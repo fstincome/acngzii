@@ -6,6 +6,15 @@ import { Search, User, ChevronRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Visitor } from "@/lib/store";
 
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm font-medium text-foreground capitalize">{value}</p>
+    </div>
+  );
+}
+
 export default function Visitors() {
   useStore();
   const visitors = getVisitors();
@@ -24,10 +33,12 @@ export default function Visitors() {
       (a, b) => b.timestamp.localeCompare(a.timestamp)
     );
 
+    const genderLabel = selected.gender === "male" ? "Homme" : selected.gender === "female" ? "Femme" : "Autre";
+
     return (
       <div className="mx-auto max-w-2xl space-y-6">
         <Button variant="ghost" className="gap-2" onClick={() => setSelected(null)}>
-          <ArrowLeft className="h-4 w-4" /> Back to list
+          <ArrowLeft className="h-4 w-4" /> Retour à la liste
         </Button>
 
         <div className="rounded-xl border border-border bg-card p-6">
@@ -43,21 +54,20 @@ export default function Visitors() {
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <Detail label="Phone" value={selected.phone} />
+            <Detail label="Téléphone" value={selected.phone} />
             <Detail label="Email" value={selected.email || "—"} />
-            <Detail label="Gender" value={selected.gender} />
-            <Detail label="Date of Birth" value={selected.dateOfBirth || "—"} />
-            <Detail label="Neighborhood" value={selected.neighborhood} />
-            <Detail label="Occupation" value={selected.occupation} />
-            <Detail label="Registered" value={selected.registrationDate} />
+            <Detail label="Genre" value={genderLabel} />
+            <Detail label="Date de naissance" value={selected.dateOfBirth || "—"} />
+            <Detail label="Quartier" value={selected.neighborhood} />
+            <Detail label="Profession" value={selected.occupation} />
+            <Detail label="Inscrit le" value={selected.registrationDate} />
           </div>
         </div>
 
-        {/* Visit History */}
         <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Visit History ({visits.length})</h3>
+          <h3 className="mb-4 text-sm font-semibold text-foreground">Historique des visites ({visits.length})</h3>
           {visits.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No visits recorded yet.</p>
+            <p className="text-sm text-muted-foreground">Aucune visite enregistrée.</p>
           ) : (
             <div className="space-y-1.5">
               {visits.map((v) => (
@@ -65,12 +75,12 @@ export default function Visitors() {
                   <div className="flex items-center gap-2">
                     <span className={`h-1.5 w-1.5 rounded-full ${v.action === "check_in" ? "bg-success" : "bg-muted-foreground"}`} />
                     <span className="text-foreground">
-                      {v.action === "check_in" ? "Entered" : "Left"}{" "}
-                      {v.room === "computer_lab" ? "Computer Lab" : "Multipurpose Room"}
+                      {v.action === "check_in" ? "Entrée" : "Sortie"}{" "}
+                      {v.room === "computer_lab" ? "Salle Informatique" : "Salle Polyvalente"}
                     </span>
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(v.timestamp).toLocaleDateString()} {new Date(v.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {new Date(v.timestamp).toLocaleDateString("fr-FR")} {new Date(v.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
               ))}
@@ -85,8 +95,8 @@ export default function Visitors() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Visitors</h1>
-          <p className="text-sm text-muted-foreground">{visitors.length} registered members</p>
+          <h1 className="text-2xl font-bold text-foreground">Visiteurs</h1>
+          <p className="text-sm text-muted-foreground">{visitors.length} membres inscrits</p>
         </div>
       </div>
 
@@ -94,7 +104,7 @@ export default function Visitors() {
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-10"
-          placeholder="Search by name, ID, or phone..."
+          placeholder="Rechercher par nom, ID ou téléphone..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -120,18 +130,9 @@ export default function Visitors() {
           </button>
         ))}
         {filtered.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">No visitors found.</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">Aucun visiteur trouvé.</p>
         )}
       </div>
-    </div>
-  );
-}
-
-function Detail({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium text-foreground capitalize">{value}</p>
     </div>
   );
 }
