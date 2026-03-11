@@ -13,11 +13,11 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/register", icon: UserPlus, label: "Register" },
+  { to: "/", icon: LayoutDashboard, label: "Tableau de bord" },
+  { to: "/register", icon: UserPlus, label: "Inscription" },
   { to: "/scanner", icon: ScanLine, label: "Scanner" },
-  { to: "/visitors", icon: Users, label: "Visitors" },
-  { to: "/statistics", icon: BarChart3, label: "Statistics" },
+  { to: "/visitors", icon: Users, label: "Visiteurs" },
+  { to: "/statistics", icon: BarChart3, label: "Statistiques" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -26,7 +26,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm lg:hidden"
@@ -34,13 +33,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-sidebar text-sidebar-foreground transition-transform duration-200 lg:static lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Logo */}
         <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
             <Monitor className="h-5 w-5 text-sidebar-primary-foreground" />
@@ -57,7 +54,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 space-y-1 p-3">
           {navItems.map((item) => {
             const active = location.pathname === item.to;
@@ -79,14 +75,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* Footer */}
         <div className="border-t border-sidebar-border p-3">
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-xs font-semibold text-sidebar-foreground">
               D
             </div>
             <div className="flex-1">
-              <p className="text-xs font-medium text-sidebar-foreground">Director</p>
+              <p className="text-xs font-medium text-sidebar-foreground">Directeur</p>
               <p className="text-[10px] text-sidebar-foreground/50">Admin</p>
             </div>
             <LogOut className="h-4 w-4 text-sidebar-foreground/40" />
@@ -94,9 +89,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
         <header className="flex h-14 items-center gap-4 border-b border-border bg-card px-4 lg:px-6">
           <button
             className="rounded-md p-1.5 hover:bg-muted lg:hidden"
@@ -107,11 +100,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex-1" />
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 animate-pulse-slow rounded-full bg-success" />
-            <span className="text-xs text-muted-foreground">Online</span>
+            <span className="text-xs text-muted-foreground">En ligne</span>
           </div>
         </header>
 
-        {/* Content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
     </div>

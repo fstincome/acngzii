@@ -7,15 +7,8 @@ import {
   useStore,
 } from "@/lib/store";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell,
 } from "recharts";
 
 export default function Dashboard() {
@@ -33,19 +26,18 @@ export default function Dashboard() {
   const multiCount = multiOccupancy.size;
   const labFull = labCount >= COMPUTER_LAB_CAPACITY;
 
-  // Chart data
   const hourlyData = Array.from({ length: 12 }, (_, i) => {
     const hour = i + 7;
     const count = visits.filter((v) => {
       const h = new Date(v.timestamp).getHours();
       return h === hour && v.action === "check_in";
     }).length;
-    return { hour: `${hour}:00`, visits: count };
+    return { hour: `${hour}:00`, visites: count };
   });
 
   const roomData = [
-    { name: "Computer Lab", value: visits.filter((v) => v.room === "computer_lab" && v.action === "check_in").length },
-    { name: "Multipurpose", value: visits.filter((v) => v.room === "multipurpose_room" && v.action === "check_in").length },
+    { name: "Salle Informatique", value: visits.filter((v) => v.room === "computer_lab" && v.action === "check_in").length },
+    { name: "Salle Polyvalente", value: visits.filter((v) => v.room === "multipurpose_room" && v.action === "check_in").length },
   ];
 
   const COLORS = ["hsl(214, 80%, 52%)", "hsl(199, 70%, 48%)"];
@@ -53,42 +45,31 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Gitega Study Space Overview</p>
+        <h1 className="text-2xl font-bold text-foreground">Tableau de bord</h1>
+        <p className="text-sm text-muted-foreground">Vue d'ensemble — Gitega Study Space</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={Users} label="Total Members" value={visitors.length} />
-        <StatCard icon={UserPlus} label="Visitors Today" value={uniqueToday} />
-        <StatCard
-          icon={Monitor}
-          label="Computer Lab"
-          value={`${labCount} / ${COMPUTER_LAB_CAPACITY}`}
-          alert={labFull}
-        />
-        <StatCard icon={DoorOpen} label="Multipurpose Room" value={multiCount} />
+        <StatCard icon={Users} label="Membres inscrits" value={visitors.length} />
+        <StatCard icon={UserPlus} label="Visiteurs aujourd'hui" value={uniqueToday} />
+        <StatCard icon={Monitor} label="Salle Informatique" value={`${labCount} / ${COMPUTER_LAB_CAPACITY}`} alert={labFull} />
+        <StatCard icon={DoorOpen} label="Salle Polyvalente" value={multiCount} />
       </div>
 
-      {/* Lab Full Alert */}
       {labFull && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
-          <p className="text-sm font-semibold text-destructive">⚠ Computer Lab Full</p>
-          <p className="text-xs text-destructive/80">Capacity of {COMPUTER_LAB_CAPACITY} reached. Please wait.</p>
+          <p className="text-sm font-semibold text-destructive">⚠ Salle Informatique pleine</p>
+          <p className="text-xs text-destructive/80">Capacité de {COMPUTER_LAB_CAPACITY} atteinte. Veuillez patienter.</p>
         </div>
       )}
 
-      {/* Occupancy Bars */}
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-3 text-sm font-semibold text-foreground">Computer Lab Occupancy</h3>
+          <h3 className="mb-3 text-sm font-semibold text-foreground">Occupation Salle Informatique</h3>
           <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${Math.min((labCount / COMPUTER_LAB_CAPACITY) * 100, 100)}%` }}
-            />
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min((labCount / COMPUTER_LAB_CAPACITY) * 100, 100)}%` }} />
           </div>
-          <p className="text-xs text-muted-foreground">{labCount} of {COMPUTER_LAB_CAPACITY} seats occupied</p>
+          <p className="text-xs text-muted-foreground">{labCount} sur {COMPUTER_LAB_CAPACITY} places occupées</p>
           {labOccupancy.size > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {Array.from(labOccupancy).map((id) => (
@@ -99,10 +80,10 @@ export default function Dashboard() {
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-3 text-sm font-semibold text-foreground">Multipurpose Room</h3>
+          <h3 className="mb-3 text-sm font-semibold text-foreground">Salle Polyvalente</h3>
           <div className="mb-2 flex items-center gap-2">
             <span className="text-3xl font-bold text-accent">{multiCount}</span>
-            <span className="text-sm text-muted-foreground">visitors inside</span>
+            <span className="text-sm text-muted-foreground">visiteurs à l'intérieur</span>
           </div>
           {multiOccupancy.size > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -114,22 +95,21 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Charts */}
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Hourly Attendance</h3>
+          <h3 className="mb-4 text-sm font-semibold text-foreground">Fréquentation horaire</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={hourlyData}>
               <XAxis dataKey="hour" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
-              <Bar dataKey="visits" fill="hsl(214, 80%, 52%)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="visites" fill="hsl(214, 80%, 52%)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Room Distribution</h3>
+          <h3 className="mb-4 text-sm font-semibold text-foreground">Répartition par salle</h3>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie data={roomData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label>
@@ -154,17 +134,7 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  alert,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string | number;
-  alert?: boolean;
-}) {
+function StatCard({ icon: Icon, label, value, alert }: { icon: React.ElementType; label: string; value: string | number; alert?: boolean }) {
   return (
     <div className={`stat-card ${alert ? "border-destructive/40 bg-destructive/5" : ""}`}>
       <div className="mb-2 flex items-center gap-2">

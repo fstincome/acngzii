@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
@@ -12,27 +12,66 @@ import {
   useStore,
 } from "@/lib/store";
 import type { Visitor } from "@/lib/store";
-import { ScanLine, Monitor, DoorOpen, LogOut, AlertTriangle, Search } from "lucide-react";
+import { ScanLine, Monitor, DoorOpen, LogOut, AlertTriangle, Search, Camera, X } from "lucide-react";
 import { toast } from "sonner";
+import { Html5Qrcode } from "html5-qrcode";
 
 export default function Scanner() {
   useStore();
   const [query, setQuery] = useState("");
   const [scanned, setScanned] = useState<Visitor | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
-  const handleScan = () => {
-    const trimmed = query.trim().toUpperCase();
+  const handleLookup = (id: string) => {
+    const trimmed = id.trim().toUpperCase();
     if (!trimmed) return;
-
-    // Accept GSS-XXXXXX format or just search
     const visitor = findVisitorByQR(trimmed);
     if (!visitor) {
-      toast.error("Visitor not found");
+      toast.error("Visiteur introuvable");
       setScanned(null);
       return;
     }
     setScanned(visitor);
   };
+
+  const handleScan = () => handleLookup(query);
+
+  const stopCamera = useCallback(async () => {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+        scannerRef.current.clear();
+      } catch (_) {}
+      scannerRef.current = null;
+    }
+    setCameraOpen(false);
+  }, []);
+
+  const startCamera = useCallback(async () => {
+    setCameraOpen(true);
+    // Wait for DOM element to render
+    await new Promise((r) => setTimeout(r, 100));
+
+    try {
+      const scanner = new Html5Qrcode("qr-reader");
+      scannerRef.current = scanner;
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          handleLookup(decodedText);
+          setQuery(decodedText);
+          stopCamera();
+        },
+        () => {}
+      );
+    } catch (err) {
+      console.error("Erreur caméra:", err);
+      toast.error("Impossible d'accéder à la caméra. Vérifiez les permissions.");
+      setCameraOpen(false);
+    }
+  }, [stopCamera]);
 
   const inLab = scanned ? isVisitorInRoom(scanned.visitorId, "computer_lab") : false;
   const inMulti = scanned ? isVisitorInRoom(scanned.visitorId, "multipurpose_room") : false;
@@ -40,17 +79,14 @@ export default function Scanner() {
 
   const handleAction = (room: "computer_lab" | "multipurpose_room", action: "check_in" | "check_out") => {
     if (!scanned) return;
-
     if (action === "check_in" && room === "computer_lab" && labFull) {
-      toast.error("Computer Lab is full. Please wait.");
+      toast.error("La Salle Informatique est pleine. Veuillez patienter.");
       return;
     }
-
     if (action === "check_in" && isVisitorInRoom(scanned.visitorId, room)) {
-      toast.warning("This visitor is already inside this room.");
+      toast.warning("Ce visiteur est déjà dans cette salle.");
       return;
     }
-
     addVisit({
       id: crypto.randomUUID(),
       visitorId: scanned.visitorId,
@@ -58,21 +94,31 @@ export default function Scanner() {
       action,
       timestamp: new Date().toISOString(),
     });
-
-    const roomLabel = room === "computer_lab" ? "Computer Lab" : "Multipurpose Room";
-    const actionLabel = action === "check_in" ? "checked in to" : "checked out of";
+    const roomLabel = room === "computer_lab" ? "Salle Informatique" : "Salle Polyvalente";
+    const actionLabel = action === "check_in" ? "entré(e) dans" : "sorti(e) de";
     toast.success(`${scanned.fullName} ${actionLabel} ${roomLabel}`);
-
-    // Force re-render
     setScanned({ ...scanned });
   };
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">QR Scanner</h1>
-        <p className="text-sm text-muted-foreground">Scan or enter visitor ID to check in/out</p>
+        <h1 className="text-2xl font-bold text-foreground">Scanner QR</h1>
+        <p className="text-sm text-muted-foreground">Scannez ou entrez l'ID du visiteur</p>
       </div>
+
+      {/* Camera Scanner */}
+      {cameraOpen && (
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-sm font-semibold text-foreground">Caméra active</p>
+            <Button variant="ghost" size="sm" onClick={stopCamera}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div id="qr-reader" className="overflow-hidden rounded-lg" />
+        </div>
+      )}
 
       {/* Scanner Input */}
       <div className="rounded-xl border border-border bg-card p-6">
@@ -82,8 +128,16 @@ export default function Scanner() {
           </div>
         </div>
         <p className="mb-4 text-center text-xs text-muted-foreground">
-          Enter the visitor ID (e.g. GSS-000001) or scan the QR code
+          Scannez le QR code avec la caméra ou entrez l'ID (ex: GSS-000001)
         </p>
+
+        {!cameraOpen && (
+          <Button onClick={startCamera} variant="outline" className="mb-4 w-full gap-2">
+            <Camera className="h-4 w-4" />
+            Ouvrir la caméra
+          </Button>
+        )}
+
         <div className="flex gap-2">
           <Input
             value={query}
@@ -94,7 +148,7 @@ export default function Scanner() {
           />
           <Button onClick={handleScan} className="gap-2">
             <Search className="h-4 w-4" />
-            Search
+            Chercher
           </Button>
         </div>
       </div>
@@ -115,16 +169,16 @@ export default function Scanner() {
           <div className="flex flex-wrap gap-2">
             {inLab && (
               <span className="occupancy-badge bg-primary/10 text-primary">
-                <Monitor className="h-3 w-3" /> In Computer Lab
+                <Monitor className="h-3 w-3" /> En Salle Informatique
               </span>
             )}
             {inMulti && (
               <span className="occupancy-badge bg-accent/10 text-accent">
-                <DoorOpen className="h-3 w-3" /> In Multipurpose Room
+                <DoorOpen className="h-3 w-3" /> En Salle Polyvalente
               </span>
             )}
             {!inLab && !inMulti && (
-              <span className="occupancy-badge bg-muted text-muted-foreground">Not currently in any room</span>
+              <span className="occupancy-badge bg-muted text-muted-foreground">Pas dans une salle actuellement</span>
             )}
           </div>
 
@@ -132,43 +186,30 @@ export default function Scanner() {
           {inLab && inMulti && (
             <div className="flex items-center gap-2 rounded-lg bg-warning/10 p-3 text-xs text-warning">
               <AlertTriangle className="h-4 w-4" />
-              Visitor is recorded in both rooms. Please verify.
+              Ce visiteur est enregistré dans les deux salles. Veuillez vérifier.
             </div>
           )}
 
           {/* Actions */}
           <div className="space-y-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</p>
-
             <div className="grid gap-2 sm:grid-cols-2">
               {!inLab && (
-                <Button
-                  onClick={() => handleAction("computer_lab", "check_in")}
-                  className="gap-2"
-                  disabled={labFull}
-                >
+                <Button onClick={() => handleAction("computer_lab", "check_in")} className="gap-2" disabled={labFull}>
                   <Monitor className="h-4 w-4" />
-                  Check In Computer Lab
+                  Entrée Salle Informatique
                 </Button>
               )}
               {inLab && (
-                <Button
-                  onClick={() => handleAction("computer_lab", "check_out")}
-                  variant="outline"
-                  className="gap-2"
-                >
+                <Button onClick={() => handleAction("computer_lab", "check_out")} variant="outline" className="gap-2">
                   <LogOut className="h-4 w-4" />
-                  Check Out Computer Lab
+                  Sortie Salle Informatique
                 </Button>
               )}
               {!inMulti && (
-                <Button
-                  onClick={() => handleAction("multipurpose_room", "check_in")}
-                  variant="secondary"
-                  className="gap-2"
-                >
+                <Button onClick={() => handleAction("multipurpose_room", "check_in")} variant="secondary" className="gap-2">
                   <DoorOpen className="h-4 w-4" />
-                  Enter Multipurpose Room
+                  Entrée Salle Polyvalente
                 </Button>
               )}
             </div>
@@ -176,7 +217,7 @@ export default function Scanner() {
 
           {/* Recent visits */}
           <div>
-            <p className="mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recent Activity</p>
+            <p className="mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Activité récente</p>
             <div className="space-y-1">
               {getVisitorVisits(scanned.visitorId)
                 .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
@@ -184,8 +225,8 @@ export default function Scanner() {
                 .map((v) => (
                   <div key={v.id} className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-xs">
                     <span className="text-foreground">
-                      {v.action === "check_in" ? "→ In" : "← Out"}{" "}
-                      {v.room === "computer_lab" ? "Computer Lab" : "Multipurpose Room"}
+                      {v.action === "check_in" ? "→ Entrée" : "← Sortie"}{" "}
+                      {v.room === "computer_lab" ? "Salle Informatique" : "Salle Polyvalente"}
                     </span>
                     <span className="text-muted-foreground">
                       {new Date(v.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
