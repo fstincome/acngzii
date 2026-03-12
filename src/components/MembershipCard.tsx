@@ -314,24 +314,24 @@ export default function MembershipCard({ fullName, visitorId, showActions = true
           <div className="flex items-center gap-2 px-1">
             <span className="text-xs text-muted-foreground">Partager :</span>
             <div className="flex gap-2">
-              <Button
-                onClick={handleWhatsApp}
-                size="sm"
-                variant="ghost"
-                className="gap-1.5 rounded-lg text-xs h-8 px-3 hover:bg-success/10 hover:text-success"
+              <a
+                href={getWhatsAppUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg text-xs h-8 px-3 hover:bg-success/10 hover:text-success text-foreground transition-colors"
               >
                 <MessageCircle className="h-3.5 w-3.5" />
                 WhatsApp
-              </Button>
-              <Button
-                onClick={handleEmail}
-                size="sm"
-                variant="ghost"
-                className="gap-1.5 rounded-lg text-xs h-8 px-3"
+              </a>
+              <a
+                href={getEmailUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg text-xs h-8 px-3 hover:bg-accent/10 hover:text-accent text-foreground transition-colors"
               >
                 <Mail className="h-3.5 w-3.5" />
                 Email
-              </Button>
+              </a>
             </div>
           </div>
         </div>
