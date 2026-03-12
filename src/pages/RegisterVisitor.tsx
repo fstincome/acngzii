@@ -104,7 +104,7 @@ export default function RegisterVisitor() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-foreground">Genre *</Label>
+            <Label className="text-foreground">Genre</Label>
             <Select value={form.gender} onValueChange={(v) => update("gender", v)}>
               <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
               <SelectContent>
