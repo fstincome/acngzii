@@ -31,8 +31,8 @@ export default function RegisterVisitor() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.fullName || !form.gender || !form.phone || !form.neighborhood || !form.occupation) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
+    if (!form.fullName) {
+      toast.error("Veuillez remplir le nom complet");
       return;
     }
 
