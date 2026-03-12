@@ -131,7 +131,7 @@ export default function RegisterVisitor() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="neighborhood" className="text-foreground">Quartier / Commune *</Label>
+            <Label htmlFor="neighborhood" className="text-foreground">Quartier / Commune</Label>
             <Input id="neighborhood" value={form.neighborhood} onChange={(e) => update("neighborhood", e.target.value)} placeholder="ex: Mushasha" className="rounded-xl h-11" />
           </div>
 

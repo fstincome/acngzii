@@ -146,6 +146,38 @@ export function useAddVisitor() {
   });
 }
 
+export function useUpdateVisitor() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ visitor_id, updates }: {
+      visitor_id: string;
+      updates: {
+        full_name?: string;
+        gender?: string;
+        date_of_birth?: string | null;
+        phone?: string;
+        email?: string | null;
+        neighborhood?: string;
+        occupation?: string;
+        photo?: string | null;
+      };
+    }) => {
+      const { data, error } = await supabase
+        .from("visitors")
+        .update(updates)
+        .eq("visitor_id", visitor_id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Visitor;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["visitors"] });
+      queryClient.invalidateQueries({ queryKey: ["visitor"] });
+    },
+  });
+}
+
 export function useAddVisit() {
   const queryClient = useQueryClient();
   return useMutation({

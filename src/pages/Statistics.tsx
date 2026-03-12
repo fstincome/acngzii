@@ -384,17 +384,35 @@ export default function Statistics() {
         </div>
       </div>
 
-      {/* Neighborhood */}
-      <div className="stat-card">
-        <h3 className="mb-5 text-sm font-semibold text-foreground">Provenance des visiteurs (quartiers)</h3>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={neighborhoodData}>
-            <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={tooltipStyle} />
-            <Bar dataKey="value" fill="hsl(174,62%,47%)" radius={[6, 6, 0, 0]} name="Visiteurs" />
-          </BarChart>
-        </ResponsiveContainer>
+      {/* Neighborhood + Age */}
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="stat-card">
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Provenance des visiteurs (quartiers)</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={neighborhoodData}>
+              <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="value" fill="hsl(174,62%,47%)" radius={[6, 6, 0, 0]} name="Visiteurs" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="stat-card">
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Fréquentation selon l'âge</h3>
+          {ageData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={ageData}>
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar dataKey="value" fill="hsl(280,65%,55%)" radius={[6, 6, 0, 0]} name="Visiteurs" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-sm text-muted-foreground italic py-8 text-center">Aucune date de naissance renseignée pour cette période.</p>
+          )}
+        </div>
       </div>
     </div>
   );
