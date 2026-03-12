@@ -9,6 +9,7 @@ import RegisterVisitor from "@/pages/RegisterVisitor";
 import Scanner from "@/pages/Scanner";
 import Visitors from "@/pages/Visitors";
 import Statistics from "@/pages/Statistics";
+import DigitalCard from "@/pages/DigitalCard";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
