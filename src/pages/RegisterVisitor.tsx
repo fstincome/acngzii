@@ -24,14 +24,15 @@ export default function RegisterVisitor() {
     email: "",
     neighborhood: "",
     occupation: "",
+    photo: "",
   });
 
   const update = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.fullName || !form.gender || !form.phone || !form.neighborhood || !form.occupation) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
+    if (!form.fullName) {
+      toast.error("Veuillez remplir le nom complet");
       return;
     }
 
@@ -40,12 +41,13 @@ export default function RegisterVisitor() {
       await addVisitor.mutateAsync({
         visitor_id: visitorId,
         full_name: form.fullName,
-        gender: form.gender,
+        gender: form.gender || "other",
         date_of_birth: form.dateOfBirth || undefined,
-        phone: form.phone,
+        phone: form.phone || "—",
         email: form.email || undefined,
-        neighborhood: form.neighborhood,
-        occupation: form.occupation,
+        neighborhood: form.neighborhood || "—",
+        occupation: form.occupation || "—",
+        photo: form.photo || undefined,
       });
 
       setNewVisitorId(visitorId);
@@ -74,7 +76,7 @@ export default function RegisterVisitor() {
         <div className="flex gap-3">
           <Button className="flex-1 gap-2 rounded-xl h-11" variant="outline" onClick={() => {
             setStep("form");
-            setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "" });
+            setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", photo: "" });
           }}>
             <UserPlus className="h-4 w-4" />
             Inscrire un autre
@@ -97,12 +99,12 @@ export default function RegisterVisitor() {
       <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2 space-y-2">
-            <Label htmlFor="fullName" className="text-foreground">Nom complet *</Label>
+            <Label htmlFor="fullName" className="text-foreground">Nom complet <span className="text-destructive">*</span></Label>
             <Input id="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Entrez le nom complet" className="rounded-xl h-11" />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-foreground">Genre *</Label>
+            <Label className="text-foreground">Genre</Label>
             <Select value={form.gender} onValueChange={(v) => update("gender", v)}>
               <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
               <SelectContent>
@@ -119,7 +121,7 @@ export default function RegisterVisitor() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone" className="text-foreground">Téléphone *</Label>
+            <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
             <Input id="phone" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+257 xx xxx xxx" className="rounded-xl h-11" />
           </div>
 
@@ -129,13 +131,19 @@ export default function RegisterVisitor() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="neighborhood" className="text-foreground">Quartier / Commune *</Label>
+            <Label htmlFor="neighborhood" className="text-foreground">Quartier / Commune</Label>
             <Input id="neighborhood" value={form.neighborhood} onChange={(e) => update("neighborhood", e.target.value)} placeholder="ex: Mushasha" className="rounded-xl h-11" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="occupation" className="text-foreground">Profession *</Label>
+            <Label htmlFor="occupation" className="text-foreground">Profession</Label>
             <Input id="occupation" value={form.occupation} onChange={(e) => update("occupation", e.target.value)} placeholder="ex: Étudiant, Entrepreneur" className="rounded-xl h-11" />
+          </div>
+
+          <div className="sm:col-span-2 space-y-2">
+            <Label htmlFor="photo" className="text-foreground">Lien photo passport</Label>
+            <Input id="photo" value={form.photo} onChange={(e) => update("photo", e.target.value)} placeholder="https://lh3.googleusercontent.com/d/..." className="rounded-xl h-11" />
+            <p className="text-[10px] text-muted-foreground">Format Google Drive : https://lh3.googleusercontent.com/d/ID</p>
           </div>
         </div>
 

@@ -188,6 +188,26 @@ export default function Statistics() {
     .slice(0, 6)
     .map(([name, value]) => ({ name, value }));
 
+  // Age distribution
+  const ageGroups: Record<string, number> = {};
+  const now = new Date();
+  visitors.filter((v) => relevantVisitorIds.has(v.visitor_id) && v.date_of_birth).forEach((v) => {
+    const birth = new Date(v.date_of_birth!);
+    const age = Math.floor((now.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+    let group: string;
+    if (age < 15) group = "< 15";
+    else if (age < 20) group = "15-19";
+    else if (age < 25) group = "20-24";
+    else if (age < 30) group = "25-29";
+    else if (age < 40) group = "30-39";
+    else group = "40+";
+    ageGroups[group] = (ageGroups[group] || 0) + 1;
+  });
+  const ageOrder = ["< 15", "15-19", "20-24", "25-29", "30-39", "40+"];
+  const ageData = ageOrder
+    .filter((g) => ageGroups[g])
+    .map((name) => ({ name, value: ageGroups[name] || 0 }));
+
   // Month options
   const monthOptions = useMemo(() => {
     const months = new Set<string>();
@@ -364,17 +384,35 @@ export default function Statistics() {
         </div>
       </div>
 
-      {/* Neighborhood */}
-      <div className="stat-card">
-        <h3 className="mb-5 text-sm font-semibold text-foreground">Provenance des visiteurs (quartiers)</h3>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={neighborhoodData}>
-            <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={tooltipStyle} />
-            <Bar dataKey="value" fill="hsl(174,62%,47%)" radius={[6, 6, 0, 0]} name="Visiteurs" />
-          </BarChart>
-        </ResponsiveContainer>
+      {/* Neighborhood + Age */}
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="stat-card">
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Provenance des visiteurs (quartiers)</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={neighborhoodData}>
+              <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="value" fill="hsl(174,62%,47%)" radius={[6, 6, 0, 0]} name="Visiteurs" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="stat-card">
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Fréquentation selon l'âge</h3>
+          {ageData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={ageData}>
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar dataKey="value" fill="hsl(280,65%,55%)" radius={[6, 6, 0, 0]} name="Visiteurs" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-sm text-muted-foreground italic py-8 text-center">Aucune date de naissance renseignée pour cette période.</p>
+          )}
+        </div>
       </div>
     </div>
   );
