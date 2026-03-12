@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScanLine, Search, CheckCircle2, Clock, XCircle, Camera, X } from "lucide-react";
+import { ScanLine, Search, CheckCircle2, Clock, XCircle, Camera, X, Building, Fingerprint } from "lucide-react";
 import { toast } from "sonner";
 import { format, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -87,7 +87,6 @@ export default function ProgramAttendance() {
     }
   };
 
-  // Camera - getUserMedia called directly in click handler
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -95,8 +94,6 @@ export default function ProgramAttendance() {
       });
       streamRef.current = stream;
       setCameraActive(true);
-
-      // Wait for next render to attach stream to video
       setTimeout(() => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -119,11 +116,9 @@ export default function ProgramAttendance() {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
         if (!ctx || video.readyState !== video.HAVE_ENOUGH_DATA) return;
-
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0);
-
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
         if (qrCode) {
@@ -147,137 +142,186 @@ export default function ProgramAttendance() {
     setCameraActive(false);
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      stopCamera();
-    };
+    return () => { stopCamera(); };
   }, [stopCamera]);
+
+  const selectedProgram = programs.find(p => p.id === selectedProgramId);
+  const selectedSession = sessions.find(s => s.id === selectedSessionId);
 
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Présence Programme</h1>
+        <h1 className="page-title flex items-center gap-2.5">
+          <div className="icon-box h-9 w-9">
+            <Fingerprint className="h-4.5 w-4.5 text-primary-foreground" />
+          </div>
+          Présence Programme
+        </h1>
         <p className="page-subtitle">Pointez les participants pour chaque session</p>
       </div>
 
       {/* Program & Session selection */}
       <div className="grid gap-3 sm:grid-cols-2 mb-6">
-        <Select value={selectedProgramId} onValueChange={v => { setSelectedProgramId(v); setSelectedSessionId(""); }}>
-          <SelectTrigger><SelectValue placeholder="Sélectionner un programme" /></SelectTrigger>
-          <SelectContent>
-            {programs.map(p => (
-              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={selectedSessionId} onValueChange={setSelectedSessionId} disabled={!selectedProgramId}>
-          <SelectTrigger><SelectValue placeholder="Sélectionner une session" /></SelectTrigger>
-          <SelectContent>
-            {sessions.map(s => (
-              <SelectItem key={s.id} value={s.id}>
-                {format(new Date(s.session_date), "EEEE dd MMMM yyyy", { locale: fr })}
-                {isToday(new Date(s.session_date)) && " (Aujourd'hui)"}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Programme</label>
+          <Select value={selectedProgramId} onValueChange={v => { setSelectedProgramId(v); setSelectedSessionId(""); }}>
+            <SelectTrigger className="h-11"><SelectValue placeholder="Sélectionner un programme" /></SelectTrigger>
+            <SelectContent>
+              {programs.map(p => (
+                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Session</label>
+          <Select value={selectedSessionId} onValueChange={setSelectedSessionId} disabled={!selectedProgramId}>
+            <SelectTrigger className="h-11"><SelectValue placeholder="Sélectionner une session" /></SelectTrigger>
+            <SelectContent>
+              {sessions.map(s => (
+                <SelectItem key={s.id} value={s.id}>
+                  {format(new Date(s.session_date), "EEEE dd MMMM yyyy", { locale: fr })}
+                  {isToday(new Date(s.session_date)) && " (Aujourd'hui)"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {!selectedSessionId ? (
-        <Card className="p-8 text-center text-muted-foreground">
-          Sélectionnez un programme et une session pour commencer le pointage.
+        <Card className="p-12 text-center border-dashed border-2">
+          <div className="icon-box h-14 w-14 mx-auto mb-4">
+            <ScanLine className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <h3 className="font-semibold text-foreground mb-1">Prêt pour le pointage</h3>
+          <p className="text-sm text-muted-foreground">Sélectionnez un programme et une session pour commencer.</p>
         </Card>
       ) : (
         <div className="space-y-6">
+          {/* Session info banner */}
+          {selectedProgram && selectedSession && (
+            <div className="rounded-xl p-4 text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-lg">{selectedProgram.name}</p>
+                  <p className="text-sm opacity-90 capitalize">
+                    {format(new Date(selectedSession.session_date), "EEEE dd MMMM yyyy", { locale: fr })}
+                    {isToday(new Date(selectedSession.session_date)) && (
+                      <Badge className="ml-2 bg-white/20 text-white border-white/30 text-xs">Aujourd'hui</Badge>
+                    )}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold">{presentList.length}<span className="text-lg opacity-70">/{participants.length}</span></p>
+                  <p className="text-xs opacity-80">présents</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Scanner */}
-          <Card className="p-4 space-y-3">
+          <Card className="p-5 space-y-4 border-primary/20">
             <div className="flex items-center gap-2">
-              <ScanLine className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-foreground">Scanner le QR code</h3>
+              <div className="icon-box h-8 w-8">
+                <ScanLine className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground text-sm">Scanner le QR code</h3>
+                <p className="text-xs text-muted-foreground">Scannez ou entrez le code participant</p>
+              </div>
             </div>
 
             {cameraActive && (
-              <div className="relative">
-                <video
-                  ref={videoRef}
-                  className="w-full rounded-xl"
-                  playsInline
-                  muted
-                />
+              <div className="relative rounded-xl overflow-hidden border border-border">
+                <video ref={videoRef} className="w-full" playsInline muted />
                 <canvas ref={canvasRef} className="hidden" />
-                <Button size="icon" variant="destructive" className="absolute top-2 right-2 rounded-full" onClick={stopCamera}>
+                <div className="absolute inset-0 border-2 border-primary/30 rounded-xl pointer-events-none" />
+                <div className="absolute top-1/2 left-1/4 right-1/4 h-0.5 bg-primary/50 animate-pulse" />
+                <Button size="icon" variant="destructive" className="absolute top-3 right-3 rounded-full shadow-lg" onClick={stopCamera}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             )}
 
             <div className="flex gap-2">
-              <Button variant="outline" className="gap-2" onClick={cameraActive ? stopCamera : startCamera}>
+              <Button
+                variant={cameraActive ? "destructive" : "outline"}
+                className="gap-2 rounded-xl"
+                onClick={cameraActive ? stopCamera : startCamera}
+              >
                 <Camera className="h-4 w-4" />
-                {cameraActive ? "Fermer caméra" : "Ouvrir caméra"}
+                {cameraActive ? "Fermer" : "Caméra"}
               </Button>
-              <Input
-                placeholder="Entrer le code participant..."
-                value={scanCode}
-                onChange={e => setScanCode(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleManualScan()}
-                className="flex-1"
-              />
-              <Button onClick={handleManualScan}><Search className="h-4 w-4" /></Button>
+              <div className="flex-1 relative">
+                <Input
+                  placeholder="Entrer le code participant..."
+                  value={scanCode}
+                  onChange={e => setScanCode(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleManualScan()}
+                  className="pr-10 h-10"
+                />
+                <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={handleManualScan}>
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </Card>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3">
-            <Card className="p-4 text-center">
-              <div className="flex items-center justify-center gap-1.5 text-success mb-1">
-                <CheckCircle2 className="h-4 w-4" />
-                <span className="text-lg font-bold">{presentList.length}</span>
+            <Card className="p-4 text-center border-l-4 border-l-success">
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+                <span className="text-2xl font-bold text-foreground">{presentList.length}</span>
               </div>
-              <p className="text-xs text-muted-foreground">Présents</p>
+              <p className="text-xs text-muted-foreground font-medium">Présents</p>
             </Card>
-            <Card className="p-4 text-center">
-              <div className="flex items-center justify-center gap-1.5 text-warning mb-1">
-                <Clock className="h-4 w-4" />
-                <span className="text-lg font-bold">{waitingList.length}</span>
+            <Card className="p-4 text-center border-l-4 border-l-warning">
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <Clock className="h-5 w-5 text-warning" />
+                <span className="text-2xl font-bold text-foreground">{waitingList.length}</span>
               </div>
-              <p className="text-xs text-muted-foreground">En attente</p>
+              <p className="text-xs text-muted-foreground font-medium">En attente</p>
             </Card>
-            <Card className="p-4 text-center">
-              <div className="flex items-center justify-center gap-1.5 text-destructive mb-1">
-                <XCircle className="h-4 w-4" />
-                <span className="text-lg font-bold">{absentList.length}</span>
+            <Card className="p-4 text-center border-l-4 border-l-destructive">
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <XCircle className="h-5 w-5 text-destructive" />
+                <span className="text-2xl font-bold text-foreground">{absentList.length}</span>
               </div>
-              <p className="text-xs text-muted-foreground">Absents</p>
+              <p className="text-xs text-muted-foreground font-medium">Absents</p>
             </Card>
           </div>
 
           {/* Search */}
-          <Input
-            placeholder="Rechercher un participant..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="max-w-sm"
-          />
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher un participant..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
 
           {/* Tabs */}
           <Tabs defaultValue="waiting">
-            <TabsList>
-              <TabsTrigger value="waiting" className="gap-1.5">
+            <TabsList className="bg-muted/60 p-1 rounded-xl">
+              <TabsTrigger value="waiting" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
                 <Clock className="h-3.5 w-3.5" /> En attente ({waitingList.length})
               </TabsTrigger>
-              <TabsTrigger value="present" className="gap-1.5">
+              <TabsTrigger value="present" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Présents ({presentList.length})
               </TabsTrigger>
-              <TabsTrigger value="absent" className="gap-1.5">
+              <TabsTrigger value="absent" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
                 <XCircle className="h-3.5 w-3.5" /> Absents ({absentList.length})
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="waiting" className="space-y-2 mt-3">
+            <TabsContent value="waiting" className="space-y-2 mt-4">
               {filteredParticipants(waitingList).length === 0 ? (
-                <p className="text-sm text-muted-foreground p-4">Aucun participant en attente</p>
+                <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant en attente</p>
               ) : (
                 filteredParticipants(waitingList).map(p => (
                   <ParticipantRow key={p.id} participant={p} status="en_attente" onMark={() => {
@@ -288,9 +332,9 @@ export default function ProgramAttendance() {
               )}
             </TabsContent>
 
-            <TabsContent value="present" className="space-y-2 mt-3">
+            <TabsContent value="present" className="space-y-2 mt-4">
               {filteredParticipants(presentList).length === 0 ? (
-                <p className="text-sm text-muted-foreground p-4">Aucun participant présent</p>
+                <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant présent</p>
               ) : (
                 filteredParticipants(presentList).map(p => (
                   <ParticipantRow key={p.id} participant={p} status="present" />
@@ -298,9 +342,9 @@ export default function ProgramAttendance() {
               )}
             </TabsContent>
 
-            <TabsContent value="absent" className="space-y-2 mt-3">
+            <TabsContent value="absent" className="space-y-2 mt-4">
               {filteredParticipants(absentList).length === 0 ? (
-                <p className="text-sm text-muted-foreground p-4">Aucun participant absent</p>
+                <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant absent</p>
               ) : (
                 filteredParticipants(absentList).map(p => (
                   <ParticipantRow key={p.id} participant={p} status="absent" />
@@ -320,32 +364,43 @@ function ParticipantRow({ participant, status, onMark }: {
   onMark?: () => void;
 }) {
   return (
-    <Card className="flex items-center gap-3 p-3">
+    <Card className="flex items-center gap-3 p-3.5 transition-all hover:shadow-md group">
       {participant.photo ? (
-        <img src={participant.photo} alt="" className="h-9 w-9 rounded-full object-cover" />
+        <img src={participant.photo} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-border" />
       ) : (
-        <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground">
+        <div className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
+          participant.role === "mentor"
+            ? "bg-primary/10 text-primary ring-2 ring-primary/20"
+            : "bg-muted text-muted-foreground ring-2 ring-border"
+        }`}>
           {participant.full_name.charAt(0)}
         </div>
       )}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{participant.full_name}</p>
-        <p className="text-xs text-muted-foreground font-mono">{participant.participant_code}</p>
-        {participant.institution && <p className="text-xs text-muted-foreground">{participant.institution}</p>}
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-xs text-muted-foreground font-mono">{participant.participant_code}</span>
+          {participant.institution && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <Building className="h-3 w-3" /> {participant.institution}
+            </span>
+          )}
+        </div>
       </div>
-      <Badge variant="secondary" className="text-xs">
+      <Badge variant="secondary" className="text-xs shrink-0">
+        {participant.role === "mentor" ? "⭐ " : "🎓 "}
         {PARTICIPANT_ROLES[participant.role as keyof typeof PARTICIPANT_ROLES] || participant.role}
       </Badge>
       {status === "en_attente" && onMark && (
-        <Button size="sm" className="gap-1.5 rounded-lg" onClick={onMark}>
+        <Button size="sm" className="gap-1.5 rounded-xl shadow-sm shrink-0" onClick={onMark} style={{ background: "var(--gradient-primary)" }}>
           <CheckCircle2 className="h-3.5 w-3.5" /> Pointer
         </Button>
       )}
       {status === "present" && (
-        <Badge className="bg-success/10 text-success border-success/20">Présent</Badge>
+        <Badge className="bg-success/10 text-success border-success/20 shrink-0">✓ Présent</Badge>
       )}
       {status === "absent" && (
-        <Badge variant="destructive">Absent</Badge>
+        <Badge variant="destructive" className="shrink-0">✗ Absent</Badge>
       )}
     </Card>
   );
