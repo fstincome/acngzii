@@ -121,7 +121,7 @@ export default function Visitors() {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader><DialogTitle>Carte de membre</DialogTitle></DialogHeader>
-                    <MembershipCard fullName={selected.full_name} visitorId={selected.visitor_id} />
+                    <MembershipCard fullName={selected.full_name} visitorId={selected.visitor_id} photo={selected.photo} />
                   </DialogContent>
                 </Dialog>
               </>
