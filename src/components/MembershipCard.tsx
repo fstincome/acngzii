@@ -257,8 +257,13 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
                 <p className="font-mono text-sm font-bold text-accent">{visitorId}</p>
               </div>
             </div>
-            <div className="shrink-0 rounded-xl bg-white p-2 shadow-lg">
-              <QRCodeSVG value={visitorId} size={compact ? 56 : 72} level="M" />
+            <div className="shrink-0 flex flex-col items-center gap-2">
+              {photo && (
+                <img src={photo} alt={fullName} className="h-16 w-14 rounded-lg object-cover border border-white/20" />
+              )}
+              <div className="rounded-xl bg-white p-2 shadow-lg">
+                <QRCodeSVG value={visitorId} size={compact ? 56 : 72} level="M" />
+              </div>
             </div>
           </div>
 
