@@ -3,30 +3,36 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
 import {
-  findVisitorByQR,
-  getVisitorVisits,
-  isVisitorInRoom,
-  addVisit,
-  getCurrentOccupancy,
+  useVisitors,
+  useVisits,
+  useVisitorVisits,
+  useAddVisit,
+  computeOccupancy,
   COMPUTER_LAB_CAPACITY,
-  useStore,
-} from "@/lib/store";
-import type { Visitor } from "@/lib/store";
+  useVisitsRealtime,
+} from "@/lib/supabase-store";
+import type { Visitor } from "@/lib/supabase-store";
 import { ScanLine, Monitor, DoorOpen, LogOut, AlertTriangle, Search, Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import { Html5Qrcode } from "html5-qrcode";
 
 export default function Scanner() {
-  useStore();
+  useVisitsRealtime();
+  const { data: visitors = [] } = useVisitors();
+  const { data: allVisits = [] } = useVisits();
+  const addVisit = useAddVisit();
+
   const [query, setQuery] = useState("");
   const [scanned, setScanned] = useState<Visitor | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
+  const scannedVisits = allVisits.filter((v) => scanned && v.visitor_id === scanned.visitor_id);
+
   const handleLookup = (id: string) => {
     const trimmed = id.trim().toUpperCase();
     if (!trimmed) return;
-    const visitor = findVisitorByQR(trimmed);
+    const visitor = visitors.find((v) => v.visitor_id === trimmed);
     if (!visitor) {
       toast.error("Visiteur introuvable");
       setScanned(null);
@@ -69,33 +75,38 @@ export default function Scanner() {
       toast.error("Impossible d'accéder à la caméra. Vérifiez les permissions.");
       setCameraOpen(false);
     }
-  }, [stopCamera]);
+  }, [stopCamera, visitors]);
 
-  const inLab = scanned ? isVisitorInRoom(scanned.visitorId, "computer_lab") : false;
-  const inMulti = scanned ? isVisitorInRoom(scanned.visitorId, "multipurpose_room") : false;
-  const labFull = getCurrentOccupancy("computer_lab").size >= COMPUTER_LAB_CAPACITY;
+  const isInRoom = (visitorId: string, room: "computer_lab" | "multipurpose_room") =>
+    computeOccupancy(allVisits, room).has(visitorId);
 
-  const handleAction = (room: "computer_lab" | "multipurpose_room", action: "check_in" | "check_out") => {
+  const inLab = scanned ? isInRoom(scanned.visitor_id, "computer_lab") : false;
+  const inMulti = scanned ? isInRoom(scanned.visitor_id, "multipurpose_room") : false;
+  const labFull = computeOccupancy(allVisits, "computer_lab").size >= COMPUTER_LAB_CAPACITY;
+
+  const handleAction = async (room: "computer_lab" | "multipurpose_room", action: "check_in" | "check_out") => {
     if (!scanned) return;
     if (action === "check_in" && room === "computer_lab" && labFull) {
       toast.error("La Salle Informatique est pleine. Veuillez patienter.");
       return;
     }
-    if (action === "check_in" && isVisitorInRoom(scanned.visitorId, room)) {
+    if (action === "check_in" && isInRoom(scanned.visitor_id, room)) {
       toast.warning("Ce visiteur est déjà dans cette salle.");
       return;
     }
-    addVisit({
-      id: crypto.randomUUID(),
-      visitorId: scanned.visitorId,
-      room,
-      action,
-      timestamp: new Date().toISOString(),
-    });
-    const roomLabel = room === "computer_lab" ? "Salle Informatique" : "Salle Polyvalente";
-    const actionLabel = action === "check_in" ? "entré(e) dans" : "sorti(e) de";
-    toast.success(`${scanned.fullName} ${actionLabel} ${roomLabel}`);
-    setScanned({ ...scanned });
+    try {
+      await addVisit.mutateAsync({
+        visitor_id: scanned.visitor_id,
+        room,
+        action,
+        timestamp: new Date().toISOString(),
+      });
+      const roomLabel = room === "computer_lab" ? "Salle Informatique" : "Salle Polyvalente";
+      const actionLabel = action === "check_in" ? "entré(e) dans" : "sorti(e) de";
+      toast.success(`${scanned.full_name} ${actionLabel} ${roomLabel}`);
+    } catch {
+      toast.error("Erreur lors de l'enregistrement");
+    }
   };
 
   return (
@@ -105,7 +116,6 @@ export default function Scanner() {
         <p className="page-subtitle">Scannez ou entrez l'ID du visiteur</p>
       </div>
 
-      {/* Camera */}
       {cameraOpen && (
         <div className="rounded-2xl border border-border/50 bg-card p-4 shadow-sm animate-fade-in">
           <div className="mb-3 flex items-center justify-between">
@@ -118,7 +128,6 @@ export default function Scanner() {
         </div>
       )}
 
-      {/* Scanner input card */}
       <div className="rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
         <div className="mb-5 flex items-center justify-center">
           <div className="icon-box h-16 w-16">
@@ -151,21 +160,19 @@ export default function Scanner() {
         </div>
       </div>
 
-      {/* Result */}
       {scanned && (
         <div className="space-y-5 rounded-2xl border border-border/50 bg-card p-7 shadow-sm animate-fade-in">
           <div className="flex items-start gap-4">
             <div className="rounded-xl border border-border/30 bg-background p-2">
-              <QRCodeSVG value={scanned.visitorId} size={60} />
+              <QRCodeSVG value={scanned.visitor_id} size={60} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold text-foreground">{scanned.fullName}</h3>
-              <p className="font-mono text-sm font-semibold text-primary">{scanned.visitorId}</p>
+              <h3 className="text-lg font-bold text-foreground">{scanned.full_name}</h3>
+              <p className="font-mono text-sm font-semibold text-primary">{scanned.visitor_id}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{scanned.occupation} · {scanned.neighborhood}</p>
             </div>
           </div>
 
-          {/* Status badges */}
           <div className="flex flex-wrap gap-2">
             {inLab && (
               <span className="occupancy-badge bg-primary/10 text-primary border border-primary/15">
@@ -189,24 +196,23 @@ export default function Scanner() {
             </div>
           )}
 
-          {/* Actions */}
           <div className="space-y-3">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Actions</p>
             <div className="grid gap-2 sm:grid-cols-2">
               {!inLab && (
-                <Button onClick={() => handleAction("computer_lab", "check_in")} className="gap-2 rounded-xl h-11" disabled={labFull}>
+                <Button onClick={() => handleAction("computer_lab", "check_in")} className="gap-2 rounded-xl h-11" disabled={labFull || addVisit.isPending}>
                   <Monitor className="h-4 w-4" />
                   Entrée Salle Info
                 </Button>
               )}
               {inLab && (
-                <Button onClick={() => handleAction("computer_lab", "check_out")} variant="outline" className="gap-2 rounded-xl h-11">
+                <Button onClick={() => handleAction("computer_lab", "check_out")} variant="outline" className="gap-2 rounded-xl h-11" disabled={addVisit.isPending}>
                   <LogOut className="h-4 w-4" />
                   Sortie Salle Info
                 </Button>
               )}
               {!inMulti && (
-                <Button onClick={() => handleAction("multipurpose_room", "check_in")} variant="secondary" className="gap-2 rounded-xl h-11">
+                <Button onClick={() => handleAction("multipurpose_room", "check_in")} variant="secondary" className="gap-2 rounded-xl h-11" disabled={addVisit.isPending}>
                   <DoorOpen className="h-4 w-4" />
                   Entrée Salle Poly
                 </Button>
@@ -214,11 +220,10 @@ export default function Scanner() {
             </div>
           </div>
 
-          {/* Recent activity */}
           <div>
             <p className="mb-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Activité récente</p>
             <div className="space-y-1.5">
-              {getVisitorVisits(scanned.visitorId)
+              {scannedVisits
                 .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
                 .slice(0, 5)
                 .map((v) => (

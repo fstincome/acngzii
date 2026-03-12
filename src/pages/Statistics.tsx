@@ -1,4 +1,4 @@
-import { getVisitors, getVisits, useStore } from "@/lib/store";
+import { useVisitors, useVisits } from "@/lib/supabase-store";
 import { Users, TrendingUp, Calendar, Clock } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -6,19 +6,18 @@ import {
 } from "recharts";
 
 export default function Statistics() {
-  useStore();
-  const visitors = getVisitors();
-  const visits = getVisits();
+  const { data: visitors = [] } = useVisitors();
+  const { data: visits = [] } = useVisits();
   const checkIns = visits.filter((v) => v.action === "check_in");
 
   const visitorCount: Record<string, number> = {};
-  checkIns.forEach((v) => { visitorCount[v.visitorId] = (visitorCount[v.visitorId] || 0) + 1; });
+  checkIns.forEach((v) => { visitorCount[v.visitor_id] = (visitorCount[v.visitor_id] || 0) + 1; });
   const topVisitors = Object.entries(visitorCount)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
     .map(([id, count]) => {
-      const v = visitors.find((vis) => vis.visitorId === id);
-      return { name: v?.fullName || id, count };
+      const v = visitors.find((vis) => vis.visitor_id === id);
+      return { name: v?.full_name || id, count };
     });
 
   const occCount: Record<string, number> = {};

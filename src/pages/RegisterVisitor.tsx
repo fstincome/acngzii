@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { addVisitor, generateVisitorId } from "@/lib/store";
+import { useAddVisitor, generateVisitorId } from "@/lib/supabase-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ export default function RegisterVisitor() {
   const [step, setStep] = useState<"form" | "card">("form");
   const [newVisitorId, setNewVisitorId] = useState("");
   const [fullName, setFullName] = useState("");
+  const addVisitor = useAddVisitor();
 
   const [form, setForm] = useState({
     fullName: "",
@@ -27,31 +28,34 @@ export default function RegisterVisitor() {
 
   const update = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.fullName || !form.gender || !form.phone || !form.neighborhood || !form.occupation) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
-    const visitorId = generateVisitorId();
-    addVisitor({
-      id: crypto.randomUUID(),
-      visitorId,
-      fullName: form.fullName,
-      gender: form.gender as "male" | "female" | "other",
-      dateOfBirth: form.dateOfBirth,
-      phone: form.phone,
-      email: form.email || undefined,
-      neighborhood: form.neighborhood,
-      occupation: form.occupation,
-      registrationDate: new Date().toISOString().split("T")[0],
-    });
+    try {
+      const visitorId = await generateVisitorId();
+      await addVisitor.mutateAsync({
+        visitor_id: visitorId,
+        full_name: form.fullName,
+        gender: form.gender,
+        date_of_birth: form.dateOfBirth || undefined,
+        phone: form.phone,
+        email: form.email || undefined,
+        neighborhood: form.neighborhood,
+        occupation: form.occupation,
+      });
 
-    setNewVisitorId(visitorId);
-    setFullName(form.fullName);
-    setStep("card");
-    toast.success("Visiteur inscrit avec succès !");
+      setNewVisitorId(visitorId);
+      setFullName(form.fullName);
+      setStep("card");
+      toast.success("Visiteur inscrit avec succès !");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur lors de l'inscription");
+    }
   };
 
   if (step === "card") {
@@ -135,9 +139,9 @@ export default function RegisterVisitor() {
           </div>
         </div>
 
-        <Button type="submit" className="w-full gap-2 rounded-xl h-12 text-sm font-semibold" size="lg">
+        <Button type="submit" className="w-full gap-2 rounded-xl h-12 text-sm font-semibold" size="lg" disabled={addVisitor.isPending}>
           <UserPlus className="h-4 w-4" />
-          Inscrire le visiteur
+          {addVisitor.isPending ? "Inscription en cours..." : "Inscrire le visiteur"}
         </Button>
       </form>
     </div>
