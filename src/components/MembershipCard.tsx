@@ -7,6 +7,7 @@ import {
   downloadCardPDF,
   printCardPDF,
   shareViaWhatsApp,
+  shareViaEmail,
 } from "@/lib/membership-card";
 import { toast } from "sonner";
 
