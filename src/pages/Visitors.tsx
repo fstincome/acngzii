@@ -26,8 +26,11 @@ function Detail({ icon: Icon, label, value }: { icon: React.ElementType; label: 
 export default function Visitors() {
   const { data: visitors = [], isLoading } = useVisitors();
   const { data: allVisits = [] } = useVisits();
+  const updateVisitor = useUpdateVisitor();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Visitor | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState<Record<string, string>>({});
 
   const filtered = visitors.filter(
     (v) =>
