@@ -1,11 +1,19 @@
 import { useParams } from "react-router-dom";
-import { findVisitorByQR } from "@/lib/store";
+import { useVisitorByQR } from "@/lib/supabase-store";
 import MembershipCard from "@/components/MembershipCard";
 import { Sparkles } from "lucide-react";
 
 export default function DigitalCard() {
   const { visitorId } = useParams<{ visitorId: string }>();
-  const visitor = visitorId ? findVisitorByQR(visitorId) : undefined;
+  const { data: visitor, isLoading } = useVisitorByQR(visitorId);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <p className="text-sm text-muted-foreground">Chargement...</p>
+      </div>
+    );
+  }
 
   if (!visitor) {
     return (
@@ -28,7 +36,7 @@ export default function DigitalCard() {
           <h1 className="text-lg font-bold text-foreground">Ma Carte de Membre</h1>
           <p className="text-sm text-muted-foreground">Gitega Study Space</p>
         </div>
-        <MembershipCard fullName={visitor.fullName} visitorId={visitor.visitorId} />
+        <MembershipCard fullName={visitor.full_name} visitorId={visitor.visitor_id} />
       </div>
     </div>
   );

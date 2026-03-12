@@ -14,7 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      visitors: {
+        Row: {
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          full_name: string
+          gender: string
+          id: string
+          neighborhood: string
+          occupation: string
+          phone: string
+          photo: string | null
+          registration_date: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          full_name: string
+          gender: string
+          id?: string
+          neighborhood: string
+          occupation: string
+          phone: string
+          photo?: string | null
+          registration_date?: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          full_name?: string
+          gender?: string
+          id?: string
+          neighborhood?: string
+          occupation?: string
+          phone?: string
+          photo?: string | null
+          registration_date?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
+      visits: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          room: string
+          timestamp: string
+          visitor_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          room: string
+          timestamp?: string
+          visitor_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          room?: string
+          timestamp?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visits_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["visitor_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

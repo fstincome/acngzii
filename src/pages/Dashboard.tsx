@@ -1,26 +1,20 @@
 import { Users, UserPlus, Monitor, DoorOpen, TrendingUp } from "lucide-react";
-import {
-  getVisitors,
-  getVisits,
-  getCurrentOccupancy,
-  COMPUTER_LAB_CAPACITY,
-  useStore,
-} from "@/lib/store";
+import { useVisitors, useVisits, computeOccupancy, COMPUTER_LAB_CAPACITY, useVisitsRealtime } from "@/lib/supabase-store";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from "recharts";
 
 export default function Dashboard() {
-  useStore();
-  const visitors = getVisitors();
-  const visits = getVisits();
-  const labOccupancy = getCurrentOccupancy("computer_lab");
-  const multiOccupancy = getCurrentOccupancy("multipurpose_room");
+  useVisitsRealtime();
+  const { data: visitors = [] } = useVisitors();
+  const { data: visits = [] } = useVisits();
+  const labOccupancy = computeOccupancy(visits, "computer_lab");
+  const multiOccupancy = computeOccupancy(visits, "multipurpose_room");
 
   const today = new Date().toISOString().split("T")[0];
   const todayVisits = visits.filter((v) => v.timestamp.startsWith(today) && v.action === "check_in");
-  const uniqueToday = new Set(todayVisits.map((v) => v.visitorId)).size;
+  const uniqueToday = new Set(todayVisits.map((v) => v.visitor_id)).size;
 
   const labCount = labOccupancy.size;
   const multiCount = multiOccupancy.size;
@@ -51,7 +45,6 @@ export default function Dashboard() {
         <p className="page-subtitle">Vue d'ensemble — Gitega Study Space</p>
       </div>
 
-      {/* Stats grid */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard icon={Users} label="Membres inscrits" value={visitors.length} color="primary" />
         <StatCard icon={UserPlus} label="Visiteurs aujourd'hui" value={uniqueToday} color="accent" />
@@ -71,7 +64,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Room occupancy */}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
           <div className="mb-4 flex items-center justify-between">
@@ -83,10 +75,7 @@ export default function Dashboard() {
           <div className="mb-3 h-2.5 w-full overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${labPercent}%`,
-                background: "var(--gradient-primary)",
-              }}
+              style={{ width: `${labPercent}%`, background: "var(--gradient-primary)" }}
             />
           </div>
           <p className="text-xs text-muted-foreground">{labCount} sur {COMPUTER_LAB_CAPACITY} places occupées</p>
@@ -115,7 +104,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Charts */}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
           <h3 className="mb-5 text-sm font-semibold text-foreground">Fréquentation horaire</h3>
@@ -123,9 +111,7 @@ export default function Dashboard() {
             <BarChart data={hourlyData}>
               <XAxis dataKey="hour" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={false} tickLine={false} />
-              <Tooltip
-                contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgb(0 0 0 / 0.1)" }}
-              />
+              <Tooltip contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgb(0 0 0 / 0.1)" }} />
               <Bar dataKey="visites" fill="hsl(234, 85%, 60%)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -140,9 +126,7 @@ export default function Dashboard() {
                   <Cell key={i} fill={COLORS[i]} />
                 ))}
               </Pie>
-              <Tooltip
-                contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgb(0 0 0 / 0.1)" }}
-              />
+              <Tooltip contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgb(0 0 0 / 0.1)" }} />
             </PieChart>
           </ResponsiveContainer>
           <div className="mt-3 flex justify-center gap-6">
