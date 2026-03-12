@@ -9,7 +9,7 @@ import {
   Menu,
   X,
   LogOut,
-  Monitor,
+  Sparkles,
 } from "lucide-react";
 
 const navItems = [
@@ -25,36 +25,42 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-background">
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-foreground/30 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-sidebar text-sidebar-foreground transition-transform duration-200 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{ background: "var(--gradient-sidebar)" }}
       >
-        <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
-            <Monitor className="h-5 w-5 text-sidebar-primary-foreground" />
+        {/* Logo */}
+        <div className="flex h-[72px] items-center gap-3 px-6">
+          <div className="icon-box h-10 w-10 shrink-0">
+            <Sparkles className="h-5 w-5 text-primary-foreground" />
           </div>
-          <div>
-            <h1 className="text-sm font-bold tracking-tight text-sidebar-foreground">GSS Access</h1>
-            <p className="text-[10px] text-sidebar-foreground/60">Gitega Study Space</p>
+          <div className="min-w-0">
+            <h1 className="text-[15px] font-bold tracking-tight text-sidebar-foreground">GSS Access</h1>
+            <p className="text-[11px] text-sidebar-foreground/50 truncate">Gitega Study Space</p>
           </div>
           <button
-            className="ml-auto rounded-md p-1 hover:bg-sidebar-accent lg:hidden"
+            className="ml-auto rounded-lg p-1.5 text-sidebar-foreground/60 hover:bg-sidebar-accent lg:hidden"
             onClick={() => setSidebarOpen(false)}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 p-3">
+        {/* Navigation */}
+        <nav className="flex-1 space-y-1 px-3 pt-4">
+          <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+            Navigation
+          </p>
           {navItems.map((item) => {
             const active = location.pathname === item.to;
             return (
@@ -62,49 +68,64 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 key={item.to}
                 to={item.to}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 ${
                   active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                    ? "bg-sidebar-primary/15 text-sidebar-primary shadow-sm"
+                    : "text-sidebar-foreground/60 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
                 }`}
               >
-                <item.icon className="h-4.5 w-4.5" />
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200 ${
+                    active
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                      : "bg-sidebar-accent/50 text-sidebar-foreground/50 group-hover:bg-sidebar-accent group-hover:text-sidebar-foreground/80"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                </div>
                 {item.label}
+                {active && (
+                  <div className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary animate-pulse-slow" />
+                )}
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-sidebar-border p-3">
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-xs font-semibold text-sidebar-foreground">
+        {/* User profile */}
+        <div className="border-t border-sidebar-border/50 p-4">
+          <div className="flex items-center gap-3 rounded-xl bg-sidebar-accent/40 px-3 py-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full font-semibold text-xs text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
               D
             </div>
-            <div className="flex-1">
-              <p className="text-xs font-medium text-sidebar-foreground">Directeur</p>
-              <p className="text-[10px] text-sidebar-foreground/50">Admin</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold text-sidebar-foreground truncate">Directeur</p>
+              <p className="text-[10px] text-sidebar-foreground/40">Administrateur</p>
             </div>
-            <LogOut className="h-4 w-4 text-sidebar-foreground/40" />
+            <button className="rounded-lg p-1.5 text-sidebar-foreground/30 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground/60">
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </aside>
 
+      {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-14 items-center gap-4 border-b border-border bg-card px-4 lg:px-6">
+        <header className="flex h-16 items-center gap-4 border-b border-border/60 bg-card/80 backdrop-blur-md px-4 lg:px-8">
           <button
-            className="rounded-md p-1.5 hover:bg-muted lg:hidden"
+            className="rounded-xl p-2 hover:bg-muted transition-colors lg:hidden"
             onClick={() => setSidebarOpen(true)}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5 text-foreground" />
           </button>
           <div className="flex-1" />
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 animate-pulse-slow rounded-full bg-success" />
-            <span className="text-xs text-muted-foreground">En ligne</span>
+          <div className="flex items-center gap-2.5 rounded-full bg-success/10 px-3 py-1.5">
+            <div className="h-2 w-2 rounded-full bg-success animate-pulse-slow" />
+            <span className="text-xs font-medium text-success">En ligne</span>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-5 lg:p-8">{children}</main>
       </div>
     </div>
   );
