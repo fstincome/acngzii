@@ -102,7 +102,7 @@ export default function Visitors() {
                     <span className={`h-2 w-2 rounded-full ${v.action === "check_in" ? "bg-success" : "bg-muted-foreground"}`} />
                     <span className="text-foreground font-medium">
                       {v.action === "check_in" ? "Entrée" : "Sortie"}{" "}
-                      {v.room === "computer_lab" ? "Salle Informatique" : "Salle Polyvalente"}
+                      {ROOM_LABELS[v.room as RoomType] || v.room}
                     </span>
                   </div>
                   <span className="text-xs text-muted-foreground">
