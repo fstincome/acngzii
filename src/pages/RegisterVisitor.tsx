@@ -41,12 +41,13 @@ export default function RegisterVisitor() {
       await addVisitor.mutateAsync({
         visitor_id: visitorId,
         full_name: form.fullName,
-        gender: form.gender,
+        gender: form.gender || "other",
         date_of_birth: form.dateOfBirth || undefined,
-        phone: form.phone,
+        phone: form.phone || "—",
         email: form.email || undefined,
-        neighborhood: form.neighborhood,
-        occupation: form.occupation,
+        neighborhood: form.neighborhood || "—",
+        occupation: form.occupation || "—",
+        photo: form.photo || undefined,
       });
 
       setNewVisitorId(visitorId);
