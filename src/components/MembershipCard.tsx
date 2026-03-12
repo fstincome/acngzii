@@ -198,18 +198,12 @@ export default function MembershipCard({ fullName, visitorId, showActions = true
 
   const handleWhatsApp = () => {
     shareViaWhatsApp(visitorId, fullName);
+    toast.success("Ouverture de WhatsApp...");
   };
 
   const handleEmail = () => {
-    const subject = encodeURIComponent("Votre carte de membre - Gitega Study Space");
-    const body = encodeURIComponent(
-      `Bonjour ${fullName},\n\n` +
-      `Voici votre identifiant de membre: ${visitorId}\n\n` +
-      `Présentez votre QR code à chaque visite au Gitega Study Space.\n\n` +
-      `Accédez à votre carte: ${window.location.origin}/card/${visitorId}\n\n` +
-      `Cordialement,\nGitega Study Space`
-    );
-    window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
+    shareViaEmail(visitorId, fullName);
+    toast.success("Ouverture de l'email...");
   };
 
   return (
