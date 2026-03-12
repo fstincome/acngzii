@@ -12,6 +12,7 @@ import Statistics from "@/pages/Statistics";
 import DigitalCard from "@/pages/DigitalCard";
 import Programs from "@/pages/Programs";
 import ProgramAttendance from "@/pages/ProgramAttendance";
+import ProgramReport from "@/pages/ProgramReport";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
