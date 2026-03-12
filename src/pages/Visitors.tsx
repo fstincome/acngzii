@@ -45,12 +45,89 @@ export default function Visitors() {
       .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
     const genderLabel = selected.gender === "male" ? "Homme" : selected.gender === "female" ? "Femme" : "Autre";
 
+    const startEdit = () => {
+      setEditForm({
+        full_name: selected.full_name,
+        gender: selected.gender,
+        date_of_birth: selected.date_of_birth || "",
+        phone: selected.phone,
+        email: selected.email || "",
+        neighborhood: selected.neighborhood,
+        occupation: selected.occupation,
+        photo: selected.photo || "",
+      });
+      setEditing(true);
+    };
+
+    const saveEdit = async () => {
+      try {
+        await updateVisitor.mutateAsync({
+          visitor_id: selected.visitor_id,
+          updates: {
+            full_name: editForm.full_name,
+            gender: editForm.gender || "other",
+            date_of_birth: editForm.date_of_birth || null,
+            phone: editForm.phone || "—",
+            email: editForm.email || null,
+            neighborhood: editForm.neighborhood || "—",
+            occupation: editForm.occupation || "—",
+            photo: editForm.photo || null,
+          },
+        });
+        setSelected({
+          ...selected,
+          full_name: editForm.full_name,
+          gender: editForm.gender as Visitor["gender"],
+          date_of_birth: editForm.date_of_birth || null,
+          phone: editForm.phone || "—",
+          email: editForm.email || null,
+          neighborhood: editForm.neighborhood || "—",
+          occupation: editForm.occupation || "—",
+          photo: editForm.photo || null,
+        });
+        setEditing(false);
+        toast.success("Visiteur mis à jour avec succès");
+      } catch {
+        toast.error("Erreur lors de la mise à jour");
+      }
+    };
+
     return (
       <div className="mx-auto max-w-2xl space-y-6 animate-fade-in">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" className="gap-2 rounded-xl" onClick={() => setSelected(null)}>
+          <Button variant="ghost" className="gap-2 rounded-xl" onClick={() => { setSelected(null); setEditing(false); }}>
             <ArrowLeft className="h-4 w-4" /> Retour
           </Button>
+          <div className="ml-auto flex gap-2">
+            {editing ? (
+              <>
+                <Button variant="outline" className="gap-2 rounded-xl" onClick={() => setEditing(false)}>
+                  <X className="h-4 w-4" /> Annuler
+                </Button>
+                <Button className="gap-2 rounded-xl" onClick={saveEdit} disabled={updateVisitor.isPending}>
+                  <Save className="h-4 w-4" /> {updateVisitor.isPending ? "Enregistrement..." : "Enregistrer"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" className="gap-2 rounded-xl" onClick={startEdit}>
+                  <Pencil className="h-4 w-4" /> Modifier
+                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="gap-2 rounded-xl">
+                      <CreditCard className="h-4 w-4" /> Carte
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader><DialogTitle>Carte de membre</DialogTitle></DialogHeader>
+                    <MembershipCard fullName={selected.full_name} visitorId={selected.visitor_id} />
+                  </DialogContent>
+                </Dialog>
+              </>
+            )}
+          </div>
+        </div>
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2 rounded-xl ml-auto">
