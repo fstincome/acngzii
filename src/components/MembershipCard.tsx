@@ -104,7 +104,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.fillText("GITEGA STUDY SPACE", 68, 32);
       ctx.font = "10px Inter, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.fillText("Carte de Membre", 68, 46);
+      ctx.fillText(programName || "Carte de Membre", 68, 46);
 
       // Photo (top-right, same size as logo)
       if (photo) {
