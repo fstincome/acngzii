@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
-import { UserPlus, Download, Check } from "lucide-react";
+import { UserPlus, Download, Check, Sparkles } from "lucide-react";
 
 export default function RegisterVisitor() {
   const navigate = useNavigate();
@@ -56,41 +56,47 @@ export default function RegisterVisitor() {
 
   if (step === "card") {
     return (
-      <div className="mx-auto max-w-md space-y-6">
+      <div className="mx-auto max-w-md space-y-8 animate-fade-in">
         <div className="text-center">
-          <Check className="mx-auto mb-3 h-12 w-12 text-success" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10">
+            <Check className="h-8 w-8 text-success" />
+          </div>
           <h2 className="text-xl font-bold text-foreground">Inscription terminée</h2>
-          <p className="text-sm text-muted-foreground">Carte de membre prête</p>
+          <p className="mt-1 text-sm text-muted-foreground">La carte de membre est prête</p>
         </div>
 
-        <div id="membership-card" className="mx-auto w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-lg">
-          <div className="mb-4 flex items-center gap-3 border-b border-border pb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <span className="text-sm font-bold text-primary-foreground">GSS</span>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-primary">GITEGA STUDY SPACE</p>
-              <p className="text-[10px] text-muted-foreground">Carte de membre</p>
+        <div id="membership-card" className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-border/50 bg-card shadow-lg">
+          <div className="px-6 pt-6 pb-4">
+            <div className="flex items-center gap-3 pb-4 border-b border-border/50">
+              <div className="icon-box h-10 w-10 shrink-0">
+                <Sparkles className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-primary tracking-wide">GITEGA STUDY SPACE</p>
+                <p className="text-[10px] text-muted-foreground">Carte de membre</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-start gap-4">
-            <QRCodeSVG value={newVisitorId} size={80} />
-            <div>
-              <p className="text-sm font-semibold text-foreground">{fullName}</p>
-              <p className="mt-1 font-mono text-xs text-primary">{newVisitorId}</p>
+          <div className="flex items-start gap-4 px-6 pb-6">
+            <div className="rounded-xl border border-border/30 p-2 bg-background">
+              <QRCodeSVG value={newVisitorId} size={72} />
+            </div>
+            <div className="pt-1">
+              <p className="text-base font-semibold text-foreground">{fullName}</p>
+              <p className="mt-1.5 font-mono text-xs font-semibold text-primary">{newVisitorId}</p>
             </div>
           </div>
         </div>
 
         <div className="flex gap-3">
-          <Button className="flex-1 gap-2" variant="outline" onClick={() => {
+          <Button className="flex-1 gap-2 rounded-xl h-11" variant="outline" onClick={() => {
             setStep("form");
             setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "" });
           }}>
             <UserPlus className="h-4 w-4" />
             Inscrire un autre
           </Button>
-          <Button className="flex-1 gap-2" onClick={() => navigate("/visitors")}>
+          <Button className="flex-1 gap-2 rounded-xl h-11" onClick={() => navigate("/visitors")}>
             <Download className="h-4 w-4" />
             Voir les visiteurs
           </Button>
@@ -100,23 +106,23 @@ export default function RegisterVisitor() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Inscrire un visiteur</h1>
-        <p className="text-sm text-muted-foreground">Ajouter un nouveau membre au Gitega Study Space</p>
+    <div className="mx-auto max-w-2xl space-y-8 animate-fade-in">
+      <div className="page-header">
+        <h1 className="page-title">Inscrire un visiteur</h1>
+        <p className="page-subtitle">Ajouter un nouveau membre au Gitega Study Space</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-xl border border-border bg-card p-6">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Label htmlFor="fullName">Nom complet *</Label>
-            <Input id="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Entrez le nom complet" />
+      <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="sm:col-span-2 space-y-2">
+            <Label htmlFor="fullName" className="text-foreground">Nom complet *</Label>
+            <Input id="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Entrez le nom complet" className="rounded-xl h-11" />
           </div>
 
-          <div>
-            <Label>Genre *</Label>
+          <div className="space-y-2">
+            <Label className="text-foreground">Genre *</Label>
             <Select value={form.gender} onValueChange={(v) => update("gender", v)}>
-              <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+              <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="male">Homme</SelectItem>
                 <SelectItem value="female">Femme</SelectItem>
@@ -125,33 +131,33 @@ export default function RegisterVisitor() {
             </Select>
           </div>
 
-          <div>
-            <Label htmlFor="dob">Date de naissance</Label>
-            <Input id="dob" type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} />
+          <div className="space-y-2">
+            <Label htmlFor="dob" className="text-foreground">Date de naissance</Label>
+            <Input id="dob" type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} className="rounded-xl h-11" />
           </div>
 
-          <div>
-            <Label htmlFor="phone">Numéro de téléphone *</Label>
-            <Input id="phone" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+257 xx xxx xxx" />
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-foreground">Téléphone *</Label>
+            <Input id="phone" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+257 xx xxx xxx" className="rounded-xl h-11" />
           </div>
 
-          <div>
-            <Label htmlFor="email">Email (optionnel)</Label>
-            <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="email@exemple.com" />
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-foreground">Email (optionnel)</Label>
+            <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="email@exemple.com" className="rounded-xl h-11" />
           </div>
 
-          <div>
-            <Label htmlFor="neighborhood">Quartier / Commune *</Label>
-            <Input id="neighborhood" value={form.neighborhood} onChange={(e) => update("neighborhood", e.target.value)} placeholder="ex: Mushasha" />
+          <div className="space-y-2">
+            <Label htmlFor="neighborhood" className="text-foreground">Quartier / Commune *</Label>
+            <Input id="neighborhood" value={form.neighborhood} onChange={(e) => update("neighborhood", e.target.value)} placeholder="ex: Mushasha" className="rounded-xl h-11" />
           </div>
 
-          <div>
-            <Label htmlFor="occupation">Profession *</Label>
-            <Input id="occupation" value={form.occupation} onChange={(e) => update("occupation", e.target.value)} placeholder="ex: Étudiant, Entrepreneur" />
+          <div className="space-y-2">
+            <Label htmlFor="occupation" className="text-foreground">Profession *</Label>
+            <Input id="occupation" value={form.occupation} onChange={(e) => update("occupation", e.target.value)} placeholder="ex: Étudiant, Entrepreneur" className="rounded-xl h-11" />
           </div>
         </div>
 
-        <Button type="submit" className="w-full gap-2" size="lg">
+        <Button type="submit" className="w-full gap-2 rounded-xl h-12 text-sm font-semibold" size="lg">
           <UserPlus className="h-4 w-4" />
           Inscrire le visiteur
         </Button>
