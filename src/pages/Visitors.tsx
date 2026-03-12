@@ -2,15 +2,18 @@ import { useState } from "react";
 import { getVisitors, getVisitorVisits, useStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
-import { Search, User, ChevronRight, ArrowLeft } from "lucide-react";
+import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Visitor } from "@/lib/store";
 
-function Detail({ label, value }: { label: string; value: string }) {
+function Detail({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
-    <div>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium text-foreground capitalize">{value}</p>
+    <div className="flex items-start gap-3 rounded-xl bg-muted/40 px-4 py-3">
+      <Icon className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</p>
+        <p className="text-sm font-medium text-foreground capitalize truncate">{value}</p>
+      </div>
     </div>
   );
 }
@@ -32,49 +35,54 @@ export default function Visitors() {
     const visits = getVisitorVisits(selected.visitorId).sort(
       (a, b) => b.timestamp.localeCompare(a.timestamp)
     );
-
     const genderLabel = selected.gender === "male" ? "Homme" : selected.gender === "female" ? "Femme" : "Autre";
 
     return (
-      <div className="mx-auto max-w-2xl space-y-6">
-        <Button variant="ghost" className="gap-2" onClick={() => setSelected(null)}>
+      <div className="mx-auto max-w-2xl space-y-6 animate-fade-in">
+        <Button variant="ghost" className="gap-2 rounded-xl" onClick={() => setSelected(null)}>
           <ArrowLeft className="h-4 w-4" /> Retour à la liste
         </Button>
 
-        <div className="rounded-xl border border-border bg-card p-6">
+        <div className="rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
           <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
-              <User className="h-8 w-8 text-primary" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl shrink-0" style={{ background: "var(--gradient-primary)" }}>
+              <User className="h-8 w-8 text-primary-foreground" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h2 className="text-xl font-bold text-foreground">{selected.fullName}</h2>
-              <p className="font-mono text-sm text-primary">{selected.visitorId}</p>
+              <p className="font-mono text-sm font-semibold text-primary">{selected.visitorId}</p>
             </div>
-            <QRCodeSVG value={selected.visitorId} size={72} />
+            <div className="rounded-xl border border-border/30 bg-background p-2">
+              <QRCodeSVG value={selected.visitorId} size={64} />
+            </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <Detail label="Téléphone" value={selected.phone} />
-            <Detail label="Email" value={selected.email || "—"} />
-            <Detail label="Genre" value={genderLabel} />
-            <Detail label="Date de naissance" value={selected.dateOfBirth || "—"} />
-            <Detail label="Quartier" value={selected.neighborhood} />
-            <Detail label="Profession" value={selected.occupation} />
-            <Detail label="Inscrit le" value={selected.registrationDate} />
+          <div className="mt-6 grid grid-cols-2 gap-2.5">
+            <Detail icon={Phone} label="Téléphone" value={selected.phone} />
+            <Detail icon={Briefcase} label="Profession" value={selected.occupation} />
+            <Detail icon={MapPin} label="Quartier" value={selected.neighborhood} />
+            <Detail icon={Calendar} label="Genre" value={genderLabel} />
+            <Detail icon={Calendar} label="Date de naissance" value={selected.dateOfBirth || "—"} />
+            <Detail icon={Calendar} label="Inscrit le" value={selected.registrationDate} />
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Historique des visites ({visits.length})</h3>
+        <div className="rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
+          <h3 className="mb-4 text-sm font-semibold text-foreground">
+            Historique des visites
+            <span className="ml-2 inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+              {visits.length}
+            </span>
+          </h3>
           {visits.length === 0 ? (
             <p className="text-sm text-muted-foreground">Aucune visite enregistrée.</p>
           ) : (
             <div className="space-y-1.5">
               {visits.map((v) => (
-                <div key={v.id} className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className={`h-1.5 w-1.5 rounded-full ${v.action === "check_in" ? "bg-success" : "bg-muted-foreground"}`} />
-                    <span className="text-foreground">
+                <div key={v.id} className="flex items-center justify-between rounded-xl bg-muted/40 px-4 py-2.5 text-sm">
+                  <div className="flex items-center gap-2.5">
+                    <span className={`h-2 w-2 rounded-full ${v.action === "check_in" ? "bg-success" : "bg-muted-foreground"}`} />
+                    <span className="text-foreground font-medium">
                       {v.action === "check_in" ? "Entrée" : "Sortie"}{" "}
                       {v.room === "computer_lab" ? "Salle Informatique" : "Salle Polyvalente"}
                     </span>
@@ -92,18 +100,18 @@ export default function Visitors() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Visiteurs</h1>
-          <p className="text-sm text-muted-foreground">{visitors.length} membres inscrits</p>
+        <div className="page-header">
+          <h1 className="page-title">Visiteurs</h1>
+          <p className="page-subtitle">{visitors.length} membres inscrits</p>
         </div>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          className="pl-10"
+          className="pl-11 rounded-xl h-11"
           placeholder="Rechercher par nom, ID ou téléphone..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -115,22 +123,29 @@ export default function Visitors() {
           <button
             key={v.id}
             onClick={() => setSelected(v)}
-            className="flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-shadow hover:shadow-md"
+            className="flex w-full items-center gap-4 rounded-2xl border border-border/50 bg-card p-4 text-left transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 shrink-0">
               <User className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{v.fullName}</p>
-              <p className="text-xs text-muted-foreground">
-                <span className="font-mono text-primary">{v.visitorId}</span> · {v.occupation} · {v.neighborhood}
+              <p className="text-xs text-muted-foreground mt-0.5">
+                <span className="font-mono font-semibold text-primary">{v.visitorId}</span>
+                <span className="mx-1.5 text-border">·</span>
+                {v.occupation}
+                <span className="mx-1.5 text-border">·</span>
+                {v.neighborhood}
               </p>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
           </button>
         ))}
         {filtered.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">Aucun visiteur trouvé.</p>
+          <div className="py-12 text-center">
+            <User className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground">Aucun visiteur trouvé.</p>
+          </div>
         )}
       </div>
     </div>

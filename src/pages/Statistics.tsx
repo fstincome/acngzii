@@ -25,7 +25,7 @@ export default function Statistics() {
   visitors.forEach((v) => { occCount[v.occupation] = (occCount[v.occupation] || 0) + 1; });
   const occupationData = Object.entries(occCount).map(([name, value]) => ({ name, value }));
 
-  const COLORS = ["hsl(214,80%,52%)", "hsl(199,70%,48%)", "hsl(152,60%,42%)", "hsl(38,92%,50%)", "hsl(0,72%,55%)"];
+  const COLORS = ["hsl(234,85%,60%)", "hsl(174,62%,47%)", "hsl(160,64%,43%)", "hsl(38,92%,50%)", "hsl(0,72%,55%)"];
 
   const weekDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
   const weeklyData = weekDays.map((day, i) => ({
@@ -42,69 +42,76 @@ export default function Statistics() {
     };
   });
 
+  const tooltipStyle = { borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgb(0 0 0 / 0.1)" };
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Statistiques</h1>
-        <p className="text-sm text-muted-foreground">Analyses et tendances</p>
+    <div className="space-y-8 animate-fade-in">
+      <div className="page-header">
+        <h1 className="page-title">Statistiques</h1>
+        <p className="page-subtitle">Analyses et tendances de fréquentation</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <MiniStat icon={Users} label="Total membres" value={visitors.length} />
-        <MiniStat icon={TrendingUp} label="Total entrées" value={checkIns.length} />
-        <MiniStat icon={Calendar} label="Salle Informatique" value={checkIns.filter((v) => v.room === "computer_lab").length} />
-        <MiniStat icon={Clock} label="Salle Polyvalente" value={checkIns.filter((v) => v.room === "multipurpose_room").length} />
+        <MiniStat icon={Users} label="Total membres" value={visitors.length} color="primary" />
+        <MiniStat icon={TrendingUp} label="Total entrées" value={checkIns.length} color="accent" />
+        <MiniStat icon={Calendar} label="Salle Informatique" value={checkIns.filter((v) => v.room === "computer_lab").length} color="primary" />
+        <MiniStat icon={Clock} label="Salle Polyvalente" value={checkIns.filter((v) => v.room === "multipurpose_room").length} color="accent" />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Fréquentation hebdomadaire</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Fréquentation hebdomadaire</h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={weeklyData}>
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-              <Tooltip />
-              <Line type="monotone" dataKey="visiteurs" stroke="hsl(214,80%,52%)" strokeWidth={2} dot={{ r: 4 }} />
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Line type="monotone" dataKey="visiteurs" stroke="hsl(234,85%,60%)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(234,85%,60%)" }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Utilisation horaire par salle</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Utilisation horaire par salle</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={hourlyDist}>
-              <XAxis dataKey="hour" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-              <Tooltip />
-              <Bar dataKey="labo" fill="hsl(214,80%,52%)" radius={[2, 2, 0, 0]} name="Salle Informatique" />
-              <Bar dataKey="poly" fill="hsl(199,70%,48%)" radius={[2, 2, 0, 0]} name="Salle Polyvalente" />
+              <XAxis dataKey="hour" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="labo" fill="hsl(234,85%,60%)" radius={[4, 4, 0, 0]} name="Salle Informatique" />
+              <Bar dataKey="poly" fill="hsl(174,62%,47%)" radius={[4, 4, 0, 0]} name="Salle Polyvalente" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Visiteurs les plus fréquents</h3>
-          <div className="space-y-2">
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Visiteurs les plus fréquents</h3>
+          <div className="space-y-2.5">
             {topVisitors.map((v, i) => (
               <div key={v.name} className="flex items-center gap-3">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">{i + 1}</span>
-                <span className="flex-1 text-sm text-foreground truncate">{v.name}</span>
-                <span className="text-sm font-semibold text-primary">{v.count}</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
+                  {i + 1}
+                </span>
+                <span className="flex-1 text-sm text-foreground font-medium truncate">{v.name}</span>
+                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">{v.count}</span>
               </div>
             ))}
+            {topVisitors.length === 0 && (
+              <p className="text-sm text-muted-foreground">Aucune donnée disponible.</p>
+            )}
           </div>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Membres par profession</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Membres par profession</h3>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={occupationData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" label={({ name }) => name}>
+              <Pie data={occupationData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" label={({ name }) => name} strokeWidth={0}>
                 {occupationData.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={tooltipStyle} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -113,14 +120,16 @@ export default function Statistics() {
   );
 }
 
-function MiniStat({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: number }) {
+function MiniStat({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number; color?: string }) {
   return (
     <div className="stat-card">
-      <div className="mb-1 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-primary" />
-        <span className="text-xs text-muted-foreground">{label}</span>
+      <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${
+        color === "accent" ? "bg-accent/10" : "bg-primary/10"
+      }`}>
+        <Icon className={`h-5 w-5 ${color === "accent" ? "text-accent" : "text-primary"}`} />
       </div>
       <p className="text-2xl font-bold text-foreground">{value}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{label}</p>
     </div>
   );
 }
