@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,80 +6,87 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    --background: 220 14% 96%;
+    --foreground: 224 28% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 224 28% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 224 28% 12%;
 
-    --primary: 214 80% 52%;
+    --primary: 234 85% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 25% 93%;
-    --secondary-foreground: 215 25% 25%;
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 224 20% 30%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 15% 50%;
+    --muted: 220 14% 94%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 199 70% 48%;
+    --accent: 174 62% 47%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 60% 42%;
+    --success: 160 64% 43%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 214 80% 52%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 234 85% 60%;
 
-    --radius: 0.625rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 215 30% 18%;
-    --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 214 80% 60%;
+    --sidebar-background: 232 32% 14%;
+    --sidebar-foreground: 220 20% 88%;
+    --sidebar-primary: 234 85% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 24%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 215 25% 25%;
-    --sidebar-ring: 214 80% 52%;
+    --sidebar-accent: 232 28% 20%;
+    --sidebar-accent-foreground: 220 20% 88%;
+    --sidebar-border: 232 25% 22%;
+    --sidebar-ring: 234 85% 60%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(234, 85%, 60%), hsl(280, 80%, 60%));
+    --gradient-accent: linear-gradient(135deg, hsl(174, 62%, 47%), hsl(199, 70%, 55%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(232, 32%, 16%), hsl(232, 35%, 10%));
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    --shadow-card-hover: 0 10px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+    --shadow-glow: 0 0 20px hsl(234 85% 60% / 0.15);
   }
 
   .dark {
-    --background: 215 30% 10%;
-    --foreground: 210 20% 92%;
-    --card: 215 28% 14%;
-    --card-foreground: 210 20% 92%;
-    --popover: 215 28% 14%;
-    --popover-foreground: 210 20% 92%;
-    --primary: 214 80% 58%;
+    --background: 228 25% 8%;
+    --foreground: 220 20% 92%;
+    --card: 228 22% 12%;
+    --card-foreground: 220 20% 92%;
+    --popover: 228 22% 12%;
+    --popover-foreground: 220 20% 92%;
+    --primary: 234 85% 65%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 25% 20%;
-    --secondary-foreground: 210 20% 85%;
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 15% 55%;
-    --accent: 199 70% 52%;
+    --secondary: 228 20% 18%;
+    --secondary-foreground: 220 20% 80%;
+    --muted: 228 20% 16%;
+    --muted-foreground: 220 12% 55%;
+    --accent: 174 62% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 215 25% 22%;
-    --input: 215 25% 22%;
-    --ring: 214 80% 58%;
-    --sidebar-background: 215 35% 8%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 214 80% 60%;
+    --border: 228 20% 18%;
+    --input: 228 20% 18%;
+    --ring: 234 85% 65%;
+    --sidebar-background: 232 35% 6%;
+    --sidebar-foreground: 220 20% 82%;
+    --sidebar-primary: 234 85% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 30% 14%;
-    --sidebar-accent-foreground: 210 20% 85%;
-    --sidebar-border: 215 30% 14%;
-    --sidebar-ring: 214 80% 58%;
+    --sidebar-accent: 232 28% 14%;
+    --sidebar-accent-foreground: 220 20% 82%;
+    --sidebar-border: 232 28% 14%;
+    --sidebar-ring: 234 85% 65%;
   }
 }
 
@@ -89,21 +96,73 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'IBM Plex Sans', sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
 @layer utilities {
   .glass-card {
-    @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-sm;
+    @apply bg-card/70 backdrop-blur-xl border border-border/40 shadow-sm;
   }
-  
+
   .stat-card {
-    @apply bg-card rounded-xl border border-border/60 p-5 shadow-sm transition-shadow hover:shadow-md;
+    @apply relative overflow-hidden bg-card rounded-2xl border border-border/50 p-6 transition-all duration-300;
+    box-shadow: var(--shadow-card);
   }
-  
+
+  .stat-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-1px);
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius) var(--radius) 0 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .stat-card:hover::before {
+    opacity: 1;
+  }
+
   .occupancy-badge {
     @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
+  }
+
+  .page-header {
+    @apply mb-8;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold tracking-tight text-foreground;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-muted-foreground mt-1;
+  }
+
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .icon-box {
+    @apply flex items-center justify-center rounded-xl;
+    background: var(--gradient-primary);
+  }
+
+  .icon-box-accent {
+    @apply flex items-center justify-center rounded-xl;
+    background: var(--gradient-accent);
   }
 }
