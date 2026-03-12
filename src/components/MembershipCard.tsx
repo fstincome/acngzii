@@ -270,24 +270,14 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
 
           {/* Header */}
           <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-            {photo ? (
-              <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />
-            ) : (
-              <img src="/gss-logo.png" alt="Gitega Study Space" className="h-10 w-10 rounded-lg object-contain shrink-0" />
-            )}
-            <img src={photo ? "/gss-logo.png" : ""} alt="" className={`h-10 w-10 rounded-lg object-contain shrink-0 ${photo ? "" : "hidden"}`} />
-            {!photo && (
-              <div>
-                <p className="text-xs font-bold text-white tracking-widest">GITEGA STUDY SPACE</p>
-                <p className="text-[10px] text-white/50">Carte de Membre</p>
-              </div>
-            )}
             {photo && (
-              <div>
-                <p className="text-xs font-bold text-white tracking-widest">GITEGA STUDY SPACE</p>
-                <p className="text-[10px] text-white/50">Carte de Membre</p>
-              </div>
+              <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />
             )}
+            <img src="/gss-logo.png" alt="Gitega Study Space" className="h-10 w-10 rounded-lg object-contain shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-white tracking-widest">GITEGA STUDY SPACE</p>
+              <p className="text-[10px] text-white/50">Carte de Membre</p>
+            </div>
           </div>
 
           {/* Content */}
@@ -302,13 +292,8 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
                 <p className="font-mono text-sm font-bold text-accent">{visitorId}</p>
               </div>
             </div>
-            <div className="shrink-0 flex flex-col items-center gap-2">
-              {photo && (
-                <img src={photo} alt={fullName} className="h-16 w-14 rounded-lg object-cover border border-white/20" />
-              )}
-              <div className="rounded-xl bg-white p-2 shadow-lg">
-                <QRCodeSVG value={visitorId} size={compact ? 56 : 72} level="M" />
-              </div>
+            <div className="shrink-0 rounded-xl bg-white p-2 shadow-lg">
+              <QRCodeSVG value={visitorId} size={compact ? 56 : 72} level="M" />
             </div>
           </div>
 
