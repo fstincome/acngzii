@@ -26,6 +26,7 @@ const normalNavItems = [
 const programNavItems = [
   { to: "/programs", icon: GraduationCap, label: "Programmes" },
   { to: "/program-attendance", icon: ClipboardCheck, label: "Présence" },
+  { to: "/program-report", icon: BarChart3, label: "Rapport" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

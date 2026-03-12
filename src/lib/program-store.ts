@@ -63,6 +63,15 @@ export async function generateParticipantCode(programPrefix: string): Promise<st
   return code!;
 }
 
+/** Sort participants: mentors first, then élèves */
+export function sortParticipants<T extends { role: string }>(list: T[]): T[] {
+  return [...list].sort((a, b) => {
+    if (a.role === "mentor" && b.role !== "mentor") return -1;
+    if (a.role !== "mentor" && b.role === "mentor") return 1;
+    return 0;
+  });
+}
+
 // ---- Hooks ----
 
 export function usePrograms() {
@@ -90,7 +99,7 @@ export function useProgramParticipants(programId: string | undefined) {
         .eq("program_id", programId)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as ProgramParticipant[];
+      return sortParticipants((data ?? []) as ProgramParticipant[]);
     },
     enabled: !!programId,
   });
@@ -129,6 +138,22 @@ export function useSessionAttendance(sessionId: string | undefined) {
   });
 }
 
+export function useAllAttendanceForProgram(sessionIds: string[]) {
+  return useQuery({
+    queryKey: ["program_attendance_all", sessionIds],
+    queryFn: async () => {
+      if (sessionIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("program_attendance")
+        .select("*")
+        .in("session_id", sessionIds);
+      if (error) throw error;
+      return (data ?? []) as ProgramAttendance[];
+    },
+    enabled: sessionIds.length > 0,
+  });
+}
+
 export function useAddProgram() {
   const qc = useQueryClient();
   return useMutation({
@@ -136,6 +161,18 @@ export function useAddProgram() {
       const { data, error } = await supabase.from("programs").insert(p).select().single();
       if (error) throw error;
       return data as Program;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["programs"] }),
+  });
+}
+
+export function useUpdateProgram() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (p: { id: string; name: string; description?: string | null; start_date?: string | null; end_date?: string | null }) => {
+      const { id, ...rest } = p;
+      const { error } = await supabase.from("programs").update(rest).eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["programs"] }),
   });
@@ -162,6 +199,27 @@ export function useAddParticipant() {
   });
 }
 
+export function useUpdateParticipant() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (p: {
+      id: string;
+      program_id: string;
+      full_name: string;
+      phone?: string | null;
+      email?: string | null;
+      institution?: string | null;
+      role: string;
+      photo?: string | null;
+    }) => {
+      const { id, program_id, ...rest } = p;
+      const { error } = await supabase.from("program_participants").update(rest).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["program_participants", vars.program_id] }),
+  });
+}
+
 export function useAddSession() {
   const qc = useQueryClient();
   return useMutation({
@@ -169,6 +227,18 @@ export function useAddSession() {
       const { data, error } = await supabase.from("program_sessions").insert(p).select().single();
       if (error) throw error;
       return data as ProgramSession;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["program_sessions", vars.program_id] }),
+  });
+}
+
+export function useUpdateSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (p: { id: string; session_date: string; program_id: string }) => {
+      const { id, program_id, ...rest } = p;
+      const { error } = await supabase.from("program_sessions").update(rest).eq("id", id);
+      if (error) throw error;
     },
     onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["program_sessions", vars.program_id] }),
   });

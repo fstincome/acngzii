@@ -6,8 +6,11 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get today's date
-    const today = new Date().toISOString().split("T")[0];
+    // Get today's date in Bujumbura timezone (CAT = UTC+2)
+    const now = new Date();
+    const bujumburaOffset = 2 * 60; // minutes
+    const bujumburaTime = new Date(now.getTime() + (bujumburaOffset + now.getTimezoneOffset()) * 60000);
+    const today = bujumburaTime.toISOString().split("T")[0];
 
     // Find all sessions for today
     const { data: sessions, error: sessError } = await supabase

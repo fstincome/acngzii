@@ -12,6 +12,7 @@ import Statistics from "@/pages/Statistics";
 import DigitalCard from "@/pages/DigitalCard";
 import Programs from "@/pages/Programs";
 import ProgramAttendance from "@/pages/ProgramAttendance";
+import ProgramReport from "@/pages/ProgramReport";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/statistics" element={<AppLayout><Statistics /></AppLayout>} />
           <Route path="/programs" element={<AppLayout><Programs /></AppLayout>} />
           <Route path="/program-attendance" element={<AppLayout><ProgramAttendance /></AppLayout>} />
+          <Route path="/program-report" element={<AppLayout><ProgramReport /></AppLayout>} />
           <Route path="/card/:visitorId" element={<DigitalCard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
