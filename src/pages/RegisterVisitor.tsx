@@ -136,8 +136,14 @@ export default function RegisterVisitor() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="occupation" className="text-foreground">Profession *</Label>
+            <Label htmlFor="occupation" className="text-foreground">Profession</Label>
             <Input id="occupation" value={form.occupation} onChange={(e) => update("occupation", e.target.value)} placeholder="ex: Étudiant, Entrepreneur" className="rounded-xl h-11" />
+          </div>
+
+          <div className="sm:col-span-2 space-y-2">
+            <Label htmlFor="photo" className="text-foreground">Lien photo passport</Label>
+            <Input id="photo" value={form.photo} onChange={(e) => update("photo", e.target.value)} placeholder="https://lh3.googleusercontent.com/d/..." className="rounded-xl h-11" />
+            <p className="text-[10px] text-muted-foreground">Format Google Drive : https://lh3.googleusercontent.com/d/ID</p>
           </div>
         </div>
 
