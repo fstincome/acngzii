@@ -20,23 +20,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-function generateQRDataURL(visitorId: string): string {
-  // Use the QR code already rendered in the DOM if available
-  const svg = document.querySelector(`[data-qr-id="${visitorId}"]`) as SVGElement;
-  if (svg) {
-    const serializer = new XMLSerializer();
-    const svgStr = serializer.serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    canvas.width = 200;
-    canvas.height = 200;
-    const ctx = canvas.getContext("2d")!;
-    const img = new Image();
-    const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
-    return URL.createObjectURL(svgBlob);
-  }
-  return "";
-}
-
 export async function generateMembershipCardPDF(
   fullName: string,
   visitorId: string,
@@ -75,7 +58,6 @@ export async function generateMembershipCardPDF(
     const logoDataUrl = logoCanvas.toDataURL("image/png");
     doc.addImage(logoDataUrl, "PNG", 5, 5, 10, 10);
   } catch {
-    // If logo fails, draw a placeholder circle
     doc.setFillColor(...PRIMARY_COLOR);
     doc.circle(10, 10, 5, "F");
   }
@@ -121,14 +103,12 @@ export async function generateMembershipCardPDF(
     qrCanvas.width = 200;
     qrCanvas.height = 200;
     const qrCtx = qrCanvas.getContext("2d")!;
-    // White background for QR
     qrCtx.fillStyle = "#ffffff";
     qrCtx.roundRect(0, 0, 200, 200, 16);
     qrCtx.fill();
     qrCtx.drawImage(qrImg, 10, 10, 180, 180);
     const qrDataURL = qrCanvas.toDataURL("image/png");
     
-    // White rounded background for QR
     doc.setFillColor(255, 255, 255);
     doc.roundedRect(CARD_WIDTH - 25, 22, 20, 20, 2, 2, "F");
     doc.addImage(qrDataURL, "PNG", CARD_WIDTH - 24, 23, 18, 18);
@@ -155,13 +135,22 @@ export function downloadCardPDF(doc: jsPDF, visitorId: string) {
 }
 
 export function printCardPDF(doc: jsPDF) {
-  const pdfBlob = doc.output("blob");
-  const url = URL.createObjectURL(pdfBlob);
-  const printWindow = window.open(url, "_blank");
+  const pdfDataUri = doc.output("datauristring");
+  const printWindow = window.open("", "_blank");
   if (printWindow) {
-    printWindow.onload = () => {
-      printWindow.print();
-    };
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head><title>Carte de membre</title></head>
+        <body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f0f0f0;">
+          <embed src="${pdfDataUri}" type="application/pdf" width="400" height="260" />
+          <script>
+            setTimeout(function() { window.print(); }, 500);
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   }
 }
 
@@ -170,12 +159,31 @@ export function getCardPDFBlob(doc: jsPDF): Blob {
 }
 
 export function shareViaWhatsApp(visitorId: string, fullName: string) {
-  const message = encodeURIComponent(
-    `🎓 Carte de membre - Gitega Study Space\n\n` +
-    `Nom: ${fullName}\n` +
-    `ID: ${visitorId}\n\n` +
-    `Présentez votre QR code à chaque visite.\n` +
-    `Accédez à votre carte: ${window.location.origin}/card/${visitorId}`
-  );
-  window.open(`https://wa.me/?text=${message}`, "_blank");
+  const cardUrl = `${window.location.origin}/card/${visitorId}`;
+  const message = 
+    `🎓 *Carte de membre - Gitega Study Space*\n\n` +
+    `👤 Nom: ${fullName}\n` +
+    `🆔 ID: ${visitorId}\n\n` +
+    `📱 Voir ma carte: ${cardUrl}\n\n` +
+    `Présentez votre QR code à chaque visite.`;
+  
+  // Use api.whatsapp.com which works on both mobile and desktop
+  const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+export function shareViaEmail(visitorId: string, fullName: string, recipientEmail?: string) {
+  const cardUrl = `${window.location.origin}/card/${visitorId}`;
+  const subject = "Votre carte de membre - Gitega Study Space";
+  const body = 
+    `Bonjour ${fullName},\n\n` +
+    `Bienvenue au Gitega Study Space !\n\n` +
+    `Voici vos informations de membre :\n` +
+    `- Identifiant : ${visitorId}\n` +
+    `- Carte digitale : ${cardUrl}\n\n` +
+    `Présentez votre QR code à chaque visite.\n\n` +
+    `Cordialement,\nGitega Study Space`;
+
+  const mailto = `mailto:${recipientEmail || ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailto;
 }

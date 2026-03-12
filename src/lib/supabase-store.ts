@@ -25,13 +25,24 @@ export interface Visit {
 
 export const COMPUTER_LAB_CAPACITY = 20;
 
-// Generate visitor ID
+// Generate a random alphanumeric visitor ID like GSS-7K3M9X
 export async function generateVisitorId(): Promise<string> {
-  const { count } = await supabase
-    .from("visitors")
-    .select("*", { count: "exact", head: true });
-  const next = (count ?? 0) + 1;
-  return `GSS-${String(next).padStart(6, "0")}`;
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I to avoid confusion
+  let id: string;
+  let exists = true;
+  while (exists) {
+    let code = "";
+    for (let i = 0; i < 6; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    id = `GSS-${code}`;
+    const { count } = await supabase
+      .from("visitors")
+      .select("*", { count: "exact", head: true })
+      .eq("visitor_id", id);
+    exists = (count ?? 0) > 0;
+  }
+  return id!;
 }
 
 // ---- React Query hooks ----
