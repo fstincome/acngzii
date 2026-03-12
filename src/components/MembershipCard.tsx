@@ -20,7 +20,7 @@ interface MembershipCardProps {
   programName?: string;
 }
 
-export default function MembershipCard({ fullName, visitorId, photo, showActions = true, compact = false }: MembershipCardProps) {
+export default function MembershipCard({ fullName, visitorId, photo, showActions = true, compact = false, programName }: MembershipCardProps) {
   const [generating, setGenerating] = useState(false);
   const qrCanvasRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
