@@ -125,7 +125,7 @@ export async function generateMembershipCardPDF(
   doc.setFontSize(3.5);
   doc.setTextColor(...MUTED_TEXT);
   doc.text("Présentez cette carte à chaque visite", 5, CARD_HEIGHT - 4);
-  doc.text("gssaccess.lovable.app", CARD_WIDTH - 5, CARD_HEIGHT - 4, { align: "right" });
+  doc.text("+257 61 154 065", CARD_WIDTH - 5, CARD_HEIGHT - 4, { align: "right" });
 
   return doc;
 }

@@ -164,7 +164,7 @@ export default function MembershipCard({ fullName, visitorId, showActions = true
       ctx.fillStyle = "rgba(255,255,255,0.3)";
       ctx.fillText("Présentez cette carte à chaque visite", 20, rect.height - 14);
       ctx.textAlign = "right";
-      ctx.fillText("gssaccess.lovable.app", rect.width - 20, rect.height - 14);
+      ctx.fillText("+257 61 154 065", rect.width - 20, rect.height - 14);
       ctx.textAlign = "left";
 
       // Download
@@ -264,7 +264,7 @@ export default function MembershipCard({ fullName, visitorId, showActions = true
           {/* Footer */}
           <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
             <p className="text-[9px] text-white/30">Présentez cette carte à chaque visite</p>
-            <p className="text-[9px] text-white/30">gssaccess.lovable.app</p>
+            <p className="text-[9px] text-white/30">+257 61 154 065</p>
           </div>
         </div>
       </div>
