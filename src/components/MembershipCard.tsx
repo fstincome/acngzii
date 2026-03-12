@@ -82,6 +82,35 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.fillStyle = accentGrad;
       ctx.fillRect(0, 0, rect.width, 4);
 
+      let headerXOffset = 20;
+
+      // Draw photo if available (top-left, same size as logo)
+      if (photo) {
+        try {
+          const photoImg = new window.Image();
+          photoImg.crossOrigin = "anonymous";
+          await new Promise<void>((res, rej) => {
+            photoImg.onload = () => res();
+            photoImg.onerror = rej;
+            photoImg.src = photo;
+          });
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(20, 16, 40, 40, 8);
+          ctx.clip();
+          ctx.drawImage(photoImg, 20, 16, 40, 40);
+          ctx.restore();
+          ctx.strokeStyle = "rgba(255,255,255,0.2)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(20, 16, 40, 40, 8);
+          ctx.stroke();
+          headerXOffset = 68;
+        } catch {
+          // skip photo
+        }
+      }
+
       // Logo
       try {
         const logoImg = new window.Image();
@@ -91,19 +120,20 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
           logoImg.onerror = rej;
           logoImg.src = "/gss-logo.png";
         });
-        ctx.drawImage(logoImg, 20, 16, 40, 40);
+        ctx.drawImage(logoImg, headerXOffset, 16, 40, 40);
       } catch {
         // skip logo
       }
 
       // Header text
+      const textX = headerXOffset + 48;
       ctx.font = "bold 11px Inter, sans-serif";
       ctx.fillStyle = "#ffffff";
       ctx.letterSpacing = "2px";
-      ctx.fillText("GITEGA STUDY SPACE", 68, 32);
+      ctx.fillText("GITEGA STUDY SPACE", textX, 32);
       ctx.font = "10px Inter, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.fillText("Carte de Membre", 68, 46);
+      ctx.fillText("Carte de Membre", textX, 46);
 
       // Divider
       ctx.strokeStyle = "rgba(255,255,255,0.1)";
@@ -133,40 +163,10 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.fillStyle = "hsl(174, 62%, 47%)";
       ctx.fillText(visitorId, 20, 138);
 
-      // Photo + QR Code
+      // QR Code
       const qrSize = 72;
       const qrX = rect.width - qrSize - 28;
-      let qrY = 76;
-
-      // Draw photo if available
-      if (photo) {
-        try {
-          const photoImg = new window.Image();
-          photoImg.crossOrigin = "anonymous";
-          await new Promise<void>((res, rej) => {
-            photoImg.onload = () => res();
-            photoImg.onerror = rej;
-            photoImg.src = photo;
-          });
-          const photoW = 56;
-          const photoH = 64;
-          const photoX = qrX + (qrSize + 16 - photoW) / 2;
-          ctx.save();
-          ctx.beginPath();
-          ctx.roundRect(photoX, 76, photoW, photoH, 8);
-          ctx.clip();
-          ctx.drawImage(photoImg, photoX, 76, photoW, photoH);
-          ctx.restore();
-          ctx.strokeStyle = "rgba(255,255,255,0.2)";
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.roundRect(photoX, 76, photoW, photoH, 8);
-          ctx.stroke();
-          qrY = 76 + photoH + 8;
-        } catch {
-          // skip photo
-        }
-      }
+      const qrY = 76;
 
       // QR Code
       const qrDataUrl = await getQRDataUrl();
@@ -270,6 +270,9 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
 
           {/* Header */}
           <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+            {photo && (
+              <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />
+            )}
             <img src="/gss-logo.png" alt="Gitega Study Space" className="h-10 w-10 rounded-lg object-contain shrink-0" />
             <div>
               <p className="text-xs font-bold text-white tracking-widest">GITEGA STUDY SPACE</p>
@@ -289,13 +292,8 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
                 <p className="font-mono text-sm font-bold text-accent">{visitorId}</p>
               </div>
             </div>
-            <div className="shrink-0 flex flex-col items-center gap-2">
-              {photo && (
-                <img src={photo} alt={fullName} className="h-16 w-14 rounded-lg object-cover border border-white/20" />
-              )}
-              <div className="rounded-xl bg-white p-2 shadow-lg">
-                <QRCodeSVG value={visitorId} size={compact ? 56 : 72} level="M" />
-              </div>
+            <div className="shrink-0 rounded-xl bg-white p-2 shadow-lg">
+              <QRCodeSVG value={visitorId} size={compact ? 56 : 72} level="M" />
             </div>
           </div>
 
