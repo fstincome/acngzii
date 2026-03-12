@@ -2,8 +2,10 @@ import { useState } from "react";
 import { getVisitors, getVisitorVisits, useStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
-import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase } from "lucide-react";
+import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import MembershipCard from "@/components/MembershipCard";
 import type { Visitor } from "@/lib/store";
 
 function Detail({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
