@@ -99,7 +99,7 @@ export default function RegisterVisitor() {
       <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2 space-y-2">
-            <Label htmlFor="fullName" className="text-foreground">Nom complet *</Label>
+            <Label htmlFor="fullName" className="text-foreground">Nom complet <span className="text-destructive">*</span></Label>
             <Input id="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Entrez le nom complet" className="rounded-xl h-11" />
           </div>
 
