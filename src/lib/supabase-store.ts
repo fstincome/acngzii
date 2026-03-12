@@ -18,16 +18,26 @@ export interface Visitor {
 export interface Visit {
   id: string;
   visitor_id: string;
-  room: "computer_lab" | "multipurpose_room";
+  room: "computer_lab" | "multipurpose_room" | "garden";
   action: "check_in" | "check_out";
   timestamp: string;
+  expected_checkout: string | null;
 }
 
 export const COMPUTER_LAB_CAPACITY = 20;
+export const DEFAULT_DURATION_HOURS = 6;
+
+export type RoomType = "computer_lab" | "multipurpose_room" | "garden";
+
+export const ROOM_LABELS: Record<RoomType, string> = {
+  computer_lab: "Salle Informatique",
+  multipurpose_room: "Salle Polyvalente",
+  garden: "Jardin",
+};
 
 // Generate a random alphanumeric visitor ID like GSS-7K3M9X
 export async function generateVisitorId(): Promise<string> {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I to avoid confusion
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let id: string;
   let exists = true;
   while (exists) {
@@ -144,6 +154,7 @@ export function useAddVisit() {
       room: string;
       action: string;
       timestamp: string;
+      expected_checkout?: string;
     }) => {
       const { data, error } = await supabase
         .from("visits")
@@ -161,15 +172,31 @@ export function useAddVisit() {
 }
 
 // Compute current occupancy from visits array
-export function computeOccupancy(visits: Visit[], room: "computer_lab" | "multipurpose_room"): Set<string> {
+// For multipurpose_room and garden, auto-checkout after expected_checkout time
+export function computeOccupancy(visits: Visit[], room: RoomType): Set<string> {
   const roomVisits = visits.filter((v) => v.room === room);
-  const checkedIn = new Set<string>();
+  const checkedIn = new Map<string, Visit>();
   const sorted = [...roomVisits].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  const now = new Date();
+
   for (const v of sorted) {
-    if (v.action === "check_in") checkedIn.add(v.visitor_id);
-    else checkedIn.delete(v.visitor_id);
+    if (v.action === "check_in") {
+      checkedIn.set(v.visitor_id, v);
+    } else {
+      checkedIn.delete(v.visitor_id);
+    }
   }
-  return checkedIn;
+
+  // For rooms with auto-checkout, remove expired visitors
+  if (room === "multipurpose_room" || room === "garden") {
+    for (const [vid, visit] of checkedIn) {
+      if (visit.expected_checkout && new Date(visit.expected_checkout) <= now) {
+        checkedIn.delete(vid);
+      }
+    }
+  }
+
+  return new Set(checkedIn.keys());
 }
 
 // Realtime subscription hook
@@ -187,7 +214,6 @@ export function useVisitsRealtime() {
       }
     );
 
-  // Subscribe once
   if (channel.state !== "joined" && channel.state !== "joining") {
     channel.subscribe();
   }

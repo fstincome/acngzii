@@ -2,19 +2,32 @@ import { useState, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import {
   useVisitors,
   useVisits,
-  useVisitorVisits,
   useAddVisit,
   computeOccupancy,
   COMPUTER_LAB_CAPACITY,
+  DEFAULT_DURATION_HOURS,
   useVisitsRealtime,
+  ROOM_LABELS,
 } from "@/lib/supabase-store";
-import type { Visitor } from "@/lib/supabase-store";
-import { ScanLine, Monitor, DoorOpen, LogOut, AlertTriangle, Search, Camera, X } from "lucide-react";
+import type { Visitor, RoomType } from "@/lib/supabase-store";
+import { ScanLine, Monitor, DoorOpen, LogOut, AlertTriangle, Search, Camera, X, TreePine, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { Html5Qrcode } from "html5-qrcode";
+
+const DURATION_OPTIONS = [
+  { value: "1", label: "1 heure" },
+  { value: "2", label: "2 heures" },
+  { value: "3", label: "3 heures" },
+  { value: "4", label: "4 heures" },
+  { value: "6", label: "6 heures (défaut)" },
+  { value: "8", label: "8 heures" },
+  { value: "10", label: "10 heures" },
+];
 
 export default function Scanner() {
   useVisitsRealtime();
@@ -25,6 +38,7 @@ export default function Scanner() {
   const [query, setQuery] = useState("");
   const [scanned, setScanned] = useState<Visitor | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [duration, setDuration] = useState(String(DEFAULT_DURATION_HOURS));
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   const scannedVisits = allVisits.filter((v) => scanned && v.visitor_id === scanned.visitor_id);
@@ -77,14 +91,15 @@ export default function Scanner() {
     }
   }, [stopCamera, visitors]);
 
-  const isInRoom = (visitorId: string, room: "computer_lab" | "multipurpose_room") =>
+  const isInRoom = (visitorId: string, room: RoomType) =>
     computeOccupancy(allVisits, room).has(visitorId);
 
   const inLab = scanned ? isInRoom(scanned.visitor_id, "computer_lab") : false;
   const inMulti = scanned ? isInRoom(scanned.visitor_id, "multipurpose_room") : false;
+  const inGarden = scanned ? isInRoom(scanned.visitor_id, "garden") : false;
   const labFull = computeOccupancy(allVisits, "computer_lab").size >= COMPUTER_LAB_CAPACITY;
 
-  const handleAction = async (room: "computer_lab" | "multipurpose_room", action: "check_in" | "check_out") => {
+  const handleAction = async (room: RoomType, action: "check_in" | "check_out") => {
     if (!scanned) return;
     if (action === "check_in" && room === "computer_lab" && labFull) {
       toast.error("La Salle Informatique est pleine. Veuillez patienter.");
@@ -95,18 +110,40 @@ export default function Scanner() {
       return;
     }
     try {
-      await addVisit.mutateAsync({
+      const now = new Date();
+      const visitData: {
+        visitor_id: string;
+        room: string;
+        action: string;
+        timestamp: string;
+        expected_checkout?: string;
+      } = {
         visitor_id: scanned.visitor_id,
         room,
         action,
-        timestamp: new Date().toISOString(),
-      });
-      const roomLabel = room === "computer_lab" ? "Salle Informatique" : "Salle Polyvalente";
+        timestamp: now.toISOString(),
+      };
+
+      // For multipurpose_room and garden, set expected_checkout on check_in
+      if (action === "check_in" && (room === "multipurpose_room" || room === "garden")) {
+        const hours = parseInt(duration) || DEFAULT_DURATION_HOURS;
+        const checkout = new Date(now.getTime() + hours * 60 * 60 * 1000);
+        visitData.expected_checkout = checkout.toISOString();
+      }
+
+      await addVisit.mutateAsync(visitData);
+      const roomLabel = ROOM_LABELS[room];
       const actionLabel = action === "check_in" ? "entré(e) dans" : "sorti(e) de";
       toast.success(`${scanned.full_name} ${actionLabel} ${roomLabel}`);
     } catch {
       toast.error("Erreur lors de l'enregistrement");
     }
+  };
+
+  const roomIcon = (room: string) => {
+    if (room === "computer_lab") return <Monitor className="h-3 w-3" />;
+    if (room === "garden") return <TreePine className="h-3 w-3" />;
+    return <DoorOpen className="h-3 w-3" />;
   };
 
   return (
@@ -184,15 +221,33 @@ export default function Scanner() {
                 <DoorOpen className="h-3 w-3" /> En Salle Polyvalente
               </span>
             )}
-            {!inLab && !inMulti && (
-              <span className="occupancy-badge bg-muted text-muted-foreground">Pas dans une salle</span>
+            {inGarden && (
+              <span className="occupancy-badge bg-green-500/10 text-green-600 border border-green-500/15">
+                <TreePine className="h-3 w-3" /> Au Jardin
+              </span>
+            )}
+            {!inLab && !inMulti && !inGarden && (
+              <span className="occupancy-badge bg-muted text-muted-foreground">Pas dans un espace</span>
             )}
           </div>
 
-          {inLab && inMulti && (
-            <div className="flex items-center gap-2 rounded-xl bg-warning/10 p-3 text-xs text-warning border border-warning/15">
-              <AlertTriangle className="h-4 w-4 shrink-0" />
-              Ce visiteur est enregistré dans les deux salles. Veuillez vérifier.
+          {/* Duration selector for Polyvalente & Jardin */}
+          {(!inMulti || !inGarden) && (
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Clock className="h-3 w-3" />
+                Durée de séjour (Salle Polyvalente / Jardin)
+              </Label>
+              <Select value={duration} onValueChange={setDuration}>
+                <SelectTrigger className="rounded-xl h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DURATION_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
@@ -217,6 +272,12 @@ export default function Scanner() {
                   Entrée Salle Poly
                 </Button>
               )}
+              {!inGarden && (
+                <Button onClick={() => handleAction("garden", "check_in")} variant="outline" className="gap-2 rounded-xl h-11 border-green-500/30 text-green-600 hover:bg-green-500/5" disabled={addVisit.isPending}>
+                  <TreePine className="h-4 w-4" />
+                  Entrée Jardin
+                </Button>
+              )}
             </div>
           </div>
 
@@ -228,9 +289,10 @@ export default function Scanner() {
                 .slice(0, 5)
                 .map((v) => (
                   <div key={v.id} className="flex items-center justify-between rounded-xl bg-muted/50 px-3.5 py-2.5 text-xs">
-                    <span className="text-foreground font-medium">
+                    <span className="text-foreground font-medium flex items-center gap-1.5">
+                      {roomIcon(v.room)}
                       {v.action === "check_in" ? "→ Entrée" : "← Sortie"}{" "}
-                      {v.room === "computer_lab" ? "Salle Informatique" : "Salle Polyvalente"}
+                      {ROOM_LABELS[v.room as keyof typeof ROOM_LABELS] || v.room}
                     </span>
                     <span className="text-muted-foreground">
                       {new Date(v.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

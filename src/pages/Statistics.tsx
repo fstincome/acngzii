@@ -1,112 +1,324 @@
-import { useVisitors, useVisits } from "@/lib/supabase-store";
-import { Users, TrendingUp, Calendar, Clock } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useVisitors, useVisits, ROOM_LABELS } from "@/lib/supabase-store";
+import type { Visit, RoomType } from "@/lib/supabase-store";
+import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  LineChart, Line, PieChart, Pie, Cell,
+  LineChart, Line, PieChart, Pie, Cell, AreaChart, Area,
 } from "recharts";
+
+type Period = "today" | "week" | "month" | "all";
+
+function getStartDate(period: Period): Date | null {
+  const now = new Date();
+  if (period === "today") {
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+  if (period === "week") {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 7);
+    return d;
+  }
+  if (period === "month") {
+    const d = new Date(now);
+    d.setMonth(d.getMonth() - 1);
+    return d;
+  }
+  return null;
+}
+
+function getPreviousPeriodStart(period: Period): [Date, Date] | null {
+  const now = new Date();
+  if (period === "today") {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return [start, end];
+  }
+  if (period === "week") {
+    const end = new Date(now);
+    end.setDate(end.getDate() - 7);
+    const start = new Date(end);
+    start.setDate(start.getDate() - 7);
+    return [start, end];
+  }
+  if (period === "month") {
+    const end = new Date(now);
+    end.setMonth(end.getMonth() - 1);
+    const start = new Date(end);
+    start.setMonth(start.getMonth() - 1);
+    return [start, end];
+  }
+  return null;
+}
 
 export default function Statistics() {
   const { data: visitors = [] } = useVisitors();
   const { data: visits = [] } = useVisits();
-  const checkIns = visits.filter((v) => v.action === "check_in");
+  const [period, setPeriod] = useState<Period>("week");
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  });
 
+  const filteredVisits = useMemo(() => {
+    if (period === "month" && selectedMonth) {
+      return visits.filter((v) => v.timestamp.startsWith(selectedMonth));
+    }
+    const start = getStartDate(period);
+    if (!start) return visits;
+    return visits.filter((v) => new Date(v.timestamp) >= start);
+  }, [visits, period, selectedMonth]);
+
+  const prevPeriodVisits = useMemo(() => {
+    const range = getPreviousPeriodStart(period);
+    if (!range) return [];
+    const [start, end] = range;
+    return visits.filter((v) => {
+      const d = new Date(v.timestamp);
+      return d >= start && d < end;
+    });
+  }, [visits, period]);
+
+  const checkIns = filteredVisits.filter((v) => v.action === "check_in");
+  const prevCheckIns = prevPeriodVisits.filter((v) => v.action === "check_in");
+  const uniqueVisitors = new Set(checkIns.map((v) => v.visitor_id)).size;
+  const prevUniqueVisitors = new Set(prevCheckIns.map((v) => v.visitor_id)).size;
+
+  const labCheckIns = checkIns.filter((v) => v.room === "computer_lab").length;
+  const multiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length;
+  const gardenCheckIns = checkIns.filter((v) => v.room === "garden").length;
+
+  // Comparison percentages
+  const comparePercent = (current: number, prev: number) => {
+    if (prev === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - prev) / prev) * 100);
+  };
+
+  const totalChange = comparePercent(checkIns.length, prevCheckIns.length);
+  const visitorChange = comparePercent(uniqueVisitors, prevUniqueVisitors);
+
+  // Top visitors
   const visitorCount: Record<string, number> = {};
   checkIns.forEach((v) => { visitorCount[v.visitor_id] = (visitorCount[v.visitor_id] || 0) + 1; });
   const topVisitors = Object.entries(visitorCount)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
+    .slice(0, 8)
     .map(([id, count]) => {
       const v = visitors.find((vis) => vis.visitor_id === id);
       return { name: v?.full_name || id, count };
     });
 
+  // Occupation distribution
   const occCount: Record<string, number> = {};
-  visitors.forEach((v) => { occCount[v.occupation] = (occCount[v.occupation] || 0) + 1; });
-  const occupationData = Object.entries(occCount).map(([name, value]) => ({ name, value }));
+  const relevantVisitorIds = new Set(checkIns.map((v) => v.visitor_id));
+  visitors.filter((v) => relevantVisitorIds.has(v.visitor_id)).forEach((v) => {
+    occCount[v.occupation] = (occCount[v.occupation] || 0) + 1;
+  });
+  const occupationData = Object.entries(occCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([name, value]) => ({ name, value }));
 
-  const COLORS = ["hsl(234,85%,60%)", "hsl(174,62%,47%)", "hsl(160,64%,43%)", "hsl(38,92%,50%)", "hsl(0,72%,55%)"];
+  const COLORS = ["hsl(234,85%,60%)", "hsl(174,62%,47%)", "hsl(142,64%,43%)", "hsl(38,92%,50%)", "hsl(0,72%,55%)", "hsl(280,65%,55%)"];
 
-  const weekDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-  const weeklyData = weekDays.map((day, i) => ({
-    day,
-    visiteurs: Math.max(1, checkIns.length - i + Math.floor(Math.random() * 3)),
-  }));
+  // Daily trend data
+  const dailyTrend = useMemo(() => {
+    const dayMap: Record<string, { lab: number; multi: number; garden: number; total: number }> = {};
+    checkIns.forEach((v) => {
+      const day = v.timestamp.split("T")[0];
+      if (!dayMap[day]) dayMap[day] = { lab: 0, multi: 0, garden: 0, total: 0 };
+      dayMap[day].total++;
+      if (v.room === "computer_lab") dayMap[day].lab++;
+      else if (v.room === "multipurpose_room") dayMap[day].multi++;
+      else if (v.room === "garden") dayMap[day].garden++;
+    });
+    return Object.entries(dayMap)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, data]) => ({
+        date: new Date(date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }),
+        ...data,
+      }));
+  }, [checkIns]);
 
+  // Hourly distribution
   const hourlyDist = Array.from({ length: 12 }, (_, i) => {
     const hour = i + 7;
     return {
       hour: `${hour}h`,
       labo: checkIns.filter((v) => v.room === "computer_lab" && new Date(v.timestamp).getHours() === hour).length,
       poly: checkIns.filter((v) => v.room === "multipurpose_room" && new Date(v.timestamp).getHours() === hour).length,
+      jardin: checkIns.filter((v) => v.room === "garden" && new Date(v.timestamp).getHours() === hour).length,
     };
   });
 
+  // Room distribution for pie chart
+  const roomDistribution = [
+    { name: "Salle Info", value: labCheckIns },
+    { name: "Salle Poly", value: multiCheckIns },
+    { name: "Jardin", value: gardenCheckIns },
+  ].filter((d) => d.value > 0);
+
+  // Peak hour
+  const peakHour = hourlyDist.reduce((max, h) => {
+    const total = h.labo + h.poly + h.jardin;
+    return total > (max.total || 0) ? { hour: h.hour, total } : max;
+  }, { hour: "-", total: 0 });
+
+  // Average daily visitors
+  const daysCount = Math.max(dailyTrend.length, 1);
+  const avgDaily = Math.round(checkIns.length / daysCount);
+
+  // Gender distribution for period
+  const genderCount: Record<string, number> = {};
+  visitors.filter((v) => relevantVisitorIds.has(v.visitor_id)).forEach((v) => {
+    const g = v.gender === "male" ? "Homme" : v.gender === "female" ? "Femme" : "Autre";
+    genderCount[g] = (genderCount[g] || 0) + 1;
+  });
+  const genderData = Object.entries(genderCount).map(([name, value]) => ({ name, value }));
+
+  // Neighborhood distribution
+  const neighborhoodCount: Record<string, number> = {};
+  visitors.filter((v) => relevantVisitorIds.has(v.visitor_id)).forEach((v) => {
+    neighborhoodCount[v.neighborhood] = (neighborhoodCount[v.neighborhood] || 0) + 1;
+  });
+  const neighborhoodData = Object.entries(neighborhoodCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([name, value]) => ({ name, value }));
+
+  // Month options
+  const monthOptions = useMemo(() => {
+    const months = new Set<string>();
+    visits.forEach((v) => {
+      months.add(v.timestamp.substring(0, 7));
+    });
+    return Array.from(months).sort().reverse();
+  }, [visits]);
+
   const tooltipStyle = { borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgb(0 0 0 / 0.1)" };
+  const periodLabel = period === "today" ? "aujourd'hui" : period === "week" ? "cette semaine" : period === "month" ? "ce mois" : "tout";
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Statistiques</h1>
-        <p className="page-subtitle">Analyses et tendances de fréquentation</p>
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="page-header">
+          <h1 className="page-title">Statistiques</h1>
+          <p className="page-subtitle">Analyses et tendances de fréquentation</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
+            <TabsList className="rounded-xl">
+              <TabsTrigger value="today" className="rounded-lg text-xs">Aujourd'hui</TabsTrigger>
+              <TabsTrigger value="week" className="rounded-lg text-xs">Semaine</TabsTrigger>
+              <TabsTrigger value="month" className="rounded-lg text-xs">Mois</TabsTrigger>
+              <TabsTrigger value="all" className="rounded-lg text-xs">Tout</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {period === "month" && (
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[140px] rounded-xl h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {monthOptions.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {new Date(m + "-01").toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </div>
 
+      {/* KPI cards with comparison */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <MiniStat icon={Users} label="Total membres" value={visitors.length} color="primary" />
-        <MiniStat icon={TrendingUp} label="Total entrées" value={checkIns.length} color="accent" />
-        <MiniStat icon={Calendar} label="Salle Informatique" value={checkIns.filter((v) => v.room === "computer_lab").length} color="primary" />
-        <MiniStat icon={Clock} label="Salle Polyvalente" value={checkIns.filter((v) => v.room === "multipurpose_room").length} color="accent" />
+        <KpiCard icon={Users} label="Visiteurs uniques" value={uniqueVisitors} change={visitorChange} period={period} />
+        <KpiCard icon={TrendingUp} label="Total entrées" value={checkIns.length} change={totalChange} period={period} />
+        <KpiCard icon={Clock} label="Moy. / jour" value={avgDaily} />
+        <KpiCard icon={Calendar} label="Heure de pointe" value={peakHour.hour} subtitle={`${peakHour.total} entrées`} />
       </div>
 
+      {/* Room breakdown */}
+      <div className="grid grid-cols-3 gap-4">
+        <RoomStat icon={Monitor} label="Salle Info" value={labCheckIns} color="primary" />
+        <RoomStat icon={DoorOpen} label="Salle Poly" value={multiCheckIns} color="accent" />
+        <RoomStat icon={TreePine} label="Jardin" value={gardenCheckIns} color="garden" />
+      </div>
+
+      {/* Charts row 1 */}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Fréquentation hebdomadaire</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={weeklyData}>
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={false} tickLine={false} />
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Tendance de fréquentation</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={dailyTrend}>
+              <defs>
+                <linearGradient id="gradTotal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(234,85%,60%)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(234,85%,60%)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Line type="monotone" dataKey="visiteurs" stroke="hsl(234,85%,60%)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(234,85%,60%)" }} activeDot={{ r: 6 }} />
-            </LineChart>
+              <Area type="monotone" dataKey="total" stroke="hsl(234,85%,60%)" strokeWidth={2} fill="url(#gradTotal)" name="Total" />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Utilisation horaire par salle</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Fréquentation par salle</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={dailyTrend}>
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="lab" fill="hsl(234,85%,60%)" radius={[3, 3, 0, 0]} name="Salle Info" stackId="a" />
+              <Bar dataKey="multi" fill="hsl(174,62%,47%)" radius={[0, 0, 0, 0]} name="Salle Poly" stackId="a" />
+              <Bar dataKey="garden" fill="hsl(142,64%,43%)" radius={[3, 3, 0, 0]} name="Jardin" stackId="a" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Charts row 2 */}
+      <div className="grid gap-5 lg:grid-cols-3">
+        <div className="stat-card">
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Utilisation horaire</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={hourlyDist}>
-              <XAxis dataKey="hour" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={false} tickLine={false} />
+              <XAxis dataKey="hour" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="labo" fill="hsl(234,85%,60%)" radius={[4, 4, 0, 0]} name="Salle Informatique" />
-              <Bar dataKey="poly" fill="hsl(174,62%,47%)" radius={[4, 4, 0, 0]} name="Salle Polyvalente" />
+              <Bar dataKey="labo" fill="hsl(234,85%,60%)" radius={[3, 3, 0, 0]} name="Salle Info" />
+              <Bar dataKey="poly" fill="hsl(174,62%,47%)" radius={[3, 3, 0, 0]} name="Salle Poly" />
+              <Bar dataKey="jardin" fill="hsl(142,64%,43%)" radius={[3, 3, 0, 0]} name="Jardin" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Visiteurs les plus fréquents</h3>
-          <div className="space-y-2.5">
-            {topVisitors.map((v, i) => (
-              <div key={v.name} className="flex items-center gap-3">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
-                  {i + 1}
-                </span>
-                <span className="flex-1 text-sm text-foreground font-medium truncate">{v.name}</span>
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">{v.count}</span>
-              </div>
-            ))}
-            {topVisitors.length === 0 && (
-              <p className="text-sm text-muted-foreground">Aucune donnée disponible.</p>
-            )}
-          </div>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Répartition par espace</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie data={roomDistribution} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} strokeWidth={0}>
+                <Cell fill="hsl(234,85%,60%)" />
+                <Cell fill="hsl(174,62%,47%)" />
+                <Cell fill="hsl(142,64%,43%)" />
+              </Pie>
+              <Tooltip contentStyle={tooltipStyle} />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Membres par profession</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Répartition par genre</h3>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={occupationData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" label={({ name }) => name} strokeWidth={0}>
-                {occupationData.map((_, i) => (
+              <Pie data={genderData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} strokeWidth={0}>
+                {genderData.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
@@ -115,20 +327,97 @@ export default function Statistics() {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Charts row 3 */}
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="stat-card">
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Visiteurs les plus fréquents</h3>
+          <div className="space-y-2.5 max-h-72 overflow-y-auto">
+            {topVisitors.map((v, i) => (
+              <div key={v.name} className="flex items-center gap-3">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
+                  {i + 1}
+                </span>
+                <span className="flex-1 text-sm text-foreground font-medium truncate">{v.name}</span>
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 rounded-full bg-primary/20" style={{ width: `${Math.max(20, (v.count / (topVisitors[0]?.count || 1)) * 80)}px` }}>
+                    <div className="h-full rounded-full bg-primary" style={{ width: "100%" }} />
+                  </div>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">{v.count}</span>
+                </div>
+              </div>
+            ))}
+            {topVisitors.length === 0 && <p className="text-sm text-muted-foreground">Aucune donnée disponible.</p>}
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Par profession</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={occupationData} layout="vertical">
+              <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={90} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="value" fill="hsl(234,85%,60%)" radius={[0, 6, 6, 0]} name="Membres" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Neighborhood */}
+      <div className="stat-card">
+        <h3 className="mb-5 text-sm font-semibold text-foreground">Provenance des visiteurs (quartiers)</h3>
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={neighborhoodData}>
+            <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
+            <Tooltip contentStyle={tooltipStyle} />
+            <Bar dataKey="value" fill="hsl(174,62%,47%)" radius={[6, 6, 0, 0]} name="Visiteurs" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
 
-function MiniStat({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number; color?: string }) {
+function KpiCard({ icon: Icon, label, value, change, period, subtitle }: {
+  icon: React.ElementType; label: string; value: string | number;
+  change?: number; period?: Period; subtitle?: string;
+}) {
+  const showChange = change !== undefined && period !== "all";
+  const isUp = (change ?? 0) >= 0;
   return (
     <div className="stat-card">
-      <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${
-        color === "accent" ? "bg-accent/10" : "bg-primary/10"
-      }`}>
-        <Icon className={`h-5 w-5 ${color === "accent" ? "text-accent" : "text-primary"}`} />
+      <div className="mb-3 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+          <Icon className="h-5 w-5 text-primary" />
+        </div>
+        {showChange && (
+          <span className={`ml-auto flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+            isUp ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-500"
+          }`}>
+            {isUp ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+            {Math.abs(change!)}%
+          </span>
+        )}
       </div>
       <p className="text-2xl font-bold text-foreground">{value}</p>
       <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+      {subtitle && <p className="text-[10px] text-muted-foreground">{subtitle}</p>}
+    </div>
+  );
+}
+
+function RoomStat({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number; color: string }) {
+  const colorClass = color === "accent" ? "text-accent" : color === "garden" ? "text-green-600" : "text-primary";
+  const bgClass = color === "accent" ? "bg-accent/10" : color === "garden" ? "bg-green-500/10" : "bg-primary/10";
+  return (
+    <div className="stat-card text-center">
+      <div className={`mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl ${bgClass}`}>
+        <Icon className={`h-5 w-5 ${colorClass}`} />
+      </div>
+      <p className="text-2xl font-bold text-foreground">{value}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
     </div>
   );
 }
