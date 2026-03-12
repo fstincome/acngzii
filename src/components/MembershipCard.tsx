@@ -14,6 +14,7 @@ import { toast } from "sonner";
 interface MembershipCardProps {
   fullName: string;
   visitorId: string;
+  photo?: string | null;
   showActions?: boolean;
   compact?: boolean;
 }
