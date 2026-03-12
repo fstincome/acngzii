@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useVisitors, useVisits } from "@/lib/supabase-store";
-import type { Visitor } from "@/lib/supabase-store";
+import { useVisitors, useVisits, ROOM_LABELS } from "@/lib/supabase-store";
+import type { Visitor, RoomType } from "@/lib/supabase-store";
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
 import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase, CreditCard } from "lucide-react";
