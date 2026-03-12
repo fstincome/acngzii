@@ -24,6 +24,7 @@ export default function RegisterVisitor() {
     email: "",
     neighborhood: "",
     occupation: "",
+    photo: "",
   });
 
   const update = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
