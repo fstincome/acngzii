@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { useVisitors, useVisits, ROOM_LABELS } from "@/lib/supabase-store";
+import { useVisitors, useVisits, useUpdateVisitor, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visitor, RoomType } from "@/lib/supabase-store";
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
-import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase, CreditCard } from "lucide-react";
+import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase, CreditCard, Pencil, Save, X, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import MembershipCard from "@/components/MembershipCard";
+import { toast } from "sonner";
 
 function Detail({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
