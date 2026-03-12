@@ -36,7 +36,7 @@ export default function DigitalCard() {
           <h1 className="text-lg font-bold text-foreground">Ma Carte de Membre</h1>
           <p className="text-sm text-muted-foreground">Gitega Study Space</p>
         </div>
-        <MembershipCard fullName={visitor.full_name} visitorId={visitor.visitor_id} />
+        <MembershipCard fullName={visitor.full_name} visitorId={visitor.visitor_id} photo={visitor.photo} />
       </div>
     </div>
   );
