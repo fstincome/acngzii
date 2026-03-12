@@ -111,9 +111,8 @@ export default function ProgramAttendance() {
   };
 
   const startQRScanning = () => {
-    // Dynamic import of jsQR for QR code detection from video frames
-    import("html5-qrcode").then(({ Html5Qrcode }) => {
-      // Use a simpler approach: scan from canvas frames
+    import("jsqr").then((jsQRModule) => {
+      const jsQR = jsQRModule.default;
       const interval = window.setInterval(() => {
         if (!videoRef.current || !canvasRef.current) return;
         const video = videoRef.current;
@@ -125,20 +124,13 @@ export default function ProgramAttendance() {
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0);
 
-        // Use Html5Qrcode static method to scan from canvas
-        canvas.toBlob((blob) => {
-          if (!blob) return;
-          const file = new File([blob], "frame.png", { type: "image/png" });
-          Html5Qrcode.scanFile(file, false)
-            .then((decodedText) => {
-              handleScan(decodedText);
-              stopCamera();
-            })
-            .catch(() => {
-              // No QR found in this frame, continue scanning
-            });
-        }, "image/png");
-      }, 500);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
+        if (qrCode) {
+          handleScan(qrCode.data);
+          stopCamera();
+        }
+      }, 300);
       scanIntervalRef.current = interval;
     });
   };
