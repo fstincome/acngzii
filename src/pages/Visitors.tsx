@@ -2,8 +2,10 @@ import { useState } from "react";
 import { getVisitors, getVisitorVisits, useStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
-import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase } from "lucide-react";
+import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import MembershipCard from "@/components/MembershipCard";
 import type { Visitor } from "@/lib/store";
 
 function Detail({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
@@ -39,9 +41,25 @@ export default function Visitors() {
 
     return (
       <div className="mx-auto max-w-2xl space-y-6 animate-fade-in">
-        <Button variant="ghost" className="gap-2 rounded-xl" onClick={() => setSelected(null)}>
-          <ArrowLeft className="h-4 w-4" /> Retour à la liste
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" className="gap-2 rounded-xl" onClick={() => setSelected(null)}>
+            <ArrowLeft className="h-4 w-4" /> Retour
+          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2 rounded-xl ml-auto">
+                <CreditCard className="h-4 w-4" />
+                Carte de membre
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Carte de membre</DialogTitle>
+              </DialogHeader>
+              <MembershipCard fullName={selected.fullName} visitorId={selected.visitorId} />
+            </DialogContent>
+          </Dialog>
+        </div>
 
         <div className="rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
           <div className="flex items-start gap-4">

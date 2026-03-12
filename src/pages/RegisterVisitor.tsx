@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
-import { UserPlus, Download, Check, Sparkles } from "lucide-react";
+import { UserPlus, Check } from "lucide-react";
+import MembershipCard from "@/components/MembershipCard";
 
 export default function RegisterVisitor() {
   const navigate = useNavigate();
@@ -65,28 +65,7 @@ export default function RegisterVisitor() {
           <p className="mt-1 text-sm text-muted-foreground">La carte de membre est prête</p>
         </div>
 
-        <div id="membership-card" className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-border/50 bg-card shadow-lg">
-          <div className="px-6 pt-6 pb-4">
-            <div className="flex items-center gap-3 pb-4 border-b border-border/50">
-              <div className="icon-box h-10 w-10 shrink-0">
-                <Sparkles className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-primary tracking-wide">GITEGA STUDY SPACE</p>
-                <p className="text-[10px] text-muted-foreground">Carte de membre</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-start gap-4 px-6 pb-6">
-            <div className="rounded-xl border border-border/30 p-2 bg-background">
-              <QRCodeSVG value={newVisitorId} size={72} />
-            </div>
-            <div className="pt-1">
-              <p className="text-base font-semibold text-foreground">{fullName}</p>
-              <p className="mt-1.5 font-mono text-xs font-semibold text-primary">{newVisitorId}</p>
-            </div>
-          </div>
-        </div>
+        <MembershipCard fullName={fullName} visitorId={newVisitorId} />
 
         <div className="flex gap-3">
           <Button className="flex-1 gap-2 rounded-xl h-11" variant="outline" onClick={() => {
@@ -96,8 +75,7 @@ export default function RegisterVisitor() {
             <UserPlus className="h-4 w-4" />
             Inscrire un autre
           </Button>
-          <Button className="flex-1 gap-2 rounded-xl h-11" onClick={() => navigate("/visitors")}>
-            <Download className="h-4 w-4" />
+          <Button className="flex-1 gap-2 rounded-xl h-11" variant="outline" onClick={() => navigate("/visitors")}>
             Voir les visiteurs
           </Button>
         </div>
