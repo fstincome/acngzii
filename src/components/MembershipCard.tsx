@@ -270,11 +270,24 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
 
           {/* Header */}
           <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-            <img src="/gss-logo.png" alt="Gitega Study Space" className="h-10 w-10 rounded-lg object-contain shrink-0" />
-            <div>
-              <p className="text-xs font-bold text-white tracking-widest">GITEGA STUDY SPACE</p>
-              <p className="text-[10px] text-white/50">Carte de Membre</p>
-            </div>
+            {photo ? (
+              <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />
+            ) : (
+              <img src="/gss-logo.png" alt="Gitega Study Space" className="h-10 w-10 rounded-lg object-contain shrink-0" />
+            )}
+            <img src={photo ? "/gss-logo.png" : ""} alt="" className={`h-10 w-10 rounded-lg object-contain shrink-0 ${photo ? "" : "hidden"}`} />
+            {!photo && (
+              <div>
+                <p className="text-xs font-bold text-white tracking-widest">GITEGA STUDY SPACE</p>
+                <p className="text-[10px] text-white/50">Carte de Membre</p>
+              </div>
+            )}
+            {photo && (
+              <div>
+                <p className="text-xs font-bold text-white tracking-widest">GITEGA STUDY SPACE</p>
+                <p className="text-[10px] text-white/50">Carte de Membre</p>
+              </div>
+            )}
           </div>
 
           {/* Content */}
