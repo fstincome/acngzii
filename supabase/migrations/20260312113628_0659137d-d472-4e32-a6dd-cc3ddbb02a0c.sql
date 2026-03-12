@@ -1,0 +1,2 @@
+ALTER TABLE public.visits DROP CONSTRAINT visits_room_check;
+ALTER TABLE public.visits ADD CONSTRAINT visits_room_check CHECK (room = ANY (ARRAY['computer_lab'::text, 'multipurpose_room'::text, 'garden'::text]));
