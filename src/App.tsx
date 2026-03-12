@@ -61,6 +61,7 @@ const App = () => (
               </AppLayout>
             }
           />
+          <Route path="/card/:visitorId" element={<DigitalCard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
