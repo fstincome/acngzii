@@ -14,6 +14,190 @@ export type Database = {
   }
   public: {
     Tables: {
+      program_attendance: {
+        Row: {
+          created_at: string
+          id: string
+          marked_at: string | null
+          participant_id: string
+          session_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          marked_at?: string | null
+          participant_id: string
+          session_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          marked_at?: string | null
+          participant_id?: string
+          session_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_attendance_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "program_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_attendance_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "program_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_participants: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          participant_code: string
+          phone: string | null
+          photo: string | null
+          program_id: string
+          role: string
+          sub_program_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          participant_code: string
+          phone?: string | null
+          photo?: string | null
+          program_id: string
+          role?: string
+          sub_program_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          participant_code?: string
+          phone?: string | null
+          photo?: string | null
+          program_id?: string
+          role?: string
+          sub_program_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_participants_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_participants_sub_program_id_fkey"
+            columns: ["sub_program_id"]
+            isOneToOne: false
+            referencedRelation: "sub_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          program_id: string
+          session_date: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          program_id: string
+          session_date: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          program_id?: string
+          session_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_sessions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programs: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string | null
+        }
+        Relationships: []
+      }
+      sub_programs: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          program_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          program_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          program_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_programs_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visitors: {
         Row: {
           created_at: string

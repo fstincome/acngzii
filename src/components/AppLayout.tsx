@@ -10,9 +10,12 @@ import {
   X,
   LogOut,
   Sparkles,
+  GraduationCap,
+  ClipboardCheck,
+  ChevronDown,
 } from "lucide-react";
 
-const navItems = [
+const normalNavItems = [
   { to: "/", icon: LayoutDashboard, label: "Tableau de bord" },
   { to: "/register", icon: UserPlus, label: "Inscription" },
   { to: "/scanner", icon: ScanLine, label: "Scanner" },
@@ -20,9 +23,46 @@ const navItems = [
   { to: "/statistics", icon: BarChart3, label: "Statistiques" },
 ];
 
+const programNavItems = [
+  { to: "/programs", icon: GraduationCap, label: "Programmes" },
+  { to: "/program-attendance", icon: ClipboardCheck, label: "Présence" },
+];
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [normalOpen, setNormalOpen] = useState(true);
+  const [programOpen, setProgramOpen] = useState(true);
   const location = useLocation();
+
+  const renderNavItem = (item: typeof normalNavItems[0]) => {
+    const active = location.pathname === item.to;
+    return (
+      <Link
+        key={item.to}
+        to={item.to}
+        onClick={() => setSidebarOpen(false)}
+        className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 ${
+          active
+            ? "bg-sidebar-primary/15 text-sidebar-primary shadow-sm"
+            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+        }`}
+      >
+        <div
+          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200 ${
+            active
+              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+              : "bg-sidebar-accent/50 text-sidebar-foreground/50 group-hover:bg-sidebar-accent group-hover:text-sidebar-foreground/80"
+          }`}
+        >
+          <item.icon className="h-4 w-4" />
+        </div>
+        {item.label}
+        {active && (
+          <div className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary animate-pulse-slow" />
+        )}
+      </Link>
+    );
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -57,39 +97,38 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-3 pt-4">
-          <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
-            Navigation
-          </p>
-          {navItems.map((item) => {
-            const active = location.pathname === item.to;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={() => setSidebarOpen(false)}
-                className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 ${
-                  active
-                    ? "bg-sidebar-primary/15 text-sidebar-primary shadow-sm"
-                    : "text-sidebar-foreground/60 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-                }`}
-              >
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200 ${
-                    active
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
-                      : "bg-sidebar-accent/50 text-sidebar-foreground/50 group-hover:bg-sidebar-accent group-hover:text-sidebar-foreground/80"
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                </div>
-                {item.label}
-                {active && (
-                  <div className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary animate-pulse-slow" />
-                )}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 space-y-1 px-3 pt-4 overflow-y-auto">
+          {/* Normal Attendance group */}
+          <button
+            onClick={() => setNormalOpen(!normalOpen)}
+            className="flex w-full items-center justify-between px-3 mb-2"
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+              Présence Normale
+            </p>
+            <ChevronDown className={`h-3 w-3 text-sidebar-foreground/30 transition-transform ${normalOpen ? "" : "-rotate-90"}`} />
+          </button>
+          {normalOpen && (
+            <div className="space-y-1 mb-4">
+              {normalNavItems.map(renderNavItem)}
+            </div>
+          )}
+
+          {/* Program Attendance group */}
+          <button
+            onClick={() => setProgramOpen(!programOpen)}
+            className="flex w-full items-center justify-between px-3 mb-2"
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+              Présence Programme
+            </p>
+            <ChevronDown className={`h-3 w-3 text-sidebar-foreground/30 transition-transform ${programOpen ? "" : "-rotate-90"}`} />
+          </button>
+          {programOpen && (
+            <div className="space-y-1">
+              {programNavItems.map(renderNavItem)}
+            </div>
+          )}
         </nav>
 
         {/* User profile */}

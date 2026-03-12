@@ -1,0 +1,272 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+export interface Program {
+  id: string;
+  name: string;
+  description: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  created_at: string;
+}
+
+export interface SubProgram {
+  id: string;
+  program_id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface ProgramParticipant {
+  id: string;
+  program_id: string;
+  sub_program_id: string | null;
+  participant_code: string;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+  role: "eleve" | "mentor";
+  photo: string | null;
+  created_at: string;
+}
+
+export interface ProgramSession {
+  id: string;
+  program_id: string;
+  session_date: string;
+  created_at: string;
+}
+
+export interface ProgramAttendance {
+  id: string;
+  participant_id: string;
+  session_id: string;
+  status: "en_attente" | "present" | "absent";
+  marked_at: string | null;
+  created_at: string;
+}
+
+export const PARTICIPANT_ROLES = {
+  eleve: "Élève",
+  mentor: "Mentor",
+};
+
+export async function generateParticipantCode(programPrefix: string): Promise<string> {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code: string;
+  let exists = true;
+  while (exists) {
+    let rand = "";
+    for (let i = 0; i < 5; i++) {
+      rand += chars[Math.floor(Math.random() * chars.length)];
+    }
+    code = `${programPrefix}-${rand}`;
+    const { count } = await supabase
+      .from("program_participants")
+      .select("*", { count: "exact", head: true })
+      .eq("participant_code", code);
+    exists = (count ?? 0) > 0;
+  }
+  return code!;
+}
+
+// ---- Hooks ----
+
+export function usePrograms() {
+  return useQuery({
+    queryKey: ["programs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("programs")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Program[];
+    },
+  });
+}
+
+export function useSubPrograms(programId: string | undefined) {
+  return useQuery({
+    queryKey: ["sub_programs", programId],
+    queryFn: async () => {
+      if (!programId) return [];
+      const { data, error } = await supabase
+        .from("sub_programs")
+        .select("*")
+        .eq("program_id", programId)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as SubProgram[];
+    },
+    enabled: !!programId,
+  });
+}
+
+export function useProgramParticipants(programId: string | undefined) {
+  return useQuery({
+    queryKey: ["program_participants", programId],
+    queryFn: async () => {
+      if (!programId) return [];
+      const { data, error } = await supabase
+        .from("program_participants")
+        .select("*")
+        .eq("program_id", programId)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as ProgramParticipant[];
+    },
+    enabled: !!programId,
+  });
+}
+
+export function useProgramSessions(programId: string | undefined) {
+  return useQuery({
+    queryKey: ["program_sessions", programId],
+    queryFn: async () => {
+      if (!programId) return [];
+      const { data, error } = await supabase
+        .from("program_sessions")
+        .select("*")
+        .eq("program_id", programId)
+        .order("session_date", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as ProgramSession[];
+    },
+    enabled: !!programId,
+  });
+}
+
+export function useSessionAttendance(sessionId: string | undefined) {
+  return useQuery({
+    queryKey: ["program_attendance", sessionId],
+    queryFn: async () => {
+      if (!sessionId) return [];
+      const { data, error } = await supabase
+        .from("program_attendance")
+        .select("*")
+        .eq("session_id", sessionId);
+      if (error) throw error;
+      return (data ?? []) as ProgramAttendance[];
+    },
+    enabled: !!sessionId,
+  });
+}
+
+export function useAddProgram() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (p: { name: string; description?: string; start_date?: string; end_date?: string }) => {
+      const { data, error } = await supabase.from("programs").insert(p).select().single();
+      if (error) throw error;
+      return data as Program;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["programs"] }),
+  });
+}
+
+export function useAddSubProgram() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (p: { program_id: string; name: string; description?: string }) => {
+      const { data, error } = await supabase.from("sub_programs").insert(p).select().single();
+      if (error) throw error;
+      return data as SubProgram;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["sub_programs", vars.program_id] }),
+  });
+}
+
+export function useAddParticipant() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (p: {
+      program_id: string;
+      sub_program_id?: string;
+      participant_code: string;
+      full_name: string;
+      phone?: string;
+      email?: string;
+      role: string;
+      photo?: string;
+    }) => {
+      const { data, error } = await supabase.from("program_participants").insert(p).select().single();
+      if (error) throw error;
+      return data as ProgramParticipant;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["program_participants", vars.program_id] }),
+  });
+}
+
+export function useAddSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (p: { program_id: string; session_date: string }) => {
+      const { data, error } = await supabase.from("program_sessions").insert(p).select().single();
+      if (error) throw error;
+      return data as ProgramSession;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["program_sessions", vars.program_id] }),
+  });
+}
+
+export function useCreateAttendanceRecords() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (records: { participant_id: string; session_id: string }[]) => {
+      const withStatus = records.map(r => ({ ...r, status: "en_attente" }));
+      const { error } = await supabase.from("program_attendance").insert(withStatus);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["program_attendance"] }),
+  });
+}
+
+export function useMarkPresent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ attendanceId }: { attendanceId: string }) => {
+      const { error } = await supabase
+        .from("program_attendance")
+        .update({ status: "present", marked_at: new Date().toISOString() })
+        .eq("id", attendanceId);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["program_attendance"] }),
+  });
+}
+
+export function useParticipantByCode(code: string | undefined) {
+  return useQuery({
+    queryKey: ["participant_by_code", code],
+    queryFn: async () => {
+      if (!code) return null;
+      const { data, error } = await supabase
+        .from("program_participants")
+        .select("*")
+        .eq("participant_code", code)
+        .maybeSingle();
+      if (error) throw error;
+      return data as ProgramParticipant | null;
+    },
+    enabled: !!code,
+  });
+}
+
+// Realtime for attendance
+export function useProgramAttendanceRealtime() {
+  const qc = useQueryClient();
+  const channel = supabase
+    .channel("program-attendance-realtime")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "program_attendance" },
+      () => {
+        qc.invalidateQueries({ queryKey: ["program_attendance"] });
+      }
+    );
+  if (channel.state !== "joined" && channel.state !== "joining") {
+    channel.subscribe();
+  }
+}

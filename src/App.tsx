@@ -10,6 +10,8 @@ import Scanner from "@/pages/Scanner";
 import Visitors from "@/pages/Visitors";
 import Statistics from "@/pages/Statistics";
 import DigitalCard from "@/pages/DigitalCard";
+import Programs from "@/pages/Programs";
+import ProgramAttendance from "@/pages/ProgramAttendance";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,46 +23,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <AppLayout>
-                <Dashboard />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <AppLayout>
-                <RegisterVisitor />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/scanner"
-            element={
-              <AppLayout>
-                <Scanner />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/visitors"
-            element={
-              <AppLayout>
-                <Visitors />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/statistics"
-            element={
-              <AppLayout>
-                <Statistics />
-              </AppLayout>
-            }
-          />
+          <Route path="/" element={<AppLayout><Dashboard /></AppLayout>} />
+          <Route path="/register" element={<AppLayout><RegisterVisitor /></AppLayout>} />
+          <Route path="/scanner" element={<AppLayout><Scanner /></AppLayout>} />
+          <Route path="/visitors" element={<AppLayout><Visitors /></AppLayout>} />
+          <Route path="/statistics" element={<AppLayout><Statistics /></AppLayout>} />
+          <Route path="/programs" element={<AppLayout><Programs /></AppLayout>} />
+          <Route path="/program-attendance" element={<AppLayout><ProgramAttendance /></AppLayout>} />
           <Route path="/card/:visitorId" element={<DigitalCard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

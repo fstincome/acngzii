@@ -17,9 +17,10 @@ interface MembershipCardProps {
   photo?: string | null;
   showActions?: boolean;
   compact?: boolean;
+  programName?: string;
 }
 
-export default function MembershipCard({ fullName, visitorId, photo, showActions = true, compact = false }: MembershipCardProps) {
+export default function MembershipCard({ fullName, visitorId, photo, showActions = true, compact = false, programName }: MembershipCardProps) {
   const [generating, setGenerating] = useState(false);
   const qrCanvasRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -103,7 +104,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.fillText("GITEGA STUDY SPACE", 68, 32);
       ctx.font = "10px Inter, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.fillText("Carte de Membre", 68, 46);
+      ctx.fillText(programName || "Carte de Membre", 68, 46);
 
       // Photo (top-right, same size as logo)
       if (photo) {
@@ -270,7 +271,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
             <img src="/gss-logo.png" alt="Gitega Study Space" className="h-10 w-10 rounded-lg object-contain shrink-0" />
             <div className="flex-1">
               <p className="text-xs font-bold text-white tracking-widest">GITEGA STUDY SPACE</p>
-              <p className="text-[10px] text-white/50">Carte de Membre</p>
+              <p className="text-[10px] text-white/50">{programName || "Carte de Membre"}</p>
             </div>
             {photo && (
               <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />
