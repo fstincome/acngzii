@@ -121,7 +121,7 @@ export default function RegisterVisitor() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone" className="text-foreground">Téléphone *</Label>
+            <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
             <Input id="phone" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+257 xx xxx xxx" className="rounded-xl h-11" />
           </div>
 
