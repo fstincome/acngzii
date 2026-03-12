@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { usePrograms, useAddProgram, useProgramParticipants, useAddParticipant, useProgramSessions, useAddSession, useCreateAttendanceRecords, generateParticipantCode, type Program, PARTICIPANT_ROLES } from "@/lib/program-store";
+import {
+  usePrograms, useAddProgram, useUpdateProgram,
+  useProgramParticipants, useAddParticipant, useUpdateParticipant,
+  useProgramSessions, useAddSession, useUpdateSession,
+  useCreateAttendanceRecords, generateParticipantCode,
+  type Program, type ProgramParticipant, type ProgramSession,
+  PARTICIPANT_ROLES,
+} from "@/lib/program-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -7,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ArrowLeft, Users, Calendar, CreditCard } from "lucide-react";
+import { Plus, ArrowLeft, Users, Calendar, CreditCard, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -16,12 +23,22 @@ import MembershipCard from "@/components/MembershipCard";
 export default function Programs() {
   const { data: programs = [], isLoading } = usePrograms();
   const addProgram = useAddProgram();
+  const updateProgram = useUpdateProgram();
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [editProgram, setEditProgram] = useState<Program | null>(null);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newStart, setNewStart] = useState("");
   const [newEnd, setNewEnd] = useState("");
+
+  const openEditProgram = (p: Program) => {
+    setEditProgram(p);
+    setNewName(p.name);
+    setNewDesc(p.description || "");
+    setNewStart(p.start_date || "");
+    setNewEnd(p.end_date || "");
+  };
 
   const handleCreateProgram = async () => {
     if (!newName.trim()) return;
@@ -34,18 +51,56 @@ export default function Programs() {
       });
       toast.success("Programme créé !");
       setShowCreate(false);
-      setNewName("");
-      setNewDesc("");
-      setNewStart("");
-      setNewEnd("");
-    } catch {
-      toast.error("Erreur lors de la création");
-    }
+      setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd("");
+    } catch { toast.error("Erreur lors de la création"); }
+  };
+
+  const handleUpdateProgram = async () => {
+    if (!editProgram || !newName.trim()) return;
+    try {
+      await updateProgram.mutateAsync({
+        id: editProgram.id,
+        name: newName.trim(),
+        description: newDesc.trim() || null,
+        start_date: newStart || null,
+        end_date: newEnd || null,
+      });
+      toast.success("Programme modifié !");
+      // Update selectedProgram if viewing it
+      setSelectedProgram(prev => prev?.id === editProgram.id ? { ...prev, name: newName.trim(), description: newDesc.trim() || null, start_date: newStart || null, end_date: newEnd || null } : prev);
+      setEditProgram(null);
+      setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd("");
+    } catch { toast.error("Erreur"); }
   };
 
   if (selectedProgram) {
-    return <ProgramDetail program={selectedProgram} onBack={() => setSelectedProgram(null)} />;
+    return <ProgramDetail program={selectedProgram} onBack={() => setSelectedProgram(null)} onEditProgram={openEditProgram} />;
   }
+
+  const programFormDialog = (open: boolean, onOpenChange: (v: boolean) => void, title: string, onSubmit: () => void, isPending: boolean, submitLabel: string) => (
+    <Dialog open={open} onOpenChange={v => { onOpenChange(v); if (!v) { setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); } }}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
+        <div className="space-y-3 pt-2">
+          <Input placeholder="Nom du programme" value={newName} onChange={e => setNewName(e.target.value)} />
+          <Input placeholder="Description (optionnel)" value={newDesc} onChange={e => setNewDesc(e.target.value)} />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-xs text-muted-foreground">Date début</label>
+              <Input type="date" value={newStart} onChange={e => setNewStart(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Date fin</label>
+              <Input type="date" value={newEnd} onChange={e => setNewEnd(e.target.value)} />
+            </div>
+          </div>
+          <Button onClick={onSubmit} disabled={isPending} className="w-full">
+            {isPending ? "..." : submitLabel}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <div>
@@ -90,11 +145,10 @@ export default function Programs() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {programs.map(p => (
-            <Card
-              key={p.id}
-              className="cursor-pointer p-5 transition-all hover:shadow-md"
-              onClick={() => setSelectedProgram(p)}
-            >
+            <Card key={p.id} className="cursor-pointer p-5 transition-all hover:shadow-md relative group" onClick={() => setSelectedProgram(p)}>
+              <Button size="icon" variant="ghost" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8" onClick={e => { e.stopPropagation(); openEditProgram(p); }}>
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
               <h3 className="font-semibold text-foreground">{p.name}</h3>
               {p.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
               <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
@@ -106,20 +160,26 @@ export default function Programs() {
           ))}
         </div>
       )}
+
+      {/* Edit program dialog */}
+      {programFormDialog(!!editProgram, v => { if (!v) setEditProgram(null); }, "Modifier le programme", handleUpdateProgram, updateProgram.isPending, "Enregistrer")}
     </div>
   );
 }
 
 // ---- Program Detail ----
 
-function ProgramDetail({ program, onBack }: { program: Program; onBack: () => void }) {
+function ProgramDetail({ program, onBack, onEditProgram }: { program: Program; onBack: () => void; onEditProgram: (p: Program) => void }) {
   const { data: participants = [] } = useProgramParticipants(program.id);
   const { data: sessions = [] } = useProgramSessions(program.id);
   const addParticipant = useAddParticipant();
+  const updateParticipant = useUpdateParticipant();
   const addSession = useAddSession();
+  const updateSession = useUpdateSession();
   const createAttendance = useCreateAttendanceRecords();
 
   const [showAddParticipant, setShowAddParticipant] = useState(false);
+  const [editPart, setEditPart] = useState<ProgramParticipant | null>(null);
   const [pName, setPName] = useState("");
   const [pPhone, setPPhone] = useState("");
   const [pEmail, setPEmail] = useState("");
@@ -128,11 +188,26 @@ function ProgramDetail({ program, onBack }: { program: Program; onBack: () => vo
   const [pPhoto, setPPhoto] = useState("");
 
   const [showAddSession, setShowAddSession] = useState(false);
+  const [editSess, setEditSess] = useState<ProgramSession | null>(null);
   const [sessionDate, setSessionDate] = useState("");
 
   const [cardParticipant, setCardParticipant] = useState<typeof participants[0] | null>(null);
 
   const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
+
+  const resetParticipantForm = () => {
+    setPName(""); setPPhone(""); setPEmail(""); setPRole("eleve"); setPInstitution(""); setPPhoto("");
+  };
+
+  const openEditParticipant = (p: ProgramParticipant) => {
+    setEditPart(p);
+    setPName(p.full_name);
+    setPPhone(p.phone || "");
+    setPEmail(p.email || "");
+    setPRole(p.role);
+    setPInstitution(p.institution || "");
+    setPPhoto(p.photo || "");
+  };
 
   const handleAddParticipant = async () => {
     if (!pName.trim()) return;
@@ -150,12 +225,26 @@ function ProgramDetail({ program, onBack }: { program: Program; onBack: () => vo
       });
       toast.success("Participant ajouté !");
       setShowAddParticipant(false);
-      setPName("");
-      setPPhone("");
-      setPEmail("");
-      setPRole("eleve");
-      setPInstitution("");
-      setPPhoto("");
+      resetParticipantForm();
+    } catch { toast.error("Erreur"); }
+  };
+
+  const handleUpdateParticipant = async () => {
+    if (!editPart || !pName.trim()) return;
+    try {
+      await updateParticipant.mutateAsync({
+        id: editPart.id,
+        program_id: program.id,
+        full_name: pName.trim(),
+        phone: pPhone || null,
+        email: pEmail || null,
+        institution: pInstitution.trim() || null,
+        role: pRole,
+        photo: pPhoto || null,
+      });
+      toast.success("Participant modifié !");
+      setEditPart(null);
+      resetParticipantForm();
     } catch { toast.error("Erreur"); }
   };
 
@@ -174,12 +263,47 @@ function ProgramDetail({ program, onBack }: { program: Program; onBack: () => vo
     } catch { toast.error("Erreur"); }
   };
 
+  const handleUpdateSession = async () => {
+    if (!editSess || !sessionDate) return;
+    try {
+      await updateSession.mutateAsync({ id: editSess.id, session_date: sessionDate, program_id: program.id });
+      toast.success("Session modifiée !");
+      setEditSess(null);
+      setSessionDate("");
+    } catch { toast.error("Erreur"); }
+  };
+
+  const participantFormContent = (onSubmit: () => void, isPending: boolean, submitLabel: string) => (
+    <div className="space-y-3 pt-2">
+      <Input placeholder="Nom complet" value={pName} onChange={e => setPName(e.target.value)} />
+      <Input placeholder="Institution (école, université...)" value={pInstitution} onChange={e => setPInstitution(e.target.value)} />
+      <Input placeholder="Téléphone" value={pPhone} onChange={e => setPPhone(e.target.value)} />
+      <Input placeholder="Email (optionnel)" value={pEmail} onChange={e => setPEmail(e.target.value)} />
+      <Input placeholder="Lien photo (optionnel)" value={pPhoto} onChange={e => setPPhoto(e.target.value)} />
+      <Select value={pRole} onValueChange={setPRole}>
+        <SelectTrigger><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="eleve">Élève</SelectItem>
+          <SelectItem value="mentor">Mentor</SelectItem>
+        </SelectContent>
+      </Select>
+      <Button onClick={onSubmit} disabled={isPending} className="w-full">
+        {isPending ? "..." : submitLabel}
+      </Button>
+    </div>
+  );
+
   return (
     <div>
       <div className="page-header">
-        <Button variant="ghost" onClick={onBack} className="gap-2 mb-2">
-          <ArrowLeft className="h-4 w-4" /> Retour
-        </Button>
+        <div className="flex items-center gap-2 mb-2">
+          <Button variant="ghost" onClick={onBack} className="gap-2">
+            <ArrowLeft className="h-4 w-4" /> Retour
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEditProgram(program)}>
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+        </div>
         <h1 className="page-title">{program.name}</h1>
         {program.description && <p className="page-subtitle">{program.description}</p>}
       </div>
@@ -193,29 +317,13 @@ function ProgramDetail({ program, onBack }: { program: Program; onBack: () => vo
         {/* Participants tab */}
         <TabsContent value="participants" className="space-y-4">
           <div className="flex justify-end">
-            <Dialog open={showAddParticipant} onOpenChange={setShowAddParticipant}>
+            <Dialog open={showAddParticipant} onOpenChange={v => { setShowAddParticipant(v); if (!v) resetParticipantForm(); }}>
               <DialogTrigger asChild>
                 <Button size="sm" className="gap-2 rounded-xl"><Plus className="h-4 w-4" /> Ajouter un participant</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>Ajouter un participant</DialogTitle></DialogHeader>
-                <div className="space-y-3 pt-2">
-                  <Input placeholder="Nom complet" value={pName} onChange={e => setPName(e.target.value)} />
-                  <Input placeholder="Institution (école, université...)" value={pInstitution} onChange={e => setPInstitution(e.target.value)} />
-                  <Input placeholder="Téléphone" value={pPhone} onChange={e => setPPhone(e.target.value)} />
-                  <Input placeholder="Email (optionnel)" value={pEmail} onChange={e => setPEmail(e.target.value)} />
-                  <Input placeholder="Lien photo (optionnel)" value={pPhoto} onChange={e => setPPhoto(e.target.value)} />
-                  <Select value={pRole} onValueChange={setPRole}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="eleve">Élève</SelectItem>
-                      <SelectItem value="mentor">Mentor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button onClick={handleAddParticipant} disabled={addParticipant.isPending} className="w-full">
-                    {addParticipant.isPending ? "Ajout..." : "Ajouter"}
-                  </Button>
-                </div>
+                {participantFormContent(handleAddParticipant, addParticipant.isPending, "Ajouter")}
               </DialogContent>
             </Dialog>
           </div>
@@ -241,6 +349,9 @@ function ProgramDetail({ program, onBack }: { program: Program; onBack: () => vo
                   <Badge variant={p.role === "mentor" ? "default" : "secondary"}>
                     {PARTICIPANT_ROLES[p.role as keyof typeof PARTICIPANT_ROLES] || p.role}
                   </Badge>
+                  <Button size="sm" variant="ghost" className="gap-1 h-8 w-8 p-0" onClick={() => openEditParticipant(p)}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
                   <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setCardParticipant(p)}>
                     <CreditCard className="h-3.5 w-3.5" /> Carte
                   </Button>
@@ -253,7 +364,7 @@ function ProgramDetail({ program, onBack }: { program: Program; onBack: () => vo
         {/* Sessions tab */}
         <TabsContent value="sessions" className="space-y-4">
           <div className="flex justify-end">
-            <Dialog open={showAddSession} onOpenChange={setShowAddSession}>
+            <Dialog open={showAddSession} onOpenChange={v => { setShowAddSession(v); if (!v) setSessionDate(""); }}>
               <DialogTrigger asChild>
                 <Button size="sm" className="gap-2 rounded-xl"><Plus className="h-4 w-4" /> Ajouter une session</Button>
               </DialogTrigger>
@@ -274,16 +385,40 @@ function ProgramDetail({ program, onBack }: { program: Program; onBack: () => vo
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {sessions.map(s => (
-                <Card key={s.id} className="p-4">
+                <Card key={s.id} className="p-4 flex items-center justify-between group">
                   <p className="font-medium text-foreground">
                     {format(new Date(s.session_date), "EEEE dd MMMM yyyy", { locale: fr })}
                   </p>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => { setEditSess(s); setSessionDate(s.session_date); }}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
                 </Card>
               ))}
             </div>
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Edit participant dialog */}
+      <Dialog open={!!editPart} onOpenChange={v => { if (!v) { setEditPart(null); resetParticipantForm(); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Modifier le participant</DialogTitle></DialogHeader>
+          {participantFormContent(handleUpdateParticipant, updateParticipant.isPending, "Enregistrer")}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit session dialog */}
+      <Dialog open={!!editSess} onOpenChange={v => { if (!v) { setEditSess(null); setSessionDate(""); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Modifier la session</DialogTitle></DialogHeader>
+          <div className="space-y-3 pt-2">
+            <Input type="date" value={sessionDate} onChange={e => setSessionDate(e.target.value)} />
+            <Button onClick={handleUpdateSession} disabled={updateSession.isPending} className="w-full">
+              {updateSession.isPending ? "..." : "Enregistrer"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Card dialog */}
       <Dialog open={!!cardParticipant} onOpenChange={() => setCardParticipant(null)}>
