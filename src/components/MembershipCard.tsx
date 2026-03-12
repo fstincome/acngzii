@@ -186,8 +186,9 @@ export default function MembershipCard({ fullName, visitorId, showActions = true
     try {
       const qrDataUrl = await getQRDataUrl();
       const doc = await generateMembershipCardPDF(fullName, visitorId, qrDataUrl);
-      printCardPDF(doc);
-      toast.success("Impression lancée !");
+      // Download and let user print manually
+      downloadCardPDF(doc, visitorId);
+      toast.success("PDF téléchargé — ouvrez-le pour imprimer");
     } catch (err) {
       toast.error("Erreur lors de l'impression");
       console.error(err);
@@ -196,14 +197,29 @@ export default function MembershipCard({ fullName, visitorId, showActions = true
     }
   };
 
-  const handleWhatsApp = () => {
-    shareViaWhatsApp(visitorId, fullName);
-    toast.success("Ouverture de WhatsApp...");
+  const getWhatsAppUrl = () => {
+    const cardUrl = `${window.location.origin}/card/${visitorId}`;
+    const message =
+      `🎓 *Carte de membre - Gitega Study Space*\n\n` +
+      `👤 Nom: ${fullName}\n` +
+      `🆔 ID: ${visitorId}\n\n` +
+      `📱 Voir ma carte: ${cardUrl}\n\n` +
+      `Présentez votre QR code à chaque visite.`;
+    return `https://wa.me/?text=${encodeURIComponent(message)}`;
   };
 
-  const handleEmail = () => {
-    shareViaEmail(visitorId, fullName);
-    toast.success("Ouverture de l'email...");
+  const getEmailUrl = () => {
+    const cardUrl = `${window.location.origin}/card/${visitorId}`;
+    const subject = "Votre carte de membre - Gitega Study Space";
+    const body =
+      `Bonjour ${fullName},\n\n` +
+      `Bienvenue au Gitega Study Space !\n\n` +
+      `Voici vos informations de membre :\n` +
+      `- Identifiant : ${visitorId}\n` +
+      `- Carte digitale : ${cardUrl}\n\n` +
+      `Présentez votre QR code à chaque visite.\n\n` +
+      `Cordialement,\nGitega Study Space`;
+    return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
@@ -298,24 +314,24 @@ export default function MembershipCard({ fullName, visitorId, showActions = true
           <div className="flex items-center gap-2 px-1">
             <span className="text-xs text-muted-foreground">Partager :</span>
             <div className="flex gap-2">
-              <Button
-                onClick={handleWhatsApp}
-                size="sm"
-                variant="ghost"
-                className="gap-1.5 rounded-lg text-xs h-8 px-3 hover:bg-success/10 hover:text-success"
+              <a
+                href={getWhatsAppUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg text-xs h-8 px-3 hover:bg-success/10 hover:text-success text-foreground transition-colors"
               >
                 <MessageCircle className="h-3.5 w-3.5" />
                 WhatsApp
-              </Button>
-              <Button
-                onClick={handleEmail}
-                size="sm"
-                variant="ghost"
-                className="gap-1.5 rounded-lg text-xs h-8 px-3"
+              </a>
+              <a
+                href={getEmailUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg text-xs h-8 px-3 hover:bg-accent/10 hover:text-accent text-foreground transition-colors"
               >
                 <Mail className="h-3.5 w-3.5" />
                 Email
-              </Button>
+              </a>
             </div>
           </div>
         </div>
