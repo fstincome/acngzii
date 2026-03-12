@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { usePrograms, useProgramSessions, useProgramParticipants, useSessionAttendance, useMarkPresent, useProgramAttendanceRealtime, useParticipantByCode, type Program, type ProgramSession, PARTICIPANT_ROLES } from "@/lib/program-store";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { usePrograms, useProgramSessions, useProgramParticipants, useSessionAttendance, useMarkPresent, useProgramAttendanceRealtime, PARTICIPANT_ROLES } from "@/lib/program-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -10,7 +10,6 @@ import { ScanLine, Search, CheckCircle2, Clock, XCircle, Camera, X } from "lucid
 import { toast } from "sonner";
 import { format, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Html5Qrcode } from "html5-qrcode";
 
 export default function ProgramAttendance() {
   useProgramAttendanceRealtime();
@@ -21,9 +20,11 @@ export default function ProgramAttendance() {
   const [searchQuery, setSearchQuery] = useState("");
   const [scanCode, setScanCode] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const scanIntervalRef = useRef<number | null>(null);
 
-  const selectedProgram = programs.find(p => p.id === selectedProgramId);
   const { data: sessions = [] } = useProgramSessions(selectedProgramId || undefined);
   const { data: participants = [] } = useProgramParticipants(selectedProgramId || undefined);
   const { data: attendance = [] } = useSessionAttendance(selectedSessionId || undefined);
@@ -52,7 +53,7 @@ export default function ProgramAttendance() {
     return list.filter(p => p.full_name.toLowerCase().includes(q) || p.participant_code.toLowerCase().includes(q));
   };
 
-  const handleScan = async (code: string) => {
+  const handleScan = useCallback(async (code: string) => {
     const participant = participants.find(p => p.participant_code === code);
     if (!participant) {
       toast.error("Participant non trouvé dans ce programme");
@@ -77,7 +78,7 @@ export default function ProgramAttendance() {
     } catch {
       toast.error("Erreur lors du pointage");
     }
-  };
+  }, [participants, attendance, markPresent]);
 
   const handleManualScan = () => {
     if (scanCode.trim()) {
@@ -86,34 +87,80 @@ export default function ProgramAttendance() {
     }
   };
 
-  // Camera
+  // Camera - getUserMedia called directly in click handler
   const startCamera = async () => {
     try {
-      const scanner = new Html5Qrcode("program-qr-reader");
-      scannerRef.current = scanner;
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }
+      });
+      streamRef.current = stream;
       setCameraActive(true);
-      await scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          handleScan(decodedText);
-          stopCamera();
-        },
-        () => {}
-      );
+
+      // Wait for next render to attach stream to video
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+          startQRScanning();
+        }
+      }, 100);
     } catch {
-      toast.error("Impossible d'accéder à la caméra");
+      toast.error("Impossible d'accéder à la caméra. Vérifiez les permissions.");
       setCameraActive(false);
     }
   };
 
-  const stopCamera = async () => {
-    if (scannerRef.current) {
-      try { await scannerRef.current.stop(); } catch {}
-      scannerRef.current = null;
+  const startQRScanning = () => {
+    // Dynamic import of jsQR for QR code detection from video frames
+    import("html5-qrcode").then(({ Html5Qrcode }) => {
+      // Use a simpler approach: scan from canvas frames
+      const interval = window.setInterval(() => {
+        if (!videoRef.current || !canvasRef.current) return;
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        if (!ctx || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+
+        // Use Html5Qrcode static method to scan from canvas
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          const file = new File([blob], "frame.png", { type: "image/png" });
+          Html5Qrcode.scanFile(file, false)
+            .then((decodedText) => {
+              handleScan(decodedText);
+              stopCamera();
+            })
+            .catch(() => {
+              // No QR found in this frame, continue scanning
+            });
+        }, "image/png");
+      }, 500);
+      scanIntervalRef.current = interval;
+    });
+  };
+
+  const stopCamera = useCallback(() => {
+    if (scanIntervalRef.current) {
+      clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     }
     setCameraActive(false);
-  };
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, [stopCamera]);
 
   return (
     <div>
@@ -160,7 +207,13 @@ export default function ProgramAttendance() {
 
             {cameraActive && (
               <div className="relative">
-                <div id="program-qr-reader" className="rounded-xl overflow-hidden" />
+                <video
+                  ref={videoRef}
+                  className="w-full rounded-xl"
+                  playsInline
+                  muted
+                />
+                <canvas ref={canvasRef} className="hidden" />
                 <Button size="icon" variant="destructive" className="absolute top-2 right-2 rounded-full" onClick={stopCamera}>
                   <X className="h-4 w-4" />
                 </Button>
@@ -270,7 +323,7 @@ export default function ProgramAttendance() {
 }
 
 function ParticipantRow({ participant, status, onMark }: {
-  participant: { id: string; full_name: string; participant_code: string; role: string; photo: string | null };
+  participant: { id: string; full_name: string; participant_code: string; role: string; photo: string | null; institution?: string | null };
   status: string;
   onMark?: () => void;
 }) {
@@ -286,6 +339,7 @@ function ParticipantRow({ participant, status, onMark }: {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{participant.full_name}</p>
         <p className="text-xs text-muted-foreground font-mono">{participant.participant_code}</p>
+        {participant.institution && <p className="text-xs text-muted-foreground">{participant.institution}</p>}
       </div>
       <Badge variant="secondary" className="text-xs">
         {PARTICIPANT_ROLES[participant.role as keyof typeof PARTICIPANT_ROLES] || participant.role}

@@ -10,22 +10,14 @@ export interface Program {
   created_at: string;
 }
 
-export interface SubProgram {
-  id: string;
-  program_id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
-}
-
 export interface ProgramParticipant {
   id: string;
   program_id: string;
-  sub_program_id: string | null;
   participant_code: string;
   full_name: string;
   phone: string | null;
   email: string | null;
+  institution: string | null;
   role: "eleve" | "mentor";
   photo: string | null;
   created_at: string;
@@ -84,23 +76,6 @@ export function usePrograms() {
       if (error) throw error;
       return (data ?? []) as Program[];
     },
-  });
-}
-
-export function useSubPrograms(programId: string | undefined) {
-  return useQuery({
-    queryKey: ["sub_programs", programId],
-    queryFn: async () => {
-      if (!programId) return [];
-      const { data, error } = await supabase
-        .from("sub_programs")
-        .select("*")
-        .eq("program_id", programId)
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as SubProgram[];
-    },
-    enabled: !!programId,
   });
 }
 
@@ -166,28 +141,16 @@ export function useAddProgram() {
   });
 }
 
-export function useAddSubProgram() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (p: { program_id: string; name: string; description?: string }) => {
-      const { data, error } = await supabase.from("sub_programs").insert(p).select().single();
-      if (error) throw error;
-      return data as SubProgram;
-    },
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["sub_programs", vars.program_id] }),
-  });
-}
-
 export function useAddParticipant() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (p: {
       program_id: string;
-      sub_program_id?: string;
       participant_code: string;
       full_name: string;
       phone?: string;
       email?: string;
+      institution?: string;
       role: string;
       photo?: string;
     }) => {
