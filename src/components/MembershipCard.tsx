@@ -82,9 +82,30 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.fillStyle = accentGrad;
       ctx.fillRect(0, 0, rect.width, 4);
 
-      let headerXOffset = 20;
+      // Logo (always top-left)
+      try {
+        const logoImg = new window.Image();
+        logoImg.crossOrigin = "anonymous";
+        await new Promise<void>((res, rej) => {
+          logoImg.onload = () => res();
+          logoImg.onerror = rej;
+          logoImg.src = "/gss-logo.png";
+        });
+        ctx.drawImage(logoImg, 20, 16, 40, 40);
+      } catch {
+        // skip logo
+      }
 
-      // Draw photo if available (top-left, same size as logo)
+      // Header text
+      ctx.font = "bold 11px Inter, sans-serif";
+      ctx.fillStyle = "#ffffff";
+      ctx.letterSpacing = "2px";
+      ctx.fillText("GITEGA STUDY SPACE", 68, 32);
+      ctx.font = "10px Inter, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.fillText("Carte de Membre", 68, 46);
+
+      // Photo (top-right, same size as logo)
       if (photo) {
         try {
           const photoImg = new window.Image();
@@ -94,46 +115,22 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
             photoImg.onerror = rej;
             photoImg.src = photo;
           });
+          const photoX = rect.width - 60;
           ctx.save();
           ctx.beginPath();
-          ctx.roundRect(20, 16, 40, 40, 8);
+          ctx.roundRect(photoX, 16, 40, 40, 8);
           ctx.clip();
-          ctx.drawImage(photoImg, 20, 16, 40, 40);
+          ctx.drawImage(photoImg, photoX, 16, 40, 40);
           ctx.restore();
           ctx.strokeStyle = "rgba(255,255,255,0.2)";
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.roundRect(20, 16, 40, 40, 8);
+          ctx.roundRect(photoX, 16, 40, 40, 8);
           ctx.stroke();
-          headerXOffset = 68;
         } catch {
           // skip photo
         }
       }
-
-      // Logo
-      try {
-        const logoImg = new window.Image();
-        logoImg.crossOrigin = "anonymous";
-        await new Promise<void>((res, rej) => {
-          logoImg.onload = () => res();
-          logoImg.onerror = rej;
-          logoImg.src = "/gss-logo.png";
-        });
-        ctx.drawImage(logoImg, headerXOffset, 16, 40, 40);
-      } catch {
-        // skip logo
-      }
-
-      // Header text
-      const textX = headerXOffset + 48;
-      ctx.font = "bold 11px Inter, sans-serif";
-      ctx.fillStyle = "#ffffff";
-      ctx.letterSpacing = "2px";
-      ctx.fillText("GITEGA STUDY SPACE", textX, 32);
-      ctx.font = "10px Inter, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.fillText("Carte de Membre", textX, 46);
 
       // Divider
       ctx.strokeStyle = "rgba(255,255,255,0.1)";
@@ -270,14 +267,14 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
 
           {/* Header */}
           <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-            {photo && (
-              <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />
-            )}
             <img src="/gss-logo.png" alt="Gitega Study Space" className="h-10 w-10 rounded-lg object-contain shrink-0" />
-            <div>
+            <div className="flex-1">
               <p className="text-xs font-bold text-white tracking-widest">GITEGA STUDY SPACE</p>
               <p className="text-[10px] text-white/50">Carte de Membre</p>
             </div>
+            {photo && (
+              <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />
+            )}
           </div>
 
           {/* Content */}
