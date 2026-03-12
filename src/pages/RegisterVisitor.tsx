@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
-import { UserPlus, Download, Check, Sparkles } from "lucide-react";
+import { UserPlus, Check } from "lucide-react";
+import MembershipCard from "@/components/MembershipCard";
 
 export default function RegisterVisitor() {
   const navigate = useNavigate();
