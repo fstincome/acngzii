@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useVisitors, useVisits } from "@/lib/supabase-store";
-import type { Visitor } from "@/lib/supabase-store";
+import { useVisitors, useVisits, ROOM_LABELS } from "@/lib/supabase-store";
+import type { Visitor, RoomType } from "@/lib/supabase-store";
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
 import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase, CreditCard } from "lucide-react";
@@ -102,7 +102,7 @@ export default function Visitors() {
                     <span className={`h-2 w-2 rounded-full ${v.action === "check_in" ? "bg-success" : "bg-muted-foreground"}`} />
                     <span className="text-foreground font-medium">
                       {v.action === "check_in" ? "Entrée" : "Sortie"}{" "}
-                      {v.room === "computer_lab" ? "Salle Informatique" : "Salle Polyvalente"}
+                      {ROOM_LABELS[v.room as RoomType] || v.room}
                     </span>
                   </div>
                   <span className="text-xs text-muted-foreground">
