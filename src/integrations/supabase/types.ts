@@ -63,6 +63,7 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          expected_checkout: string | null
           id: string
           room: string
           timestamp: string
@@ -71,6 +72,7 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          expected_checkout?: string | null
           id?: string
           room: string
           timestamp?: string
@@ -79,6 +81,7 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          expected_checkout?: string | null
           id?: string
           room?: string
           timestamp?: string
