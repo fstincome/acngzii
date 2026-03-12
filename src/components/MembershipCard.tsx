@@ -19,7 +19,7 @@ interface MembershipCardProps {
   compact?: boolean;
 }
 
-export default function MembershipCard({ fullName, visitorId, showActions = true, compact = false }: MembershipCardProps) {
+export default function MembershipCard({ fullName, visitorId, photo, showActions = true, compact = false }: MembershipCardProps) {
   const [generating, setGenerating] = useState(false);
   const qrCanvasRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
