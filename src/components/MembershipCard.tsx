@@ -82,6 +82,35 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.fillStyle = accentGrad;
       ctx.fillRect(0, 0, rect.width, 4);
 
+      let headerXOffset = 20;
+
+      // Draw photo if available (top-left, same size as logo)
+      if (photo) {
+        try {
+          const photoImg = new window.Image();
+          photoImg.crossOrigin = "anonymous";
+          await new Promise<void>((res, rej) => {
+            photoImg.onload = () => res();
+            photoImg.onerror = rej;
+            photoImg.src = photo;
+          });
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(20, 16, 40, 40, 8);
+          ctx.clip();
+          ctx.drawImage(photoImg, 20, 16, 40, 40);
+          ctx.restore();
+          ctx.strokeStyle = "rgba(255,255,255,0.2)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(20, 16, 40, 40, 8);
+          ctx.stroke();
+          headerXOffset = 68;
+        } catch {
+          // skip photo
+        }
+      }
+
       // Logo
       try {
         const logoImg = new window.Image();
@@ -91,19 +120,20 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
           logoImg.onerror = rej;
           logoImg.src = "/gss-logo.png";
         });
-        ctx.drawImage(logoImg, 20, 16, 40, 40);
+        ctx.drawImage(logoImg, headerXOffset, 16, 40, 40);
       } catch {
         // skip logo
       }
 
       // Header text
+      const textX = headerXOffset + 48;
       ctx.font = "bold 11px Inter, sans-serif";
       ctx.fillStyle = "#ffffff";
       ctx.letterSpacing = "2px";
-      ctx.fillText("GITEGA STUDY SPACE", 68, 32);
+      ctx.fillText("GITEGA STUDY SPACE", textX, 32);
       ctx.font = "10px Inter, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.fillText("Carte de Membre", 68, 46);
+      ctx.fillText("Carte de Membre", textX, 46);
 
       // Divider
       ctx.strokeStyle = "rgba(255,255,255,0.1)";
