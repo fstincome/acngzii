@@ -133,6 +133,41 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.fillStyle = "hsl(174, 62%, 47%)";
       ctx.fillText(visitorId, 20, 138);
 
+      // Photo + QR Code
+      const qrSize = 72;
+      const qrX = rect.width - qrSize - 28;
+      let qrY = 76;
+
+      // Draw photo if available
+      if (photo) {
+        try {
+          const photoImg = new window.Image();
+          photoImg.crossOrigin = "anonymous";
+          await new Promise<void>((res, rej) => {
+            photoImg.onload = () => res();
+            photoImg.onerror = rej;
+            photoImg.src = photo;
+          });
+          const photoW = 56;
+          const photoH = 64;
+          const photoX = qrX + (qrSize + 16 - photoW) / 2;
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(photoX, 76, photoW, photoH, 8);
+          ctx.clip();
+          ctx.drawImage(photoImg, photoX, 76, photoW, photoH);
+          ctx.restore();
+          ctx.strokeStyle = "rgba(255,255,255,0.2)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(photoX, 76, photoW, photoH, 8);
+          ctx.stroke();
+          qrY = 76 + photoH + 8;
+        } catch {
+          // skip photo
+        }
+      }
+
       // QR Code
       const qrDataUrl = await getQRDataUrl();
       if (qrDataUrl) {
@@ -142,9 +177,6 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
           qrImg.onerror = rej;
           qrImg.src = qrDataUrl;
         });
-        const qrSize = 72;
-        const qrX = rect.width - qrSize - 28;
-        const qrY = 76;
         // White bg
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
