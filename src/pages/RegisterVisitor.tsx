@@ -6,8 +6,84 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { UserPlus, Check } from "lucide-react";
+import { UserPlus, Check, Printer } from "lucide-react";
 import MembershipCard from "@/components/MembershipCard";
+import jsPDF from "jspdf";
+
+function generatePrintableForm() {
+  const doc = new jsPDF("p", "mm", "a4");
+  const w = 210;
+  const margin = 20;
+  const contentW = w - margin * 2;
+  let y = 20;
+
+  // Header
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("GITEGA STUDY SPACE", w / 2, y, { align: "center" });
+  y += 8;
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  doc.text("Formulaire d'inscription — Visiteur", w / 2, y, { align: "center" });
+  y += 4;
+  doc.setDrawColor(60, 60, 60);
+  doc.setLineWidth(0.5);
+  doc.line(margin, y, w - margin, y);
+  y += 10;
+
+  const fields = [
+    { label: "Nom complet *", height: 10 },
+    { label: "Genre (Homme / Femme / Autre)", height: 10 },
+    { label: "Date de naissance (JJ/MM/AAAA)", height: 10 },
+    { label: "Téléphone", height: 10 },
+    { label: "Email", height: 10 },
+    { label: "Quartier / Commune", height: 10 },
+    { label: "Profession", height: 10 },
+  ];
+
+  for (const field of fields) {
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(field.label, margin, y);
+    y += 5;
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.3);
+    doc.rect(margin, y, contentW, field.height);
+    y += field.height + 8;
+  }
+
+  // Photo placeholder
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Photo passeport (coller ici)", margin, y);
+  y += 5;
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.3);
+  doc.rect(margin, y, 35, 45);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text("3.5 x 4.5 cm", margin + 17.5, y + 25, { align: "center" });
+
+  // Signature
+  const sigY = y + 55;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Signature du visiteur :", margin, sigY);
+  doc.line(margin + 45, sigY, margin + contentW, sigY);
+
+  // Date
+  const dateY = sigY + 12;
+  doc.text("Date :", margin, dateY);
+  doc.line(margin + 20, dateY, margin + 80, dateY);
+
+  // Footer
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "italic");
+  doc.text("Ce formulaire est à remplir par le visiteur. Le Directeur se chargera de saisir les données dans le système.", margin, 285);
+
+  doc.save("formulaire-inscription-visiteur.pdf");
+  toast.success("Formulaire PDF généré !");
+}
 
 export default function RegisterVisitor() {
   const navigate = useNavigate();
