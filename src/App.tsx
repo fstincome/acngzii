@@ -34,6 +34,7 @@ const App = () => (
           <Route path="/program-attendance" element={<AppLayout><ProgramAttendance /></AppLayout>} />
           <Route path="/program-report" element={<AppLayout><ProgramReport /></AppLayout>} />
           <Route path="/card/:visitorId" element={<DigitalCard />} />
+          <Route path="/formulaire" element={<RegistrationForm />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

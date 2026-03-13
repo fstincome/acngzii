@@ -122,17 +122,13 @@ function FormPreview({ onBack }: { onBack: () => void }) {
   };
 
   const getEmailUrl = () => {
+    const formUrl = `${window.location.origin}/formulaire`;
     const subject = "Formulaire d'inscription - Gitega Study Space";
     const body =
       `Bonjour,\n\n` +
-      `Veuillez remplir les informations suivantes pour votre inscription au Gitega Study Space :\n\n` +
-      `1. Nom complet : _______________\n` +
-      `2. Genre (Homme / Femme / Autre) : _______________\n` +
-      `3. Date de naissance : _______________\n` +
-      `4. Téléphone : _______________\n` +
-      `5. Email : _______________\n` +
-      `6. Quartier / Commune : _______________\n` +
-      `7. Profession : _______________\n\n` +
+      `Veuillez remplir votre formulaire d'inscription au Gitega Study Space en suivant ce lien :\n\n` +
+      `${formUrl}\n\n` +
+      `Vous pouvez aussi télécharger le PDF depuis cette page pour le remplir à la main.\n\n` +
       `Merci !\n\nCordialement,\nGitega Study Space`;
     return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
