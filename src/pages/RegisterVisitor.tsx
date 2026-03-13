@@ -6,18 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { UserPlus, Check, Printer } from "lucide-react";
+import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft } from "lucide-react";
 import MembershipCard from "@/components/MembershipCard";
 import jsPDF from "jspdf";
 
-function generatePrintableForm() {
+function buildFormPDF(): jsPDF {
   const doc = new jsPDF("p", "mm", "a4");
   const w = 210;
   const margin = 20;
   const contentW = w - margin * 2;
   let y = 20;
 
-  // Header
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.text("GITEGA STUDY SPACE", w / 2, y, { align: "center" });
@@ -52,7 +51,6 @@ function generatePrintableForm() {
     y += field.height + 8;
   }
 
-  // Photo placeholder
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.text("Photo passeport (coller ici)", margin, y);
@@ -64,30 +62,202 @@ function generatePrintableForm() {
   doc.setFont("helvetica", "normal");
   doc.text("3.5 x 4.5 cm", margin + 17.5, y + 25, { align: "center" });
 
-  // Signature
   const sigY = y + 55;
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.text("Signature du visiteur :", margin, sigY);
   doc.line(margin + 45, sigY, margin + contentW, sigY);
 
-  // Date
   const dateY = sigY + 12;
   doc.text("Date :", margin, dateY);
   doc.line(margin + 20, dateY, margin + 80, dateY);
 
-  // Footer
   doc.setFontSize(7);
   doc.setFont("helvetica", "italic");
   doc.text("Ce formulaire est à remplir par le visiteur. Le Directeur se chargera de saisir les données dans le système.", margin, 285);
 
-  doc.save("formulaire-inscription-visiteur.pdf");
-  toast.success("Formulaire PDF généré !");
+  return doc;
 }
 
+// ---- Form Preview Component ----
+function FormPreview({ onBack }: { onBack: () => void }) {
+  const [generating, setGenerating] = useState(false);
+
+  const handleDownload = () => {
+    const doc = buildFormPDF();
+    doc.save("formulaire-inscription-visiteur.pdf");
+    toast.success("Formulaire PDF téléchargé !");
+  };
+
+  const handlePrint = () => {
+    setGenerating(true);
+    try {
+      const doc = buildFormPDF();
+      const pdfDataUri = doc.output("datauristring");
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html><html><head><title>Formulaire d'inscription</title></head>
+          <body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f0f0f0;">
+            <embed src="${pdfDataUri}" type="application/pdf" width="600" height="850" />
+            <script>setTimeout(function(){window.print();},500);</script>
+          </body></html>
+        `);
+        printWindow.document.close();
+      }
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const getWhatsAppUrl = () => {
+    const message =
+      `📋 *Formulaire d'inscription - Gitega Study Space*\n\n` +
+      `Veuillez remplir les informations suivantes :\n\n` +
+      `1. Nom complet *\n` +
+      `2. Genre (Homme / Femme / Autre)\n` +
+      `3. Date de naissance\n` +
+      `4. Téléphone\n` +
+      `5. Email\n` +
+      `6. Quartier / Commune\n` +
+      `7. Profession\n\n` +
+      `Merci de nous envoyer ces informations pour compléter votre inscription.\n\n` +
+      `— Gitega Study Space`;
+    return `https://wa.me/?text=${encodeURIComponent(message)}`;
+  };
+
+  const getEmailUrl = () => {
+    const subject = "Formulaire d'inscription - Gitega Study Space";
+    const body =
+      `Bonjour,\n\n` +
+      `Veuillez remplir les informations suivantes pour votre inscription au Gitega Study Space :\n\n` +
+      `1. Nom complet : _______________\n` +
+      `2. Genre (Homme / Femme / Autre) : _______________\n` +
+      `3. Date de naissance : _______________\n` +
+      `4. Téléphone : _______________\n` +
+      `5. Email : _______________\n` +
+      `6. Quartier / Commune : _______________\n` +
+      `7. Profession : _______________\n\n` +
+      `Merci !\n\nCordialement,\nGitega Study Space`;
+    return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const fields = [
+    "Nom complet *",
+    "Genre (Homme / Femme / Autre)",
+    "Date de naissance (JJ/MM/AAAA)",
+    "Téléphone",
+    "Email",
+    "Quartier / Commune",
+    "Profession",
+  ];
+
+  return (
+    <div className="mx-auto max-w-lg space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="icon" className="rounded-xl" onClick={onBack}>
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div>
+          <h2 className="text-lg font-bold text-foreground">Formulaire d'inscription</h2>
+          <p className="text-sm text-muted-foreground">Aperçu du formulaire papier</p>
+        </div>
+      </div>
+
+      {/* Visual Preview */}
+      <div className="rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden">
+        {/* Form header */}
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 px-6 py-5 text-center border-b border-border/30">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <img src="/gss-logo.png" alt="GSS" className="h-8 w-8 rounded-lg object-contain" />
+            <h3 className="text-sm font-bold tracking-widest text-foreground uppercase">Gitega Study Space</h3>
+          </div>
+          <p className="text-xs text-muted-foreground">Formulaire d'inscription — Visiteur</p>
+          <div className="mt-3 h-px bg-border/50" />
+        </div>
+
+        {/* Fields preview */}
+        <div className="px-6 py-4 space-y-3">
+          {fields.map((label, i) => (
+            <div key={i} className="space-y-1">
+              <p className="text-[11px] font-semibold text-foreground/80">{label}</p>
+              <div className="h-8 rounded-lg border border-dashed border-border/60 bg-muted/30" />
+            </div>
+          ))}
+
+          {/* Photo area */}
+          <div className="pt-2 space-y-1">
+            <p className="text-[11px] font-semibold text-foreground/80">Photo passeport (coller ici)</p>
+            <div className="h-24 w-20 rounded-lg border border-dashed border-border/60 bg-muted/30 flex items-center justify-center">
+              <span className="text-[9px] text-muted-foreground">3.5 × 4.5 cm</span>
+            </div>
+          </div>
+
+          {/* Signature */}
+          <div className="pt-3 flex items-end gap-2">
+            <p className="text-[11px] font-semibold text-foreground/80 shrink-0">Signature :</p>
+            <div className="flex-1 border-b border-dashed border-border/60 mb-0.5" />
+          </div>
+          <div className="flex items-end gap-2">
+            <p className="text-[11px] font-semibold text-foreground/80 shrink-0">Date :</p>
+            <div className="w-32 border-b border-dashed border-border/60 mb-0.5" />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 bg-muted/20 border-t border-border/30">
+          <p className="text-[9px] text-muted-foreground italic text-center">
+            Ce formulaire est à remplir par le visiteur. Le Directeur se chargera de saisir les données dans le système.
+          </p>
+        </div>
+      </div>
+
+      {/* Actions — same pattern as MembershipCard */}
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-2.5">
+          <Button onClick={handleDownload} className="gap-2 rounded-xl h-11" variant="default">
+            <Download className="h-4 w-4" />
+            Télécharger PDF
+          </Button>
+          <Button onClick={handlePrint} disabled={generating} className="gap-2 rounded-xl h-11" variant="secondary">
+            <Printer className="h-4 w-4" />
+            Imprimer
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2 px-1">
+          <span className="text-xs text-muted-foreground">Partager :</span>
+          <div className="flex gap-2">
+            <a
+              href={getWhatsAppUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg text-xs h-8 px-3 hover:bg-success/10 hover:text-success text-foreground transition-colors"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              WhatsApp
+            </a>
+            <a
+              href={getEmailUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg text-xs h-8 px-3 hover:bg-accent/10 hover:text-accent text-foreground transition-colors"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              Email
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Main Page ----
 export default function RegisterVisitor() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<"form" | "card">("form");
+  const [step, setStep] = useState<"form" | "card" | "preview-form">("form");
   const [newVisitorId, setNewVisitorId] = useState("");
   const [fullName, setFullName] = useState("");
   const addVisitor = useAddVisitor();
@@ -136,6 +306,10 @@ export default function RegisterVisitor() {
     }
   };
 
+  if (step === "preview-form") {
+    return <FormPreview onBack={() => setStep("form")} />;
+  }
+
   if (step === "card") {
     return (
       <div className="mx-auto max-w-md space-y-8 animate-fade-in">
@@ -172,9 +346,9 @@ export default function RegisterVisitor() {
           <h1 className="page-title">Inscrire un visiteur</h1>
           <p className="page-subtitle">Ajouter un nouveau membre au Gitega Study Space</p>
         </div>
-        <Button variant="outline" className="gap-2 rounded-xl h-11" onClick={generatePrintableForm}>
-          <Printer className="h-4 w-4" />
-          <span className="hidden sm:inline">Imprimer formulaire</span>
+        <Button variant="outline" className="gap-2 rounded-xl h-11" onClick={() => setStep("preview-form")}>
+          <FileText className="h-4 w-4" />
+          <span className="hidden sm:inline">Formulaire papier</span>
           <span className="sm:hidden">PDF</span>
         </Button>
       </div>
