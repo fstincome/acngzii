@@ -167,9 +167,16 @@ export default function RegisterVisitor() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 animate-fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Inscrire un visiteur</h1>
-        <p className="page-subtitle">Ajouter un nouveau membre au Gitega Study Space</p>
+      <div className="flex items-center justify-between">
+        <div className="page-header">
+          <h1 className="page-title">Inscrire un visiteur</h1>
+          <p className="page-subtitle">Ajouter un nouveau membre au Gitega Study Space</p>
+        </div>
+        <Button variant="outline" className="gap-2 rounded-xl h-11" onClick={generatePrintableForm}>
+          <Printer className="h-4 w-4" />
+          <span className="hidden sm:inline">Imprimer formulaire</span>
+          <span className="sm:hidden">PDF</span>
+        </Button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
