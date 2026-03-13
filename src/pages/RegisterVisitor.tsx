@@ -111,33 +111,24 @@ function FormPreview({ onBack }: { onBack: () => void }) {
   };
 
   const getWhatsAppUrl = () => {
+    const formUrl = `${window.location.origin}/formulaire`;
     const message =
       `📋 *Formulaire d'inscription - Gitega Study Space*\n\n` +
-      `Veuillez remplir les informations suivantes :\n\n` +
-      `1. Nom complet *\n` +
-      `2. Genre (Homme / Femme / Autre)\n` +
-      `3. Date de naissance\n` +
-      `4. Téléphone\n` +
-      `5. Email\n` +
-      `6. Quartier / Commune\n` +
-      `7. Profession\n\n` +
-      `Merci de nous envoyer ces informations pour compléter votre inscription.\n\n` +
-      `— Gitega Study Space`;
+      `Bonjour ! Veuillez remplir le formulaire d'inscription en suivant ce lien :\n\n` +
+      `👉 ${formUrl}\n\n` +
+      `Vous pouvez aussi télécharger le PDF depuis cette page pour le remplir à la main.\n\n` +
+      `Merci !\n— Gitega Study Space`;
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   };
 
   const getEmailUrl = () => {
+    const formUrl = `${window.location.origin}/formulaire`;
     const subject = "Formulaire d'inscription - Gitega Study Space";
     const body =
       `Bonjour,\n\n` +
-      `Veuillez remplir les informations suivantes pour votre inscription au Gitega Study Space :\n\n` +
-      `1. Nom complet : _______________\n` +
-      `2. Genre (Homme / Femme / Autre) : _______________\n` +
-      `3. Date de naissance : _______________\n` +
-      `4. Téléphone : _______________\n` +
-      `5. Email : _______________\n` +
-      `6. Quartier / Commune : _______________\n` +
-      `7. Profession : _______________\n\n` +
+      `Veuillez remplir votre formulaire d'inscription au Gitega Study Space en suivant ce lien :\n\n` +
+      `${formUrl}\n\n` +
+      `Vous pouvez aussi télécharger le PDF depuis cette page pour le remplir à la main.\n\n` +
       `Merci !\n\nCordialement,\nGitega Study Space`;
     return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };

@@ -13,6 +13,7 @@ import DigitalCard from "@/pages/DigitalCard";
 import Programs from "@/pages/Programs";
 import ProgramAttendance from "@/pages/ProgramAttendance";
 import ProgramReport from "@/pages/ProgramReport";
+import RegistrationForm from "@/pages/RegistrationForm";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/program-attendance" element={<AppLayout><ProgramAttendance /></AppLayout>} />
           <Route path="/program-report" element={<AppLayout><ProgramReport /></AppLayout>} />
           <Route path="/card/:visitorId" element={<DigitalCard />} />
+          <Route path="/formulaire" element={<RegistrationForm />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
