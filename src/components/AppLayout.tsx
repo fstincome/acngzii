@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard,
   UserPlus,
@@ -13,29 +14,42 @@ import {
   GraduationCap,
   ClipboardCheck,
   ChevronDown,
+  Shield,
 } from "lucide-react";
-
-const normalNavItems = [
-  { to: "/", icon: LayoutDashboard, label: "Tableau de bord" },
-  { to: "/register", icon: UserPlus, label: "Inscription" },
-  { to: "/scanner", icon: ScanLine, label: "Scanner" },
-  { to: "/visitors", icon: Users, label: "Visiteurs" },
-  { to: "/statistics", icon: BarChart3, label: "Statistiques" },
-];
-
-const programNavItems = [
-  { to: "/programs", icon: GraduationCap, label: "Programmes" },
-  { to: "/program-attendance", icon: ClipboardCheck, label: "Présence" },
-  { to: "/program-report", icon: BarChart3, label: "Rapport" },
-];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [normalOpen, setNormalOpen] = useState(true);
   const [programOpen, setProgramOpen] = useState(true);
   const location = useLocation();
+  const { role, user, signOut } = useAuth();
 
-  const renderNavItem = (item: typeof normalNavItems[0]) => {
+  // Role-based nav filtering
+  const isAdmin = role === "admin";
+  const isDirector = role === "director";
+  const isReception = role === "reception";
+
+  const normalNavItems = [
+    { to: "/", icon: LayoutDashboard, label: "Tableau de bord", roles: ["admin", "director", "reception"] },
+    { to: "/register", icon: UserPlus, label: "Inscription", roles: ["admin", "director"] },
+    { to: "/scanner", icon: ScanLine, label: "Scanner", roles: ["admin", "director", "reception"] },
+    { to: "/visitors", icon: Users, label: "Visiteurs", roles: ["admin", "director"] },
+    { to: "/statistics", icon: BarChart3, label: "Statistiques", roles: ["admin", "director"] },
+  ].filter(item => role && item.roles.includes(role));
+
+  const programNavItems = [
+    { to: "/programs", icon: GraduationCap, label: "Programmes" },
+    { to: "/program-attendance", icon: ClipboardCheck, label: "Présence" },
+    { to: "/program-report", icon: BarChart3, label: "Rapport" },
+  ];
+
+  const showPrograms = isAdmin || isDirector;
+
+  const adminNavItems = [
+    { to: "/users", icon: Shield, label: "Utilisateurs" },
+  ];
+
+  const renderNavItem = (item: { to: string; icon: any; label: string }) => {
     const active = location.pathname === item.to;
     return (
       <Link
@@ -64,6 +78,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </Link>
     );
   };
+
+  const ROLE_LABELS: Record<string, string> = {
+    admin: "Administrateur",
+    director: "Directeur",
+    reception: "Réception",
+  };
+
+  const displayName = role ? ROLE_LABELS[role] || role : "Utilisateur";
+  const initial = displayName.charAt(0).toUpperCase();
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -115,20 +138,36 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          {/* Program Attendance group */}
-          <button
-            onClick={() => setProgramOpen(!programOpen)}
-            className="flex w-full items-center justify-between px-3 mb-2"
-          >
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
-              Présence Programme
-            </p>
-            <ChevronDown className={`h-3 w-3 text-sidebar-foreground/30 transition-transform ${programOpen ? "" : "-rotate-90"}`} />
-          </button>
-          {programOpen && (
-            <div className="space-y-1">
-              {programNavItems.map(renderNavItem)}
-            </div>
+          {/* Program Attendance group - admin & director only */}
+          {showPrograms && (
+            <>
+              <button
+                onClick={() => setProgramOpen(!programOpen)}
+                className="flex w-full items-center justify-between px-3 mb-2"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+                  Présence Programme
+                </p>
+                <ChevronDown className={`h-3 w-3 text-sidebar-foreground/30 transition-transform ${programOpen ? "" : "-rotate-90"}`} />
+              </button>
+              {programOpen && (
+                <div className="space-y-1 mb-4">
+                  {programNavItems.map(renderNavItem)}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Admin section */}
+          {isAdmin && (
+            <>
+              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+                Administration
+              </p>
+              <div className="space-y-1">
+                {adminNavItems.map(renderNavItem)}
+              </div>
+            </>
           )}
         </nav>
 
@@ -136,13 +175,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="border-t border-sidebar-border/50 p-4">
           <div className="flex items-center gap-3 rounded-xl bg-sidebar-accent/40 px-3 py-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full font-semibold text-xs text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
-              D
+              {initial}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-sidebar-foreground truncate">Directeur</p>
-              <p className="text-[10px] text-sidebar-foreground/40">Administrateur</p>
+              <p className="text-[13px] font-semibold text-sidebar-foreground truncate">{displayName}</p>
+              <p className="text-[10px] text-sidebar-foreground/40 truncate">{user?.email}</p>
             </div>
-            <button className="rounded-lg p-1.5 text-sidebar-foreground/30 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground/60">
+            <button
+              onClick={signOut}
+              className="rounded-lg p-1.5 text-sidebar-foreground/30 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground/60"
+              title="Se déconnecter"
+            >
               <LogOut className="h-4 w-4" />
             </button>
           </div>

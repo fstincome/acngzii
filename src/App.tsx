@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import RegisterVisitor from "@/pages/RegisterVisitor";
@@ -14,6 +16,8 @@ import Programs from "@/pages/Programs";
 import ProgramAttendance from "@/pages/ProgramAttendance";
 import ProgramReport from "@/pages/ProgramReport";
 import RegistrationForm from "@/pages/RegistrationForm";
+import Login from "@/pages/Login";
+import UserManagement from "@/pages/UserManagement";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,19 +28,35 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<AppLayout><Dashboard /></AppLayout>} />
-          <Route path="/register" element={<AppLayout><RegisterVisitor /></AppLayout>} />
-          <Route path="/scanner" element={<AppLayout><Scanner /></AppLayout>} />
-          <Route path="/visitors" element={<AppLayout><Visitors /></AppLayout>} />
-          <Route path="/statistics" element={<AppLayout><Statistics /></AppLayout>} />
-          <Route path="/programs" element={<AppLayout><Programs /></AppLayout>} />
-          <Route path="/program-attendance" element={<AppLayout><ProgramAttendance /></AppLayout>} />
-          <Route path="/program-report" element={<AppLayout><ProgramReport /></AppLayout>} />
-          <Route path="/card/:visitorId" element={<DigitalCard />} />
-          <Route path="/formulaire" element={<RegistrationForm />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/card/:visitorId" element={<DigitalCard />} />
+            <Route path="/formulaire" element={<RegistrationForm />} />
+
+            {/* All authenticated: Dashboard */}
+            <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+
+            {/* Admin + Director */}
+            <Route path="/register" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RegisterVisitor /></AppLayout></ProtectedRoute>} />
+            <Route path="/visitors" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><Visitors /></AppLayout></ProtectedRoute>} />
+            <Route path="/statistics" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><Statistics /></AppLayout></ProtectedRoute>} />
+
+            {/* All authenticated: Scanner */}
+            <Route path="/scanner" element={<ProtectedRoute><AppLayout><Scanner /></AppLayout></ProtectedRoute>} />
+
+            {/* Admin + Director: Programs */}
+            <Route path="/programs" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><Programs /></AppLayout></ProtectedRoute>} />
+            <Route path="/program-attendance" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><ProgramAttendance /></AppLayout></ProtectedRoute>} />
+            <Route path="/program-report" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><ProgramReport /></AppLayout></ProtectedRoute>} />
+
+            {/* Admin only */}
+            <Route path="/users" element={<ProtectedRoute allowedRoles={["admin"]}><AppLayout><UserManagement /></AppLayout></ProtectedRoute>} />
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
