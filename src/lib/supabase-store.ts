@@ -11,6 +11,7 @@ export interface Visitor {
   email: string | null;
   neighborhood: string;
   occupation: string;
+  institution: string | null;
   photo: string | null;
   registration_date: string;
 }
