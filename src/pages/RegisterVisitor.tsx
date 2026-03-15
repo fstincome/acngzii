@@ -319,6 +319,7 @@ export default function RegisterVisitor() {
         email: form.email || undefined,
         neighborhood: form.neighborhood || "—",
         occupation: form.occupation || "—",
+        institution: form.institution || undefined,
         photo: form.photo || undefined,
       });
 
