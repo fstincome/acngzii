@@ -124,9 +124,10 @@ export default function Scanner() {
         timestamp: now.toISOString(),
       };
 
-      // Set expected_checkout for all rooms on check_in
+      // Set expected_checkout on check_in
       if (action === "check_in") {
-        const hours = parseInt(duration) || DEFAULT_DURATION_HOURS;
+        // Computer lab: always 9h fixed. Polyvalente/Garden: user-selected duration
+        const hours = room === "computer_lab" ? DEFAULT_DURATION_HOURS : (parseInt(duration) || DEFAULT_DURATION_HOURS);
         const checkout = new Date(now.getTime() + hours * 60 * 60 * 1000);
         visitData.expected_checkout = checkout.toISOString();
       }
