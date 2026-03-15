@@ -57,8 +57,20 @@ export default function UserManagement() {
   const [newRole, setNewRole] = useState<AppRole>("reception");
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetUser, setResetUser] = useState<any>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetting, setResetting] = useState(false);
+  const [generatedCredentials, setGeneratedCredentials] = useState<{ email: string; password: string } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const generatePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#";
+    let pwd = "";
+    for (let i = 0; i < 10; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+    return pwd;
+  };
 
   if (currentRole !== "admin") {
     return (
