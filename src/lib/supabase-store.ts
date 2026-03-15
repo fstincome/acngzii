@@ -162,6 +162,7 @@ export function useUpdateVisitor() {
         email?: string | null;
         neighborhood?: string;
         occupation?: string;
+        institution?: string | null;
         photo?: string | null;
       };
     }) => {
