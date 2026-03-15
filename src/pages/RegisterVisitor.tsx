@@ -40,6 +40,7 @@ function buildFormPDF(): jsPDF {
     { label: "Email", height: 10 },
     { label: "Quartier / Commune", height: 10 },
     { label: "Profession", height: 10 },
+    { label: "Institution (école, université...)", height: 10 },
   ];
 
   for (const field of fields) {
