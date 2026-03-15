@@ -26,7 +26,7 @@ export interface Visit {
 }
 
 export const COMPUTER_LAB_CAPACITY = 20;
-export const DEFAULT_DURATION_HOURS = 6;
+export const DEFAULT_DURATION_HOURS = 9;
 
 export type RoomType = "computer_lab" | "multipurpose_room" | "garden";
 
