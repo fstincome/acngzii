@@ -339,6 +339,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
     toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
   };
 
+  const openEditParticipant = (p: ProgramParticipant) => {
     setEditPart(p);
     setPName(p.full_name);
     setPGender((p as any).gender || "");
