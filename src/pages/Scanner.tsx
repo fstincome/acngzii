@@ -24,9 +24,9 @@ const DURATION_OPTIONS = [
   { value: "2", label: "2 heures" },
   { value: "3", label: "3 heures" },
   { value: "4", label: "4 heures" },
-  { value: "6", label: "6 heures (défaut)" },
+  { value: "6", label: "6 heures" },
   { value: "8", label: "8 heures" },
-  { value: "10", label: "10 heures" },
+  { value: "9", label: "9 heures (défaut)" },
 ];
 
 export default function Scanner() {
@@ -124,8 +124,8 @@ export default function Scanner() {
         timestamp: now.toISOString(),
       };
 
-      // For multipurpose_room and garden, set expected_checkout on check_in
-      if (action === "check_in" && (room === "multipurpose_room" || room === "garden")) {
+      // Set expected_checkout for all rooms on check_in
+      if (action === "check_in") {
         const hours = parseInt(duration) || DEFAULT_DURATION_HOURS;
         const checkout = new Date(now.getTime() + hours * 60 * 60 * 1000);
         visitData.expected_checkout = checkout.toISOString();
@@ -231,12 +231,12 @@ export default function Scanner() {
             )}
           </div>
 
-          {/* Duration selector for Polyvalente & Jardin */}
-          {(!inMulti || !inGarden) && (
+          {/* Duration selector for all rooms */}
+          {(!inLab || !inMulti || !inGarden) && (
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <Clock className="h-3 w-3" />
-                Durée de séjour (Salle Polyvalente / Jardin)
+                Durée de séjour (sortie automatique)
               </Label>
               <Select value={duration} onValueChange={setDuration}>
                 <SelectTrigger className="rounded-xl h-10">
