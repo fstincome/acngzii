@@ -80,8 +80,9 @@ export default function Programs() {
         logo_url: newLogo.trim() || null,
       });
       toast.success("Programme modifié !");
-      setSelectedProgram(prev => prev?.id === editProgram.id ? { ...prev, name: newName.trim(), description: newDesc.trim() || null, start_date: newStart || null, end_date: newEnd || null } : prev);
+      setSelectedProgram(prev => prev?.id === editProgram.id ? { ...prev, name: newName.trim(), description: newDesc.trim() || null, start_date: newStart || null, end_date: newEnd || null, logo_url: newLogo.trim() || null } : prev);
       setEditProgram(null);
+      setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); setNewLogo("");
       setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd("");
     } catch { toast.error("Erreur"); }
   };
