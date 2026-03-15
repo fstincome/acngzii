@@ -342,6 +342,55 @@ export default function UserManagement() {
           </Table>
         )}
       </Card>
+
+      {/* Reset password dialog */}
+      <Dialog open={resetOpen} onOpenChange={v => { if (!v) { setResetOpen(false); setResetUser(null); setResetPassword(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Réinitialiser le mot de passe</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleResetPassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Utilisateur</Label>
+              <Input value={resetUser?.full_name || ""} disabled className="opacity-60" />
+            </div>
+            <div className="space-y-2">
+              <Label>Nouveau mot de passe</Label>
+              <div className="flex gap-2">
+                <Input type="text" value={resetPassword} onChange={e => setResetPassword(e.target.value)} required minLength={6} />
+                <Button type="button" variant="outline" size="sm" onClick={() => setResetPassword(generatePassword())} className="shrink-0">
+                  Générer
+                </Button>
+              </div>
+            </div>
+            <Button type="submit" className="w-full" disabled={resetting}>
+              {resetting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Réinitialiser
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Credentials display dialog */}
+      <Dialog open={!!generatedCredentials} onOpenChange={v => { if (!v) setGeneratedCredentials(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Coordonnées de connexion</DialogTitle>
+          </DialogHeader>
+          {generatedCredentials && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Communiquez ces informations à l'utilisateur :</p>
+              <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-2 font-mono text-sm">
+                <p><span className="text-muted-foreground">Email :</span> {generatedCredentials.email}</p>
+                <p><span className="text-muted-foreground">Mot de passe :</span> {generatedCredentials.password}</p>
+              </div>
+              <Button onClick={copyCredentials} className="w-full gap-2">
+                <Copy className="h-4 w-4" /> Copier les coordonnées
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
