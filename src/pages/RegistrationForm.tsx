@@ -11,6 +11,7 @@ const fields = [
   "Email",
   "Quartier / Commune",
   "Profession",
+  "Institution (école, université...)",
 ];
 
 function buildFormPDF(): jsPDF {
