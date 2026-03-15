@@ -226,7 +226,7 @@ function OccupancyPanel({
   icon: Icon, title, room, occupancy, visits, getVisitor, onSelect, color, capacity, labPercent, labCount
 }: {
   icon: React.ElementType; title: string; room: string; occupancy: Set<string>;
-  visits: import("@/lib/supabase-store").Visit[];
+  visits: Visit[];
   getVisitor: (vid: string) => Visitor | undefined;
   onSelect: (v: Visitor) => void; color: string;
   capacity?: number; labPercent?: number; labCount?: number;
