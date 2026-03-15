@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle } from "lucide-react";
+import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle, Building } from "lucide-react";
 import MembershipCard from "@/components/MembershipCard";
 import jsPDF from "jspdf";
 
