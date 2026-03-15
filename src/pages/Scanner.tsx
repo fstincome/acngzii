@@ -273,10 +273,22 @@ export default function Scanner() {
                   Entrée Salle Poly
                 </Button>
               )}
+              {inMulti && (
+                <Button onClick={() => handleAction("multipurpose_room", "check_out")} variant="outline" className="gap-2 rounded-xl h-11" disabled={addVisit.isPending}>
+                  <LogOut className="h-4 w-4" />
+                  Sortie Salle Poly
+                </Button>
+              )}
               {!inGarden && (
                 <Button onClick={() => handleAction("garden", "check_in")} variant="outline" className="gap-2 rounded-xl h-11 border-green-500/30 text-green-600 hover:bg-green-500/5" disabled={addVisit.isPending}>
                   <TreePine className="h-4 w-4" />
                   Entrée Jardin
+                </Button>
+              )}
+              {inGarden && (
+                <Button onClick={() => handleAction("garden", "check_out")} variant="outline" className="gap-2 rounded-xl h-11 border-green-500/30 text-green-600 hover:bg-green-500/5" disabled={addVisit.isPending}>
+                  <LogOut className="h-4 w-4" />
+                  Sortie Jardin
                 </Button>
               )}
             </div>
