@@ -540,7 +540,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Quartier / Commune</label>
-          <Input placeholder="ex: Mushasha" value={pNeighborhood} onChange={e => setPNeighborhood(e.target.value)} className="rounded-xl h-11" />
+          <Input placeholder="ex: Mushasha" value={pNeighborhood} onChange={e => handleFieldChange("neighborhood", e.target.value, setPNeighborhood)} className="rounded-xl h-11" />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Profession</label>
