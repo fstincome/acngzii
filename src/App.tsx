@@ -40,16 +40,15 @@ const App = () => (
 
             {/* Admin + Director */}
             <Route path="/register" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RegisterVisitor /></AppLayout></ProtectedRoute>} />
-            <Route path="/visitors" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><Visitors /></AppLayout></ProtectedRoute>} />
+            <Route path="/visitors" element={<ProtectedRoute><AppLayout><Visitors /></AppLayout></ProtectedRoute>} />
             <Route path="/statistics" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><Statistics /></AppLayout></ProtectedRoute>} />
-
             {/* All authenticated: Scanner */}
             <Route path="/scanner" element={<ProtectedRoute><AppLayout><Scanner /></AppLayout></ProtectedRoute>} />
 
-            {/* Admin + Director: Programs */}
-            <Route path="/programs" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><Programs /></AppLayout></ProtectedRoute>} />
-            <Route path="/program-attendance" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><ProgramAttendance /></AppLayout></ProtectedRoute>} />
-            <Route path="/program-report" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><ProgramReport /></AppLayout></ProtectedRoute>} />
+            {/* All: Programs (role controls actions inside) */}
+            <Route path="/programs" element={<ProtectedRoute><AppLayout><Programs /></AppLayout></ProtectedRoute>} />
+            <Route path="/program-attendance" element={<ProtectedRoute><AppLayout><ProgramAttendance /></AppLayout></ProtectedRoute>} />
+            <Route path="/program-report" element={<ProtectedRoute><AppLayout><ProgramReport /></AppLayout></ProtectedRoute>} />
 
             {/* Admin only */}
             <Route path="/users" element={<ProtectedRoute allowedRoles={["admin"]}><AppLayout><UserManagement /></AppLayout></ProtectedRoute>} />

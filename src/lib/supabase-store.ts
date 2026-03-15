@@ -179,6 +179,23 @@ export function useUpdateVisitor() {
   });
 }
 
+export function useDeleteVisitor() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (visitorId: string) => {
+      // Delete visits first
+      const { error: vErr } = await supabase.from("visits").delete().eq("visitor_id", visitorId);
+      if (vErr) throw vErr;
+      const { error } = await supabase.from("visitors").delete().eq("visitor_id", visitorId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["visitors"] });
+      queryClient.invalidateQueries({ queryKey: ["visits"] });
+    },
+  });
+}
+
 export function useAddVisit() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -33,7 +33,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { to: "/", icon: LayoutDashboard, label: "Tableau de bord", roles: ["admin", "director", "reception"] },
     { to: "/register", icon: UserPlus, label: "Inscription", roles: ["admin", "director"] },
     { to: "/scanner", icon: ScanLine, label: "Scanner", roles: ["admin", "director", "reception"] },
-    { to: "/visitors", icon: Users, label: "Visiteurs", roles: ["admin", "director"] },
+    { to: "/visitors", icon: Users, label: "Visiteurs", roles: ["admin", "director", "reception"] },
     { to: "/statistics", icon: BarChart3, label: "Statistiques", roles: ["admin", "director"] },
   ].filter(item => role && item.roles.includes(role));
 
@@ -43,7 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { to: "/program-report", icon: BarChart3, label: "Rapport" },
   ];
 
-  const showPrograms = isAdmin || isDirector;
+  const showPrograms = isAdmin || isDirector || isReception;
 
   const adminNavItems = [
     { to: "/users", icon: Shield, label: "Utilisateurs" },

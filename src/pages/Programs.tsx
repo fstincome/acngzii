@@ -1,12 +1,13 @@
 import { useState } from "react";
 import {
-  usePrograms, useAddProgram, useUpdateProgram,
-  useProgramParticipants, useAddParticipant, useUpdateParticipant,
-  useProgramSessions, useAddSession, useUpdateSession,
+  usePrograms, useAddProgram, useUpdateProgram, useDeleteProgram,
+  useProgramParticipants, useAddParticipant, useUpdateParticipant, useDeleteParticipant,
+  useProgramSessions, useAddSession, useUpdateSession, useDeleteSession,
   useCreateAttendanceRecords, generateParticipantCode,
   type Program, type ProgramParticipant, type ProgramSession,
   PARTICIPANT_ROLES,
 } from "@/lib/program-store";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,16 +15,21 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ArrowLeft, Users, Calendar, CreditCard, Pencil, BookOpen, GraduationCap, Building } from "lucide-react";
+import { Plus, ArrowLeft, Users, Calendar, CreditCard, Pencil, BookOpen, GraduationCap, Building, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import MembershipCard from "@/components/MembershipCard";
 
 export default function Programs() {
+  const { role } = useAuth();
+  const canEdit = role === "admin" || role === "director";
+  const canDelete = role === "admin";
+
   const { data: programs = [], isLoading } = usePrograms();
   const addProgram = useAddProgram();
   const updateProgram = useUpdateProgram();
+  const deleteProgram = useDeleteProgram();
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [editProgram, setEditProgram] = useState<Program | null>(null);
@@ -72,8 +78,16 @@ export default function Programs() {
     } catch { toast.error("Erreur"); }
   };
 
+  const handleDeleteProgram = async (p: Program) => {
+    if (!confirm(`Supprimer le programme "${p.name}" et toutes ses données ?`)) return;
+    try {
+      await deleteProgram.mutateAsync(p.id);
+      toast.success("Programme supprimé !");
+    } catch { toast.error("Erreur lors de la suppression"); }
+  };
+
   if (selectedProgram) {
-    return <ProgramDetail program={selectedProgram} onBack={() => setSelectedProgram(null)} onEditProgram={openEditProgram} />;
+    return <ProgramDetail program={selectedProgram} onBack={() => setSelectedProgram(null)} onEditProgram={openEditProgram} canEdit={canEdit} canDelete={canDelete} />;
   }
 
   const programFormFields = () => (
@@ -111,20 +125,22 @@ export default function Programs() {
           </h1>
           <p className="page-subtitle">Gérez les programmes et leurs participants</p>
         </div>
-        <Dialog open={showCreate} onOpenChange={setShowCreate}>
-          <DialogTrigger asChild>
-            <Button className="gap-2 rounded-xl shadow-md" style={{ background: "var(--gradient-primary)" }}>
-              <Plus className="h-4 w-4" /> Nouveau programme
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Créer un programme</DialogTitle></DialogHeader>
-            {programFormFields()}
-            <Button onClick={handleCreateProgram} disabled={addProgram.isPending} className="w-full mt-2" style={{ background: "var(--gradient-primary)" }}>
-              {addProgram.isPending ? "Création..." : "Créer le programme"}
-            </Button>
-          </DialogContent>
-        </Dialog>
+        {canEdit && (
+          <Dialog open={showCreate} onOpenChange={setShowCreate}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 rounded-xl shadow-md" style={{ background: "var(--gradient-primary)" }}>
+                <Plus className="h-4 w-4" /> Nouveau programme
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Créer un programme</DialogTitle></DialogHeader>
+              {programFormFields()}
+              <Button onClick={handleCreateProgram} disabled={addProgram.isPending} className="w-full mt-2" style={{ background: "var(--gradient-primary)" }}>
+                {addProgram.isPending ? "Création..." : "Créer le programme"}
+              </Button>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {isLoading ? (
@@ -152,9 +168,18 @@ export default function Programs() {
                 <div className="icon-box h-10 w-10 mb-3">
                   <BookOpen className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8" onClick={e => { e.stopPropagation(); openEditProgram(p); }}>
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
+                <div className="flex gap-1">
+                  {canEdit && (
+                    <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8" onClick={e => { e.stopPropagation(); openEditProgram(p); }}>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); handleDeleteProgram(p); }}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
               </div>
               <h3 className="font-semibold text-foreground text-lg">{p.name}</h3>
               {p.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
@@ -189,13 +214,15 @@ export default function Programs() {
 
 // ---- Program Detail ----
 
-function ProgramDetail({ program, onBack, onEditProgram }: { program: Program; onBack: () => void; onEditProgram: (p: Program) => void }) {
+function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: { program: Program; onBack: () => void; onEditProgram: (p: Program) => void; canEdit: boolean; canDelete: boolean }) {
   const { data: participants = [] } = useProgramParticipants(program.id);
   const { data: sessions = [] } = useProgramSessions(program.id);
   const addParticipant = useAddParticipant();
   const updateParticipant = useUpdateParticipant();
+  const deleteParticipant = useDeleteParticipant();
   const addSession = useAddSession();
   const updateSession = useUpdateSession();
+  const deleteSession = useDeleteSession();
   const createAttendance = useCreateAttendanceRecords();
 
   const [showAddParticipant, setShowAddParticipant] = useState(false);
@@ -268,6 +295,14 @@ function ProgramDetail({ program, onBack, onEditProgram }: { program: Program; o
     } catch { toast.error("Erreur"); }
   };
 
+  const handleDeleteParticipant = async (p: ProgramParticipant) => {
+    if (!confirm(`Supprimer le participant "${p.full_name}" ?`)) return;
+    try {
+      await deleteParticipant.mutateAsync({ id: p.id, programId: program.id });
+      toast.success("Participant supprimé !");
+    } catch { toast.error("Erreur"); }
+  };
+
   const handleAddSession = async () => {
     if (!sessionDate) return;
     try {
@@ -290,6 +325,14 @@ function ProgramDetail({ program, onBack, onEditProgram }: { program: Program; o
       toast.success("Session modifiée !");
       setEditSess(null);
       setSessionDate("");
+    } catch { toast.error("Erreur"); }
+  };
+
+  const handleDeleteSession = async (s: ProgramSession) => {
+    if (!confirm(`Supprimer cette session et ses données de présence ?`)) return;
+    try {
+      await deleteSession.mutateAsync({ id: s.id, programId: program.id });
+      toast.success("Session supprimée !");
     } catch { toast.error("Erreur"); }
   };
 
@@ -363,9 +406,11 @@ function ProgramDetail({ program, onBack, onEditProgram }: { program: Program; o
               )}
             </div>
           </div>
-          <Button variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => onEditProgram(program)}>
-            <Pencil className="h-3.5 w-3.5" /> Modifier
-          </Button>
+          {canEdit && (
+            <Button variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => onEditProgram(program)}>
+              <Pencil className="h-3.5 w-3.5" /> Modifier
+            </Button>
+          )}
         </div>
       </div>
 
@@ -397,19 +442,21 @@ function ProgramDetail({ program, onBack, onEditProgram }: { program: Program; o
 
         {/* Participants tab */}
         <TabsContent value="participants" className="space-y-4">
-          <div className="flex justify-end">
-            <Dialog open={showAddParticipant} onOpenChange={v => { setShowAddParticipant(v); if (!v) resetParticipantForm(); }}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-2 rounded-xl shadow-sm" style={{ background: "var(--gradient-primary)" }}>
-                  <Plus className="h-4 w-4" /> Ajouter un participant
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Ajouter un participant</DialogTitle></DialogHeader>
-                {participantFormContent(handleAddParticipant, addParticipant.isPending, "Ajouter")}
-              </DialogContent>
-            </Dialog>
-          </div>
+          {canEdit && (
+            <div className="flex justify-end">
+              <Dialog open={showAddParticipant} onOpenChange={v => { setShowAddParticipant(v); if (!v) resetParticipantForm(); }}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-2 rounded-xl shadow-sm" style={{ background: "var(--gradient-primary)" }}>
+                    <Plus className="h-4 w-4" /> Ajouter un participant
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Ajouter un participant</DialogTitle></DialogHeader>
+                  {participantFormContent(handleAddParticipant, addParticipant.isPending, "Ajouter")}
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
 
           {participants.length === 0 ? (
             <Card className="p-10 text-center border-dashed border-2">
@@ -450,9 +497,16 @@ function ProgramDetail({ program, onBack, onEditProgram }: { program: Program; o
                     {PARTICIPANT_ROLES[p.role as keyof typeof PARTICIPANT_ROLES] || p.role}
                   </Badge>
                   <div className="flex items-center gap-1">
-                    <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => openEditParticipant(p)}>
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
+                    {canEdit && (
+                      <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => openEditParticipant(p)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    {canDelete && (
+                      <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={() => handleDeleteParticipant(p)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                     <Button size="sm" variant="outline" className="gap-1.5 rounded-lg" onClick={() => setCardParticipant(p)}>
                       <CreditCard className="h-3.5 w-3.5" /> Carte
                     </Button>
@@ -465,27 +519,29 @@ function ProgramDetail({ program, onBack, onEditProgram }: { program: Program; o
 
         {/* Sessions tab */}
         <TabsContent value="sessions" className="space-y-4">
-          <div className="flex justify-end">
-            <Dialog open={showAddSession} onOpenChange={v => { setShowAddSession(v); if (!v) setSessionDate(""); }}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-2 rounded-xl shadow-sm" style={{ background: "var(--gradient-primary)" }}>
-                  <Plus className="h-4 w-4" /> Ajouter une session
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Ajouter une date de session</DialogTitle></DialogHeader>
-                <div className="space-y-4 pt-2">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">Date de la session</label>
-                    <Input type="date" value={sessionDate} onChange={e => setSessionDate(e.target.value)} />
-                  </div>
-                  <Button onClick={handleAddSession} disabled={addSession.isPending} className="w-full" style={{ background: "var(--gradient-primary)" }}>
-                    {addSession.isPending ? "Ajout..." : "Ajouter la session"}
+          {canEdit && (
+            <div className="flex justify-end">
+              <Dialog open={showAddSession} onOpenChange={v => { setShowAddSession(v); if (!v) setSessionDate(""); }}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-2 rounded-xl shadow-sm" style={{ background: "var(--gradient-primary)" }}>
+                    <Plus className="h-4 w-4" /> Ajouter une session
                   </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Ajouter une date de session</DialogTitle></DialogHeader>
+                  <div className="space-y-4 pt-2">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Date de la session</label>
+                      <Input type="date" value={sessionDate} onChange={e => setSessionDate(e.target.value)} />
+                    </div>
+                    <Button onClick={handleAddSession} disabled={addSession.isPending} className="w-full" style={{ background: "var(--gradient-primary)" }}>
+                      {addSession.isPending ? "Ajout..." : "Ajouter la session"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
 
           {sessions.length === 0 ? (
             <Card className="p-10 text-center border-dashed border-2">
@@ -510,9 +566,18 @@ function ProgramDetail({ program, onBack, onEditProgram }: { program: Program; o
                       {format(new Date(s.session_date), "dd MMMM yyyy", { locale: fr })}
                     </p>
                   </div>
-                  <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => { setEditSess(s); setSessionDate(s.session_date); }}>
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
+                  <div className="flex gap-1">
+                    {canEdit && (
+                      <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => { setEditSess(s); setSessionDate(s.session_date); }}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    {canDelete && (
+                      <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={() => handleDeleteSession(s)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
                 </Card>
               ))}
             </div>
