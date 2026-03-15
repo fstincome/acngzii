@@ -274,6 +274,32 @@ export default function RegisterVisitor() {
 
   const update = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
+  const handleCheckDuplicates = async (name: string) => {
+    if (name.trim().length < 3) { setDuplicates([]); setDuplicateChecked(false); return; }
+    setCheckingDuplicates(true);
+    try {
+      const results = await findDuplicates(name.trim());
+      setDuplicates(results);
+      setDuplicateChecked(true);
+    } catch { /* ignore */ }
+    setCheckingDuplicates(false);
+  };
+
+  const fillFromDuplicate = (d: DuplicateCandidate) => {
+    setSelectedDuplicate(d);
+    setForm(f => ({
+      ...f,
+      gender: d.gender || f.gender,
+      dateOfBirth: d.date_of_birth || f.dateOfBirth,
+      phone: d.phone || f.phone,
+      email: d.email || f.email,
+      neighborhood: d.neighborhood || f.neighborhood,
+      occupation: d.occupation || f.occupation,
+      photo: d.photo || f.photo,
+    }));
+    toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.fullName) {
