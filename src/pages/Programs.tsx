@@ -274,36 +274,30 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
   const [duplicateChecked, setDuplicateChecked] = useState(false);
   const [selectedDuplicate, setSelectedDuplicate] = useState<DuplicateCandidate | null>(null);
+  const [fieldsModifiedAfterDuplicate, setFieldsModifiedAfterDuplicate] = useState(false);
+  // Store snapshot of duplicate values to detect modifications
+  const [duplicateSnapshot, setDuplicateSnapshot] = useState<Record<string, string>>({});
 
-  const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
-
-  const resetParticipantForm = () => {
-    setPName(""); setPGender(""); setPDateOfBirth(""); setPPhone(""); setPEmail(""); setPRole("eleve"); setPInstitution(""); setPNeighborhood(""); setPOccupation(""); setPPhoto("");
-    setDuplicates([]); setDuplicateChecked(false); setSelectedDuplicate(null);
+  // Check if current form values differ from the selected duplicate snapshot
+  const checkIfModified = (field: string, value: string, snapshot: Record<string, string>) => {
+    const updated = { ...snapshot, [field]: value };
+    // We don't store updated snapshot, just check if ANY field differs
+    const currentValues: Record<string, string> = {
+      gender: pGender, date_of_birth: pDateOfBirth, phone: pPhone,
+      email: pEmail, neighborhood: pNeighborhood, occupation: pOccupation,
+      photo: pPhoto, institution: pInstitution,
+      [field]: value, // override with new value
+    };
+    const isDifferent = Object.keys(snapshot).some(k => (currentValues[k] || "") !== (snapshot[k] || ""));
+    setFieldsModifiedAfterDuplicate(isDifferent);
   };
 
-  const handleCheckDuplicates = async (name: string) => {
-    if (name.trim().length < 3) { setDuplicates([]); setDuplicateChecked(false); return; }
-    setCheckingDuplicates(true);
-    try {
-      const results = await findDuplicates(name.trim());
-      setDuplicates(results);
-      setDuplicateChecked(true);
-    } catch { /* ignore */ }
-    setCheckingDuplicates(false);
-  };
-
-  const fillFromDuplicate = (d: DuplicateCandidate) => {
-    setSelectedDuplicate(d);
-    setPGender(d.gender || "");
-    setPDateOfBirth(d.date_of_birth || "");
-    setPPhone(d.phone || "");
-    setPEmail(d.email || "");
-    setPNeighborhood(d.neighborhood || "");
-    setPOccupation(d.occupation || "");
-    setPPhoto(d.photo || "");
-    if (d.institution) setPInstitution(d.institution);
-    toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
+  // Wrap each setter to track modifications
+  const handleFieldChange = (field: string, value: string, setter: (v: string) => void) => {
+    setter(value);
+    if (selectedDuplicate) {
+      checkIfModified(field, value, duplicateSnapshot);
+    }
   };
 
   const openEditParticipant = (p: ProgramParticipant) => {
