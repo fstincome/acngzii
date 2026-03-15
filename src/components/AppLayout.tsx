@@ -206,10 +206,29 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5 text-foreground" />
           </button>
           <div className="flex-1" />
-          <div className="flex items-center gap-2.5 rounded-full bg-success/10 px-3 py-1.5">
-            <div className="h-2 w-2 rounded-full bg-success animate-pulse-slow" />
-            <span className="text-xs font-medium text-success">En ligne</span>
-          </div>
+          {/* Sync button */}
+          {pendingCount > 0 && (
+            <button
+              onClick={handleSync}
+              disabled={syncing || !online}
+              className="flex items-center gap-2 rounded-full bg-warning/10 px-3 py-1.5 text-xs font-medium text-warning hover:bg-warning/20 transition-colors disabled:opacity-50"
+              title={`${pendingCount} opération(s) en attente de synchronisation`}
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
+              Synchroniser ({pendingCount})
+            </button>
+          )}
+          {online ? (
+            <div className="flex items-center gap-2.5 rounded-full bg-success/10 px-3 py-1.5">
+              <div className="h-2 w-2 rounded-full bg-success animate-pulse-slow" />
+              <span className="text-xs font-medium text-success">En ligne</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2.5 rounded-full bg-destructive/10 px-3 py-1.5">
+              <WifiOff className="h-3.5 w-3.5 text-destructive" />
+              <span className="text-xs font-medium text-destructive">Hors ligne</span>
+            </div>
+          )}
         </header>
 
         <main className="flex-1 overflow-y-auto p-5 lg:p-8">{children}</main>
