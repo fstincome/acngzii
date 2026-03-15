@@ -522,7 +522,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Date de naissance</label>
-          <Input type="date" value={pDateOfBirth} onChange={e => setPDateOfBirth(e.target.value)} className="rounded-xl h-11" />
+          <Input type="date" value={pDateOfBirth} onChange={e => handleFieldChange("date_of_birth", e.target.value, setPDateOfBirth)} className="rounded-xl h-11" />
         </div>
       </div>
 
