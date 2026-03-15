@@ -40,9 +40,8 @@ const App = () => (
 
             {/* Admin + Director */}
             <Route path="/register" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RegisterVisitor /></AppLayout></ProtectedRoute>} />
-            <Route path="/visitors" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><Visitors /></AppLayout></ProtectedRoute>} />
+            <Route path="/visitors" element={<ProtectedRoute><AppLayout><Visitors /></AppLayout></ProtectedRoute>} />
             <Route path="/statistics" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><Statistics /></AppLayout></ProtectedRoute>} />
-
             {/* All authenticated: Scanner */}
             <Route path="/scanner" element={<ProtectedRoute><AppLayout><Scanner /></AppLayout></ProtectedRoute>} />
 
