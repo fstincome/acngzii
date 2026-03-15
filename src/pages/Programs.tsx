@@ -550,9 +550,13 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         </Button>
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
-            <div className="icon-box h-12 w-12 shrink-0">
-              <BookOpen className="h-6 w-6 text-primary-foreground" />
-            </div>
+            {program.logo_url ? (
+              <img src={program.logo_url} alt={program.name} className="h-12 w-12 rounded-xl object-contain shrink-0" />
+            ) : (
+              <div className="icon-box h-12 w-12 shrink-0">
+                <BookOpen className="h-6 w-6 text-primary-foreground" />
+              </div>
+            )}
             <div>
               <h1 className="page-title">{program.name}</h1>
               {program.description && <p className="page-subtitle">{program.description}</p>}
