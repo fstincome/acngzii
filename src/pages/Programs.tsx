@@ -300,7 +300,45 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
     }
   };
 
-  const openEditParticipant = (p: ProgramParticipant) => {
+  const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
+
+  const resetParticipantForm = () => {
+    setPName(""); setPGender(""); setPDateOfBirth(""); setPPhone(""); setPEmail(""); setPRole("eleve"); setPInstitution(""); setPNeighborhood(""); setPOccupation(""); setPPhoto("");
+    setDuplicates([]); setDuplicateChecked(false); setSelectedDuplicate(null); setFieldsModifiedAfterDuplicate(false); setDuplicateSnapshot({});
+  };
+
+  const handleCheckDuplicates = async (name: string) => {
+    if (name.trim().length < 3) { setDuplicates([]); setDuplicateChecked(false); return; }
+    setCheckingDuplicates(true);
+    try {
+      const results = await findDuplicates(name.trim());
+      setDuplicates(results);
+      setDuplicateChecked(true);
+    } catch { /* ignore */ }
+    setCheckingDuplicates(false);
+  };
+
+  const fillFromDuplicate = (d: DuplicateCandidate) => {
+    setSelectedDuplicate(d);
+    setFieldsModifiedAfterDuplicate(false);
+    const snapshot: Record<string, string> = {
+      gender: d.gender || "", date_of_birth: d.date_of_birth || "",
+      phone: d.phone || "", email: d.email || "",
+      neighborhood: d.neighborhood || "", occupation: d.occupation || "",
+      photo: d.photo || "", institution: d.institution || "",
+    };
+    setDuplicateSnapshot(snapshot);
+    setPGender(d.gender || "");
+    setPDateOfBirth(d.date_of_birth || "");
+    setPPhone(d.phone || "");
+    setPEmail(d.email || "");
+    setPNeighborhood(d.neighborhood || "");
+    setPOccupation(d.occupation || "");
+    setPPhoto(d.photo || "");
+    if (d.institution) setPInstitution(d.institution);
+    toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
+  };
+
     setEditPart(p);
     setPName(p.full_name);
     setPGender((p as any).gender || "");
