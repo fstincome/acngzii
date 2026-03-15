@@ -7,6 +7,7 @@ export interface Program {
   description: string | null;
   start_date: string | null;
   end_date: string | null;
+  logo_url: string | null;
   created_at: string;
 }
 
