@@ -379,11 +379,47 @@ export default function RegisterVisitor() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
-        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2 space-y-2">
             <Label htmlFor="fullName" className="text-foreground">Nom complet <span className="text-destructive">*</span></Label>
-            <Input id="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Entrez le nom complet" className="rounded-xl h-11" />
+            <div className="flex gap-2">
+              <Input id="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Entrez le nom complet" className="rounded-xl h-11 flex-1" onBlur={() => handleCheckDuplicates(form.fullName)} />
+              <Button type="button" variant="outline" size="sm" className="rounded-xl h-11 px-3 shrink-0" onClick={() => handleCheckDuplicates(form.fullName)} disabled={checkingDuplicates}>
+                {checkingDuplicates ? "..." : "Vérifier"}
+              </Button>
+            </div>
           </div>
+
+          {/* Duplicate alert */}
+          {duplicateChecked && duplicates.length > 0 && (
+            <div className="sm:col-span-2">
+              <Alert className="border-warning/50 bg-warning/5">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                <AlertDescription className="space-y-2">
+                  <p className="text-sm font-medium">⚠️ Personne(s) similaire(s) trouvée(s) :</p>
+                  {duplicates.map(d => (
+                    <div key={d.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-background border border-border/50">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{d.full_name}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {d.source === "visitor" ? "Visiteur" : "Participant"} • {d.phone || "—"} • {d.code}
+                        </p>
+                      </div>
+                      <Button type="button" size="sm" variant="secondary" className="shrink-0 gap-1 text-xs" onClick={() => fillFromDuplicate(d)}>
+                        <Check className="h-3 w-3" /> Utiliser
+                      </Button>
+                    </div>
+                  ))}
+                  <p className="text-[10px] text-muted-foreground">Si c'est la même personne, elle est déjà enregistrée. Sinon, continuez l'inscription.</p>
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+          {duplicateChecked && duplicates.length === 0 && (
+            <div className="sm:col-span-2">
+              <p className="text-xs text-success flex items-center gap-1"><Check className="h-3 w-3" /> Aucun doublon détecté</p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-foreground">Genre</Label>
