@@ -18,6 +18,8 @@ interface MembershipCardProps {
   showActions?: boolean;
   compact?: boolean;
   programName?: string;
+  institution?: string | null;
+  programLogo?: string | null;
 }
 
 export default function MembershipCard({ fullName, visitorId, photo, showActions = true, compact = false, programName }: MembershipCardProps) {
