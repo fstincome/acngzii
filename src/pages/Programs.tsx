@@ -544,7 +544,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Profession</label>
-          <Input placeholder="ex: Étudiant, Entrepreneur" value={pOccupation} onChange={e => setPOccupation(e.target.value)} className="rounded-xl h-11" />
+          <Input placeholder="ex: Étudiant, Entrepreneur" value={pOccupation} onChange={e => handleFieldChange("occupation", e.target.value, setPOccupation)} className="rounded-xl h-11" />
         </div>
       </div>
 
