@@ -511,7 +511,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Genre</label>
-          <Select value={pGender} onValueChange={setPGender}>
+          <Select value={pGender} onValueChange={v => handleFieldChange("gender", v, setPGender)}>
             <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="male">Homme</SelectItem>
