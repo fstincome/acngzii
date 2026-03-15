@@ -144,6 +144,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
     "Email",
     "Quartier / Commune",
     "Profession",
+    "Institution (école, université...)",
   ];
 
   return (
