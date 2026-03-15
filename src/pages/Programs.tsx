@@ -118,6 +118,18 @@ export default function Programs() {
           <Input type="date" value={newEnd} onChange={e => setNewEnd(e.target.value)} />
         </div>
       </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+          <LinkIcon className="h-3 w-3" /> Lien du logo du programme (optionnel)
+        </label>
+        <Input placeholder="https://example.com/logo.png" value={newLogo} onChange={e => setNewLogo(e.target.value)} />
+        {newLogo && (
+          <div className="flex items-center gap-2 mt-1">
+            <img src={newLogo} alt="Logo" className="h-8 w-8 rounded object-contain border border-border" onError={e => (e.currentTarget.style.display = "none")} />
+            <span className="text-[10px] text-muted-foreground">Aperçu du logo</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 
