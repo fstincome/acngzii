@@ -240,12 +240,10 @@ export function computeOccupancy(visits: Visit[], room: RoomType): Set<string> {
     }
   }
 
-  // For rooms with auto-checkout, remove expired visitors
-  if (room === "multipurpose_room" || room === "garden") {
-    for (const [vid, visit] of checkedIn) {
-      if (visit.expected_checkout && new Date(visit.expected_checkout) <= now) {
-        checkedIn.delete(vid);
-      }
+  // Auto-checkout expired visitors for all rooms
+  for (const [vid, visit] of checkedIn) {
+    if (visit.expected_checkout && new Date(visit.expected_checkout) <= now) {
+      checkedIn.delete(vid);
     }
   }
 
