@@ -132,6 +132,7 @@ export function useAddVisitor() {
       email?: string;
       neighborhood: string;
       occupation: string;
+      institution?: string;
       photo?: string;
     }) => {
       const { data, error } = await supabase

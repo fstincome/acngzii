@@ -354,7 +354,7 @@ export default function RegisterVisitor() {
         <div className="flex gap-3">
           <Button className="flex-1 gap-2 rounded-xl h-11" variant="outline" onClick={() => {
             setStep("form");
-            setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", photo: "" });
+            setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", institution: "", photo: "" });
           }}>
             <UserPlus className="h-4 w-4" />
             Inscrire un autre
