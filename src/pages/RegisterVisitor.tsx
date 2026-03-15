@@ -296,6 +296,7 @@ export default function RegisterVisitor() {
       email: d.email || f.email,
       neighborhood: d.neighborhood || f.neighborhood,
       occupation: d.occupation || f.occupation,
+      institution: d.institution || f.institution,
       photo: d.photo || f.photo,
     }));
     toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
