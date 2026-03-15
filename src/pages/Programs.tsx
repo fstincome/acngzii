@@ -7,6 +7,8 @@ import {
   type Program, type ProgramParticipant, type ProgramSession,
   PARTICIPANT_ROLES,
 } from "@/lib/program-store";
+import { useAddVisitor, generateVisitorId } from "@/lib/supabase-store";
+import { findDuplicates, type DuplicateCandidate } from "@/lib/duplicate-check";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ArrowLeft, Users, Calendar, CreditCard, Pencil, BookOpen, GraduationCap, Building, Trash2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, ArrowLeft, Users, Calendar, CreditCard, Pencil, BookOpen, GraduationCap, Building, Trash2, AlertTriangle, Check, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -37,6 +40,7 @@ export default function Programs() {
   const [newDesc, setNewDesc] = useState("");
   const [newStart, setNewStart] = useState("");
   const [newEnd, setNewEnd] = useState("");
+  const [newLogo, setNewLogo] = useState("");
 
   const openEditProgram = (p: Program) => {
     setEditProgram(p);
@@ -44,6 +48,7 @@ export default function Programs() {
     setNewDesc(p.description || "");
     setNewStart(p.start_date || "");
     setNewEnd(p.end_date || "");
+    setNewLogo(p.logo_url || "");
   };
 
   const handleCreateProgram = async () => {
@@ -54,10 +59,11 @@ export default function Programs() {
         description: newDesc.trim() || undefined,
         start_date: newStart || undefined,
         end_date: newEnd || undefined,
+        logo_url: newLogo.trim() || undefined,
       });
       toast.success("Programme créé !");
       setShowCreate(false);
-      setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd("");
+      setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); setNewLogo("");
     } catch { toast.error("Erreur lors de la création"); }
   };
 
@@ -70,10 +76,12 @@ export default function Programs() {
         description: newDesc.trim() || null,
         start_date: newStart || null,
         end_date: newEnd || null,
+        logo_url: newLogo.trim() || null,
       });
       toast.success("Programme modifié !");
-      setSelectedProgram(prev => prev?.id === editProgram.id ? { ...prev, name: newName.trim(), description: newDesc.trim() || null, start_date: newStart || null, end_date: newEnd || null } : prev);
+      setSelectedProgram(prev => prev?.id === editProgram.id ? { ...prev, name: newName.trim(), description: newDesc.trim() || null, start_date: newStart || null, end_date: newEnd || null, logo_url: newLogo.trim() || null } : prev);
       setEditProgram(null);
+      setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); setNewLogo("");
       setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd("");
     } catch { toast.error("Erreur"); }
   };
@@ -109,6 +117,18 @@ export default function Programs() {
           <label className="text-xs font-medium text-muted-foreground">Date fin</label>
           <Input type="date" value={newEnd} onChange={e => setNewEnd(e.target.value)} />
         </div>
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+          <LinkIcon className="h-3 w-3" /> Lien du logo du programme (optionnel)
+        </label>
+        <Input placeholder="https://example.com/logo.png" value={newLogo} onChange={e => setNewLogo(e.target.value)} />
+        {newLogo && (
+          <div className="flex items-center gap-2 mt-1">
+            <img src={newLogo} alt="Logo" className="h-8 w-8 rounded object-contain border border-border" onError={e => (e.currentTarget.style.display = "none")} />
+            <span className="text-[10px] text-muted-foreground">Aperçu du logo</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -165,9 +185,13 @@ export default function Programs() {
           {programs.map(p => (
             <Card key={p.id} className="stat-card cursor-pointer group" onClick={() => setSelectedProgram(p)}>
               <div className="flex items-start justify-between">
-                <div className="icon-box h-10 w-10 mb-3">
-                  <BookOpen className="h-5 w-5 text-primary-foreground" />
-                </div>
+                {p.logo_url ? (
+                  <img src={p.logo_url} alt={p.name} className="h-10 w-10 rounded-xl object-contain mb-3" />
+                ) : (
+                  <div className="icon-box h-10 w-10 mb-3">
+                    <BookOpen className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                )}
                 <div className="flex gap-1">
                   {canEdit && (
                     <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8" onClick={e => { e.stopPropagation(); openEditProgram(p); }}>
@@ -199,7 +223,7 @@ export default function Programs() {
       )}
 
       {/* Edit program dialog */}
-      <Dialog open={!!editProgram} onOpenChange={v => { if (!v) { setEditProgram(null); setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); } }}>
+      <Dialog open={!!editProgram} onOpenChange={v => { if (!v) { setEditProgram(null); setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); setNewLogo(""); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Modifier le programme</DialogTitle></DialogHeader>
           {programFormFields()}
@@ -224,6 +248,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const updateSession = useUpdateSession();
   const deleteSession = useDeleteSession();
   const createAttendance = useCreateAttendanceRecords();
+  const addVisitor = useAddVisitor();
 
   const [showAddParticipant, setShowAddParticipant] = useState(false);
   const [editPart, setEditPart] = useState<ProgramParticipant | null>(null);
@@ -244,10 +269,41 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
 
   const [cardParticipant, setCardParticipant] = useState<typeof participants[0] | null>(null);
 
+  // Duplicate detection
+  const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  const [duplicateChecked, setDuplicateChecked] = useState(false);
+  const [selectedDuplicate, setSelectedDuplicate] = useState<DuplicateCandidate | null>(null);
+
   const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
 
   const resetParticipantForm = () => {
     setPName(""); setPGender(""); setPDateOfBirth(""); setPPhone(""); setPEmail(""); setPRole("eleve"); setPInstitution(""); setPNeighborhood(""); setPOccupation(""); setPPhoto("");
+    setDuplicates([]); setDuplicateChecked(false); setSelectedDuplicate(null);
+  };
+
+  const handleCheckDuplicates = async (name: string) => {
+    if (name.trim().length < 3) { setDuplicates([]); setDuplicateChecked(false); return; }
+    setCheckingDuplicates(true);
+    try {
+      const results = await findDuplicates(name.trim());
+      setDuplicates(results);
+      setDuplicateChecked(true);
+    } catch { /* ignore */ }
+    setCheckingDuplicates(false);
+  };
+
+  const fillFromDuplicate = (d: DuplicateCandidate) => {
+    setSelectedDuplicate(d);
+    setPGender(d.gender || "");
+    setPDateOfBirth(d.date_of_birth || "");
+    setPPhone(d.phone || "");
+    setPEmail(d.email || "");
+    setPNeighborhood(d.neighborhood || "");
+    setPOccupation(d.occupation || "");
+    setPPhoto(d.photo || "");
+    if (d.institution) setPInstitution(d.institution);
+    toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
   };
 
   const openEditParticipant = (p: ProgramParticipant) => {
@@ -282,7 +338,26 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         role: pRole,
         photo: pPhoto || undefined,
       });
-      toast.success("Participant ajouté !");
+
+      // Auto-add as visitor if not already a visitor (selectedDuplicate with source=visitor means already exists)
+      if (!selectedDuplicate || selectedDuplicate.source !== "visitor") {
+        try {
+          const visitorId = await generateVisitorId();
+          await addVisitor.mutateAsync({
+            visitor_id: visitorId,
+            full_name: pName.trim(),
+            gender: pGender || "other",
+            phone: pPhone || "—",
+            email: pEmail || undefined,
+            neighborhood: pNeighborhood || "—",
+            occupation: pOccupation || "—",
+            date_of_birth: pDateOfBirth || undefined,
+            photo: pPhoto || undefined,
+          });
+        } catch { /* visitor might already exist, ignore */ }
+      }
+
+      toast.success("Participant ajouté et enregistré comme visiteur !");
       setShowAddParticipant(false);
       resetParticipantForm();
     } catch { toast.error("Erreur"); }
@@ -352,12 +427,46 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
     } catch { toast.error("Erreur"); }
   };
 
-  const participantFormContent = (onSubmit: () => void, isPending: boolean, submitLabel: string) => (
+  const participantFormContent = (onSubmit: () => void, isPending: boolean, submitLabel: string, isNew = false) => (
     <div className="space-y-5 pt-2">
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-muted-foreground">Nom complet <span className="text-destructive">*</span></label>
-        <Input placeholder="Entrez le nom complet" value={pName} onChange={e => setPName(e.target.value)} className="rounded-xl h-11" />
+        <div className="flex gap-2">
+          <Input placeholder="Entrez le nom complet" value={pName} onChange={e => setPName(e.target.value)} className="rounded-xl h-11 flex-1" onBlur={() => isNew && handleCheckDuplicates(pName)} />
+          {isNew && (
+            <Button type="button" variant="outline" size="sm" className="rounded-xl h-11 px-3 shrink-0" onClick={() => handleCheckDuplicates(pName)} disabled={checkingDuplicates}>
+              {checkingDuplicates ? "..." : "Vérifier"}
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Duplicate alert */}
+      {isNew && duplicateChecked && duplicates.length > 0 && (
+        <Alert className="border-warning/50 bg-warning/5">
+          <AlertTriangle className="h-4 w-4 text-warning" />
+          <AlertDescription className="space-y-2">
+            <p className="text-sm font-medium">⚠️ Personne(s) similaire(s) trouvée(s) :</p>
+            {duplicates.map(d => (
+              <div key={d.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-background border border-border/50">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{d.full_name}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {d.source === "visitor" ? "Visiteur" : "Participant"} • {d.phone || "—"} • {d.code}
+                  </p>
+                </div>
+                <Button type="button" size="sm" variant="secondary" className="shrink-0 gap-1 text-xs" onClick={() => fillFromDuplicate(d)}>
+                  <Check className="h-3 w-3" /> Utiliser
+                </Button>
+              </div>
+            ))}
+            <p className="text-[10px] text-muted-foreground">Si c'est la même personne, cliquez "Utiliser" pour pré-remplir. Sinon, continuez normalement.</p>
+          </AlertDescription>
+        </Alert>
+      )}
+      {isNew && duplicateChecked && duplicates.length === 0 && (
+        <p className="text-xs text-success flex items-center gap-1"><Check className="h-3 w-3" /> Aucun doublon détecté</p>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
@@ -441,9 +550,13 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         </Button>
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
-            <div className="icon-box h-12 w-12 shrink-0">
-              <BookOpen className="h-6 w-6 text-primary-foreground" />
-            </div>
+            {program.logo_url ? (
+              <img src={program.logo_url} alt={program.name} className="h-12 w-12 rounded-xl object-contain shrink-0" />
+            ) : (
+              <div className="icon-box h-12 w-12 shrink-0">
+                <BookOpen className="h-6 w-6 text-primary-foreground" />
+              </div>
+            )}
             <div>
               <h1 className="page-title">{program.name}</h1>
               {program.description && <p className="page-subtitle">{program.description}</p>}
@@ -503,7 +616,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader><DialogTitle>Ajouter un participant</DialogTitle></DialogHeader>
-                  {participantFormContent(handleAddParticipant, addParticipant.isPending, "Ajouter")}
+                  {participantFormContent(handleAddParticipant, addParticipant.isPending, "Ajouter", true)}
                 </DialogContent>
               </Dialog>
             </div>
@@ -674,6 +787,8 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
                 visitorId={cardParticipant.participant_code}
                 photo={cardParticipant.photo}
                 programName={program.name}
+                institution={cardParticipant.institution}
+                programLogo={program.logo_url}
               />
             </div>
           )}

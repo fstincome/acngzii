@@ -7,6 +7,7 @@ export interface Program {
   description: string | null;
   start_date: string | null;
   end_date: string | null;
+  logo_url: string | null;
   created_at: string;
 }
 
@@ -161,7 +162,7 @@ export function useAllAttendanceForProgram(sessionIds: string[]) {
 export function useAddProgram() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: { name: string; description?: string; start_date?: string; end_date?: string }) => {
+    mutationFn: async (p: { name: string; description?: string; start_date?: string; end_date?: string; logo_url?: string }) => {
       const { data, error } = await supabase.from("programs").insert(p).select().single();
       if (error) throw error;
       return data as Program;
@@ -173,7 +174,7 @@ export function useAddProgram() {
 export function useUpdateProgram() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: { id: string; name: string; description?: string | null; start_date?: string | null; end_date?: string | null }) => {
+    mutationFn: async (p: { id: string; name: string; description?: string | null; start_date?: string | null; end_date?: string | null; logo_url?: string | null }) => {
       const { id, ...rest } = p;
       const { error } = await supabase.from("programs").update(rest).eq("id", id);
       if (error) throw error;

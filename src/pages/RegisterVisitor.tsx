@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAddVisitor, generateVisitorId } from "@/lib/supabase-store";
+import { findDuplicates, type DuplicateCandidate } from "@/lib/duplicate-check";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft } from "lucide-react";
+import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle } from "lucide-react";
 import MembershipCard from "@/components/MembershipCard";
 import jsPDF from "jspdf";
 
@@ -264,7 +266,39 @@ export default function RegisterVisitor() {
     photo: "",
   });
 
+  // Duplicate detection
+  const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
+  const [duplicateChecked, setDuplicateChecked] = useState(false);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  const [selectedDuplicate, setSelectedDuplicate] = useState<DuplicateCandidate | null>(null);
+
   const update = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
+
+  const handleCheckDuplicates = async (name: string) => {
+    if (name.trim().length < 3) { setDuplicates([]); setDuplicateChecked(false); return; }
+    setCheckingDuplicates(true);
+    try {
+      const results = await findDuplicates(name.trim());
+      setDuplicates(results);
+      setDuplicateChecked(true);
+    } catch { /* ignore */ }
+    setCheckingDuplicates(false);
+  };
+
+  const fillFromDuplicate = (d: DuplicateCandidate) => {
+    setSelectedDuplicate(d);
+    setForm(f => ({
+      ...f,
+      gender: d.gender || f.gender,
+      dateOfBirth: d.date_of_birth || f.dateOfBirth,
+      phone: d.phone || f.phone,
+      email: d.email || f.email,
+      neighborhood: d.neighborhood || f.neighborhood,
+      occupation: d.occupation || f.occupation,
+      photo: d.photo || f.photo,
+    }));
+    toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -345,11 +379,47 @@ export default function RegisterVisitor() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
-        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2 space-y-2">
             <Label htmlFor="fullName" className="text-foreground">Nom complet <span className="text-destructive">*</span></Label>
-            <Input id="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Entrez le nom complet" className="rounded-xl h-11" />
+            <div className="flex gap-2">
+              <Input id="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Entrez le nom complet" className="rounded-xl h-11 flex-1" onBlur={() => handleCheckDuplicates(form.fullName)} />
+              <Button type="button" variant="outline" size="sm" className="rounded-xl h-11 px-3 shrink-0" onClick={() => handleCheckDuplicates(form.fullName)} disabled={checkingDuplicates}>
+                {checkingDuplicates ? "..." : "Vérifier"}
+              </Button>
+            </div>
           </div>
+
+          {/* Duplicate alert */}
+          {duplicateChecked && duplicates.length > 0 && (
+            <div className="sm:col-span-2">
+              <Alert className="border-warning/50 bg-warning/5">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                <AlertDescription className="space-y-2">
+                  <p className="text-sm font-medium">⚠️ Personne(s) similaire(s) trouvée(s) :</p>
+                  {duplicates.map(d => (
+                    <div key={d.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-background border border-border/50">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{d.full_name}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {d.source === "visitor" ? "Visiteur" : "Participant"} • {d.phone || "—"} • {d.code}
+                        </p>
+                      </div>
+                      <Button type="button" size="sm" variant="secondary" className="shrink-0 gap-1 text-xs" onClick={() => fillFromDuplicate(d)}>
+                        <Check className="h-3 w-3" /> Utiliser
+                      </Button>
+                    </div>
+                  ))}
+                  <p className="text-[10px] text-muted-foreground">Si c'est la même personne, elle est déjà enregistrée. Sinon, continuez l'inscription.</p>
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+          {duplicateChecked && duplicates.length === 0 && (
+            <div className="sm:col-span-2">
+              <p className="text-xs text-success flex items-center gap-1"><Check className="h-3 w-3" /> Aucun doublon détecté</p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-foreground">Genre</Label>

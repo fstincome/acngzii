@@ -18,9 +18,11 @@ interface MembershipCardProps {
   showActions?: boolean;
   compact?: boolean;
   programName?: string;
+  institution?: string | null;
+  programLogo?: string | null;
 }
 
-export default function MembershipCard({ fullName, visitorId, photo, showActions = true, compact = false, programName }: MembershipCardProps) {
+export default function MembershipCard({ fullName, visitorId, photo, showActions = true, compact = false, programName, institution, programLogo }: MembershipCardProps) {
   const [generating, setGenerating] = useState(false);
   const qrCanvasRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -268,10 +270,14 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
 
           {/* Header */}
           <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-            <img src="/gss-logo.png" alt="Gitega Study Space" className="h-10 w-10 rounded-lg object-contain shrink-0" />
+            {programLogo ? (
+              <img src={programLogo} alt="Logo" className="h-10 w-10 rounded-lg object-contain shrink-0" />
+            ) : (
+              <img src="/gss-logo.png" alt="Gitega Study Space" className="h-10 w-10 rounded-lg object-contain shrink-0" />
+            )}
             <div className="flex-1">
-              <p className="text-xs font-bold text-white tracking-widest">GITEGA STUDY SPACE</p>
-              <p className="text-[10px] text-white/50">{programName || "Carte de Membre"}</p>
+              <p className="text-xs font-bold text-white tracking-widest">{programName ? programName.toUpperCase() : "GITEGA STUDY SPACE"}</p>
+              <p className="text-[10px] text-white/50">{institution || (programName ? "Gitega Study Space" : "Carte de Membre")}</p>
             </div>
             {photo && (
               <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />

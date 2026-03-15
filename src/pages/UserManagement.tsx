@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Users, UserPlus, Shield, Trash2, Loader2, Pencil } from "lucide-react";
+import { Users, UserPlus, Shield, Trash2, Loader2, Pencil, KeyRound, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type AppRole = "admin" | "director" | "reception";
@@ -57,8 +57,20 @@ export default function UserManagement() {
   const [newRole, setNewRole] = useState<AppRole>("reception");
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetUser, setResetUser] = useState<any>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetting, setResetting] = useState(false);
+  const [generatedCredentials, setGeneratedCredentials] = useState<{ email: string; password: string } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const generatePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#";
+    let pwd = "";
+    for (let i = 0; i < 10; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+    return pwd;
+  };
 
   if (currentRole !== "admin") {
     return (
@@ -117,6 +129,38 @@ export default function UserManagement() {
     setUpdating(false);
   };
 
+  const handleOpenReset = (user: any) => {
+    setResetUser(user);
+    const pwd = generatePassword();
+    setResetPassword(pwd);
+    setResetOpen(true);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetUser || !resetPassword) return;
+    setResetting(true);
+    try {
+      const res = await supabase.functions.invoke("reset-password", {
+        body: { user_id: resetUser.id, new_password: resetPassword },
+      });
+      if (res.error) throw res.error;
+      if (res.data?.error) throw new Error(res.data.error);
+      setGeneratedCredentials({ email: resetUser.email, password: resetPassword });
+      toast({ title: "Mot de passe réinitialisé", description: `Nouveau mot de passe généré pour ${resetUser.full_name}` });
+      setResetOpen(false);
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    }
+    setResetting(false);
+  };
+
+  const copyCredentials = () => {
+    if (!generatedCredentials) return;
+    navigator.clipboard.writeText(`Email: ${generatedCredentials.email}\nMot de passe: ${generatedCredentials.password}`);
+    toast({ title: "Copié !", description: "Coordonnées copiées dans le presse-papier" });
+  };
+
   const handleDelete = async (userId: string, userName: string) => {
     if (!confirm(`Supprimer l'utilisateur ${userName} ?`)) return;
     try {
@@ -165,7 +209,12 @@ export default function UserManagement() {
               </div>
               <div className="space-y-2">
                 <Label>Mot de passe</Label>
-                <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} />
+                <div className="flex gap-2">
+                  <Input type="text" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} />
+                  <Button type="button" variant="outline" size="sm" onClick={() => setNewPassword(generatePassword())} className="shrink-0">
+                    Générer
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Rôle</Label>
@@ -233,7 +282,7 @@ export default function UserManagement() {
                 <TableHead>Nom</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Rôle</TableHead>
-                <TableHead className="w-[120px]">Actions</TableHead>
+                <TableHead className="w-[160px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -263,6 +312,14 @@ export default function UserManagement() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => handleOpenReset(u)}
+                        title="Réinitialiser le mot de passe"
+                      >
+                        <KeyRound className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="text-destructive hover:text-destructive"
                         onClick={() => handleDelete(u.id, u.full_name)}
                         disabled={u.id === currentUser?.id}
@@ -285,6 +342,55 @@ export default function UserManagement() {
           </Table>
         )}
       </Card>
+
+      {/* Reset password dialog */}
+      <Dialog open={resetOpen} onOpenChange={v => { if (!v) { setResetOpen(false); setResetUser(null); setResetPassword(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Réinitialiser le mot de passe</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleResetPassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Utilisateur</Label>
+              <Input value={resetUser?.full_name || ""} disabled className="opacity-60" />
+            </div>
+            <div className="space-y-2">
+              <Label>Nouveau mot de passe</Label>
+              <div className="flex gap-2">
+                <Input type="text" value={resetPassword} onChange={e => setResetPassword(e.target.value)} required minLength={6} />
+                <Button type="button" variant="outline" size="sm" onClick={() => setResetPassword(generatePassword())} className="shrink-0">
+                  Générer
+                </Button>
+              </div>
+            </div>
+            <Button type="submit" className="w-full" disabled={resetting}>
+              {resetting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Réinitialiser
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Credentials display dialog */}
+      <Dialog open={!!generatedCredentials} onOpenChange={v => { if (!v) setGeneratedCredentials(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Coordonnées de connexion</DialogTitle>
+          </DialogHeader>
+          {generatedCredentials && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Communiquez ces informations à l'utilisateur :</p>
+              <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-2 font-mono text-sm">
+                <p><span className="text-muted-foreground">Email :</span> {generatedCredentials.email}</p>
+                <p><span className="text-muted-foreground">Mot de passe :</span> {generatedCredentials.password}</p>
+              </div>
+              <Button onClick={copyCredentials} className="w-full gap-2">
+                <Copy className="h-4 w-4" /> Copier les coordonnées
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

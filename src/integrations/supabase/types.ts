@@ -181,6 +181,7 @@ export type Database = {
           description: string | null
           end_date: string | null
           id: string
+          logo_url: string | null
           name: string
           start_date: string | null
         }
@@ -189,6 +190,7 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
+          logo_url?: string | null
           name: string
           start_date?: string | null
         }
@@ -197,6 +199,7 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           start_date?: string | null
         }
