@@ -43,7 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { to: "/program-report", icon: BarChart3, label: "Rapport" },
   ];
 
-  const showPrograms = isAdmin || isDirector;
+  const showPrograms = isAdmin || isDirector || isReception;
 
   const adminNavItems = [
     { to: "/users", icon: Shield, label: "Utilisateurs" },

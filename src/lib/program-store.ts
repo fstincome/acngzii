@@ -220,6 +220,52 @@ export function useUpdateParticipant() {
   });
 }
 
+export function useDeleteProgram() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (programId: string) => {
+      // Delete attendance records for all sessions of this program
+      const { data: sessions } = await supabase.from("program_sessions").select("id").eq("program_id", programId);
+      if (sessions && sessions.length > 0) {
+        const sessionIds = sessions.map(s => s.id);
+        await supabase.from("program_attendance").delete().in("session_id", sessionIds);
+      }
+      await supabase.from("program_sessions").delete().eq("program_id", programId);
+      await supabase.from("program_participants").delete().eq("program_id", programId);
+      await supabase.from("sub_programs").delete().eq("program_id", programId);
+      const { error } = await supabase.from("programs").delete().eq("id", programId);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["programs"] }),
+  });
+}
+
+export function useDeleteParticipant() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, programId }: { id: string; programId: string }) => {
+      await supabase.from("program_attendance").delete().eq("participant_id", id);
+      const { error } = await supabase.from("program_participants").delete().eq("id", id);
+      if (error) throw error;
+      return programId;
+    },
+    onSuccess: (programId) => qc.invalidateQueries({ queryKey: ["program_participants", programId] }),
+  });
+}
+
+export function useDeleteSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, programId }: { id: string; programId: string }) => {
+      await supabase.from("program_attendance").delete().eq("session_id", id);
+      const { error } = await supabase.from("program_sessions").delete().eq("id", id);
+      if (error) throw error;
+      return programId;
+    },
+    onSuccess: (programId) => qc.invalidateQueries({ queryKey: ["program_sessions", programId] }),
+  });
+}
+
 export function useAddSession() {
   const qc = useQueryClient();
   return useMutation({
