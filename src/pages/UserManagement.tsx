@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Users, UserPlus, Shield, Trash2, Loader2, Pencil } from "lucide-react";
+import { Users, UserPlus, Shield, Trash2, Loader2, Pencil, KeyRound, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type AppRole = "admin" | "director" | "reception";
