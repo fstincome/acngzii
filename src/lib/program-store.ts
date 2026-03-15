@@ -174,7 +174,7 @@ export function useAddProgram() {
 export function useUpdateProgram() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: { id: string; name: string; description?: string | null; start_date?: string | null; end_date?: string | null }) => {
+    mutationFn: async (p: { id: string; name: string; description?: string | null; start_date?: string | null; end_date?: string | null; logo_url?: string | null }) => {
       const { id, ...rest } = p;
       const { error } = await supabase.from("programs").update(rest).eq("id", id);
       if (error) throw error;
