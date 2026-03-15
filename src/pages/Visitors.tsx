@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useVisitors, useVisits, useUpdateVisitor, ROOM_LABELS } from "@/lib/supabase-store";
+import { useVisitors, useVisits, useUpdateVisitor, useDeleteVisitor, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visitor, RoomType } from "@/lib/supabase-store";
+import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
-import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase, CreditCard, Pencil, Save, X, Image } from "lucide-react";
+import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase, CreditCard, Pencil, Save, X, Image, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,9 +25,14 @@ function Detail({ icon: Icon, label, value }: { icon: React.ElementType; label: 
 }
 
 export default function Visitors() {
+  const { role } = useAuth();
+  const canEdit = role === "admin" || role === "director";
+  const canDelete = role === "admin";
+
   const { data: visitors = [], isLoading } = useVisitors();
   const { data: allVisits = [] } = useVisits();
   const updateVisitor = useUpdateVisitor();
+  const deleteVisitor = useDeleteVisitor();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Visitor | null>(null);
   const [editing, setEditing] = useState(false);
@@ -38,6 +44,15 @@ export default function Visitors() {
       v.visitor_id.toLowerCase().includes(search.toLowerCase()) ||
       v.phone.includes(search)
   );
+
+  const handleDeleteVisitor = async (v: Visitor) => {
+    if (!confirm(`Supprimer le visiteur "${v.full_name}" et tout son historique ?`)) return;
+    try {
+      await deleteVisitor.mutateAsync(v.visitor_id);
+      toast.success("Visiteur supprimé !");
+      setSelected(null);
+    } catch { toast.error("Erreur lors de la suppression"); }
+  };
 
   if (selected) {
     const visits = allVisits
@@ -110,9 +125,16 @@ export default function Visitors() {
               </>
             ) : (
               <>
-                <Button variant="outline" className="gap-2 rounded-xl" onClick={startEdit}>
-                  <Pencil className="h-4 w-4" /> Modifier
-                </Button>
+                {canDelete && (
+                  <Button variant="outline" className="gap-2 rounded-xl text-destructive hover:text-destructive" onClick={() => handleDeleteVisitor(selected)}>
+                    <Trash2 className="h-4 w-4" /> Supprimer
+                  </Button>
+                )}
+                {canEdit && (
+                  <Button variant="outline" className="gap-2 rounded-xl" onClick={startEdit}>
+                    <Pencil className="h-4 w-4" /> Modifier
+                  </Button>
+                )}
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="gap-2 rounded-xl">
