@@ -248,6 +248,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const updateSession = useUpdateSession();
   const deleteSession = useDeleteSession();
   const createAttendance = useCreateAttendanceRecords();
+  const addVisitor = useAddVisitor();
 
   const [showAddParticipant, setShowAddParticipant] = useState(false);
   const [editPart, setEditPart] = useState<ProgramParticipant | null>(null);
@@ -268,10 +269,41 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
 
   const [cardParticipant, setCardParticipant] = useState<typeof participants[0] | null>(null);
 
+  // Duplicate detection
+  const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  const [duplicateChecked, setDuplicateChecked] = useState(false);
+  const [selectedDuplicate, setSelectedDuplicate] = useState<DuplicateCandidate | null>(null);
+
   const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
 
   const resetParticipantForm = () => {
     setPName(""); setPGender(""); setPDateOfBirth(""); setPPhone(""); setPEmail(""); setPRole("eleve"); setPInstitution(""); setPNeighborhood(""); setPOccupation(""); setPPhoto("");
+    setDuplicates([]); setDuplicateChecked(false); setSelectedDuplicate(null);
+  };
+
+  const handleCheckDuplicates = async (name: string) => {
+    if (name.trim().length < 3) { setDuplicates([]); setDuplicateChecked(false); return; }
+    setCheckingDuplicates(true);
+    try {
+      const results = await findDuplicates(name.trim());
+      setDuplicates(results);
+      setDuplicateChecked(true);
+    } catch { /* ignore */ }
+    setCheckingDuplicates(false);
+  };
+
+  const fillFromDuplicate = (d: DuplicateCandidate) => {
+    setSelectedDuplicate(d);
+    setPGender(d.gender || "");
+    setPDateOfBirth(d.date_of_birth || "");
+    setPPhone(d.phone || "");
+    setPEmail(d.email || "");
+    setPNeighborhood(d.neighborhood || "");
+    setPOccupation(d.occupation || "");
+    setPPhoto(d.photo || "");
+    if (d.institution) setPInstitution(d.institution);
+    toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
   };
 
   const openEditParticipant = (p: ProgramParticipant) => {
@@ -306,7 +338,26 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         role: pRole,
         photo: pPhoto || undefined,
       });
-      toast.success("Participant ajouté !");
+
+      // Auto-add as visitor if not already a visitor (selectedDuplicate with source=visitor means already exists)
+      if (!selectedDuplicate || selectedDuplicate.source !== "visitor") {
+        try {
+          const visitorId = await generateVisitorId();
+          await addVisitor.mutateAsync({
+            visitor_id: visitorId,
+            full_name: pName.trim(),
+            gender: pGender || "other",
+            phone: pPhone || "—",
+            email: pEmail || undefined,
+            neighborhood: pNeighborhood || "—",
+            occupation: pOccupation || "—",
+            date_of_birth: pDateOfBirth || undefined,
+            photo: pPhoto || undefined,
+          });
+        } catch { /* visitor might already exist, ignore */ }
+      }
+
+      toast.success("Participant ajouté et enregistré comme visiteur !");
       setShowAddParticipant(false);
       resetParticipantForm();
     } catch { toast.error("Erreur"); }
