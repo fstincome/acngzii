@@ -49,6 +49,7 @@ export default function Programs() {
     setNewDesc(p.description || "");
     setNewStart(p.start_date || "");
     setNewEnd(p.end_date || "");
+    setNewLogo(p.logo_url || "");
   };
 
   const handleCreateProgram = async () => {
