@@ -162,7 +162,7 @@ export function useAllAttendanceForProgram(sessionIds: string[]) {
 export function useAddProgram() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: { name: string; description?: string; start_date?: string; end_date?: string }) => {
+    mutationFn: async (p: { name: string; description?: string; start_date?: string; end_date?: string; logo_url?: string }) => {
       const { data, error } = await supabase.from("programs").insert(p).select().single();
       if (error) throw error;
       return data as Program;
