@@ -64,7 +64,7 @@ export default function Programs() {
       });
       toast.success("Programme créé !");
       setShowCreate(false);
-      setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd("");
+      setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); setNewLogo("");
     } catch { toast.error("Erreur lors de la création"); }
   };
 
