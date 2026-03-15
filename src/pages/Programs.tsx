@@ -552,7 +552,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <Building className="h-3 w-3" /> Institution (école, université...)
         </label>
-        <Input placeholder="Ex: Université du Burundi" value={pInstitution} onChange={e => setPInstitution(e.target.value)} className="rounded-xl h-11" />
+        <Input placeholder="Ex: Université du Burundi" value={pInstitution} onChange={e => handleFieldChange("institution", e.target.value, setPInstitution)} className="rounded-xl h-11" />
       </div>
 
       <div className="space-y-1.5">
