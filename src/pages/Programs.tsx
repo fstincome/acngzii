@@ -185,9 +185,13 @@ export default function Programs() {
           {programs.map(p => (
             <Card key={p.id} className="stat-card cursor-pointer group" onClick={() => setSelectedProgram(p)}>
               <div className="flex items-start justify-between">
-                <div className="icon-box h-10 w-10 mb-3">
-                  <BookOpen className="h-5 w-5 text-primary-foreground" />
-                </div>
+                {p.logo_url ? (
+                  <img src={p.logo_url} alt={p.name} className="h-10 w-10 rounded-xl object-contain mb-3" />
+                ) : (
+                  <div className="icon-box h-10 w-10 mb-3">
+                    <BookOpen className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                )}
                 <div className="flex gap-1">
                   {canEdit && (
                     <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8" onClick={e => { e.stopPropagation(); openEditProgram(p); }}>
