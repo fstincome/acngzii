@@ -80,10 +80,14 @@ export type Database = {
       program_participants: {
         Row: {
           created_at: string
+          date_of_birth: string | null
           email: string | null
           full_name: string
+          gender: string | null
           id: string
           institution: string | null
+          neighborhood: string | null
+          occupation: string | null
           participant_code: string
           phone: string | null
           photo: string | null
@@ -93,10 +97,14 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
           full_name: string
+          gender?: string | null
           id?: string
           institution?: string | null
+          neighborhood?: string | null
+          occupation?: string | null
           participant_code: string
           phone?: string | null
           photo?: string | null
@@ -106,10 +114,14 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
           full_name?: string
+          gender?: string | null
           id?: string
           institution?: string | null
+          neighborhood?: string | null
+          occupation?: string | null
           participant_code?: string
           phone?: string | null
           photo?: string | null
