@@ -783,6 +783,8 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
                 visitorId={cardParticipant.participant_code}
                 photo={cardParticipant.photo}
                 programName={program.name}
+                institution={cardParticipant.institution}
+                programLogo={program.logo_url}
               />
             </div>
           )}
