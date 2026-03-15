@@ -568,7 +568,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
 
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-muted-foreground">Lien photo passeport (optionnel)</label>
-        <Input placeholder="https://lh3.googleusercontent.com/d/..." value={pPhoto} onChange={e => setPPhoto(e.target.value)} className="rounded-xl h-11" />
+        <Input placeholder="https://lh3.googleusercontent.com/d/..." value={pPhoto} onChange={e => handleFieldChange("photo", e.target.value, setPPhoto)} className="rounded-xl h-11" />
         <p className="text-[10px] text-muted-foreground">Format Google Drive : https://lh3.googleusercontent.com/d/ID</p>
       </div>
 
