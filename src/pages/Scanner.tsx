@@ -232,12 +232,12 @@ export default function Scanner() {
             )}
           </div>
 
-          {/* Duration selector for all rooms */}
-          {(!inLab || !inMulti || !inGarden) && (
+          {/* Duration selector for Polyvalente & Jardin only */}
+          {(!inMulti || !inGarden) && (
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <Clock className="h-3 w-3" />
-                Durée de séjour (sortie automatique)
+                Durée de séjour (Salle Polyvalente / Jardin)
               </Label>
               <Select value={duration} onValueChange={setDuration}>
                 <SelectTrigger className="rounded-xl h-10">
