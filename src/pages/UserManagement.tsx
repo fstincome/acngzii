@@ -312,6 +312,14 @@ export default function UserManagement() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => handleOpenReset(u)}
+                        title="Réinitialiser le mot de passe"
+                      >
+                        <KeyRound className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="text-destructive hover:text-destructive"
                         onClick={() => handleDelete(u.id, u.full_name)}
                         disabled={u.id === currentUser?.id}
