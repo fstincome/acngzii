@@ -41,7 +41,6 @@ export default function Programs() {
   const [newStart, setNewStart] = useState("");
   const [newEnd, setNewEnd] = useState("");
   const [newLogo, setNewLogo] = useState("");
-  const [newEnd, setNewEnd] = useState("");
 
   const openEditProgram = (p: Program) => {
     setEditProgram(p);
