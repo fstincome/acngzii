@@ -23,10 +23,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [programOpen, setProgramOpen] = useState(true);
   const location = useLocation();
   const { role, user, signOut } = useAuth();
-  const [normalOpen, setNormalOpen] = useState(true);
-  const [programOpen, setProgramOpen] = useState(true);
-  const location = useLocation();
-  const { role, user, signOut } = useAuth();
 
   // Role-based nav filtering
   const isAdmin = role === "admin";
