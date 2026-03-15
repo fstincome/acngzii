@@ -247,7 +247,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
 
   const resetParticipantForm = () => {
-    setPName(""); setPPhone(""); setPEmail(""); setPRole("eleve"); setPInstitution(""); setPPhoto("");
+    setPName(""); setPGender(""); setPDateOfBirth(""); setPPhone(""); setPEmail(""); setPRole("eleve"); setPInstitution(""); setPNeighborhood(""); setPOccupation(""); setPPhoto("");
   };
 
   const openEditParticipant = (p: ProgramParticipant) => {
