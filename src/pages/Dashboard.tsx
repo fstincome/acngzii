@@ -93,7 +93,9 @@ export default function Dashboard() {
         <OccupancyPanel
           icon={Monitor}
           title="Salle Informatique"
+          room="computer_lab"
           occupancy={labOccupancy}
+          visits={visits}
           getVisitor={getVisitor}
           onSelect={setSelectedVisitor}
           color="primary"
@@ -104,7 +106,9 @@ export default function Dashboard() {
         <OccupancyPanel
           icon={DoorOpen}
           title="Salle Polyvalente"
+          room="multipurpose_room"
           occupancy={multiOccupancy}
+          visits={visits}
           getVisitor={getVisitor}
           onSelect={setSelectedVisitor}
           color="accent"
@@ -112,7 +116,9 @@ export default function Dashboard() {
         <OccupancyPanel
           icon={TreePine}
           title="Jardin"
+          room="garden"
           occupancy={gardenOccupancy}
+          visits={visits}
           getVisitor={getVisitor}
           onSelect={setSelectedVisitor}
           color="garden"
