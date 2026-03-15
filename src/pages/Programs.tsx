@@ -60,6 +60,7 @@ export default function Programs() {
         description: newDesc.trim() || undefined,
         start_date: newStart || undefined,
         end_date: newEnd || undefined,
+        logo_url: newLogo.trim() || undefined,
       });
       toast.success("Programme créé !");
       setShowCreate(false);
