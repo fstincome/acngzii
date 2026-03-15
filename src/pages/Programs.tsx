@@ -612,7 +612,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader><DialogTitle>Ajouter un participant</DialogTitle></DialogHeader>
-                  {participantFormContent(handleAddParticipant, addParticipant.isPending, "Ajouter")}
+                  {participantFormContent(handleAddParticipant, addParticipant.isPending, "Ajouter", true)}
                 </DialogContent>
               </Dialog>
             </div>
