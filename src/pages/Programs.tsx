@@ -77,6 +77,7 @@ export default function Programs() {
         description: newDesc.trim() || null,
         start_date: newStart || null,
         end_date: newEnd || null,
+        logo_url: newLogo.trim() || null,
       });
       toast.success("Programme modifié !");
       setSelectedProgram(prev => prev?.id === editProgram.id ? { ...prev, name: newName.trim(), description: newDesc.trim() || null, start_date: newStart || null, end_date: newEnd || null } : prev);
