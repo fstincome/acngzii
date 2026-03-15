@@ -22,6 +22,7 @@ import {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { online, pendingCount, syncing, handleSync } = useOfflineSync();
   const [normalOpen, setNormalOpen] = useState(true);
   const [programOpen, setProgramOpen] = useState(true);
   const location = useLocation();
