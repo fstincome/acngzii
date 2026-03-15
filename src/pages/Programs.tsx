@@ -253,10 +253,14 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const openEditParticipant = (p: ProgramParticipant) => {
     setEditPart(p);
     setPName(p.full_name);
+    setPGender((p as any).gender || "");
+    setPDateOfBirth((p as any).date_of_birth || "");
     setPPhone(p.phone || "");
     setPEmail(p.email || "");
     setPRole(p.role);
     setPInstitution(p.institution || "");
+    setPNeighborhood((p as any).neighborhood || "");
+    setPOccupation((p as any).occupation || "");
     setPPhoto(p.photo || "");
   };
 
