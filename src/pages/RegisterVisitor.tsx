@@ -266,6 +266,12 @@ export default function RegisterVisitor() {
     photo: "",
   });
 
+  // Duplicate detection
+  const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
+  const [duplicateChecked, setDuplicateChecked] = useState(false);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  const [selectedDuplicate, setSelectedDuplicate] = useState<DuplicateCandidate | null>(null);
+
   const update = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
