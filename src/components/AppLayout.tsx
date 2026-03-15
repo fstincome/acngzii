@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
 import {
   LayoutDashboard,
   UserPlus,
@@ -15,6 +16,8 @@ import {
   ClipboardCheck,
   ChevronDown,
   Shield,
+  RefreshCw,
+  WifiOff,
 } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
