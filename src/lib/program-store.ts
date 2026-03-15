@@ -189,8 +189,12 @@ export function useAddParticipant() {
       program_id: string;
       participant_code: string;
       full_name: string;
+      gender?: string;
+      date_of_birth?: string;
       phone?: string;
       email?: string;
+      neighborhood?: string;
+      occupation?: string;
       institution?: string;
       role: string;
       photo?: string;
