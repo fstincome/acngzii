@@ -345,42 +345,77 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   };
 
   const participantFormContent = (onSubmit: () => void, isPending: boolean, submitLabel: string) => (
-    <div className="space-y-4 pt-2">
+    <div className="space-y-5 pt-2">
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Nom complet</label>
-        <Input placeholder="Ex: Jean Ndayishimiye" value={pName} onChange={e => setPName(e.target.value)} />
+        <label className="text-xs font-medium text-muted-foreground">Nom complet <span className="text-destructive">*</span></label>
+        <Input placeholder="Entrez le nom complet" value={pName} onChange={e => setPName(e.target.value)} className="rounded-xl h-11" />
       </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Genre</label>
+          <Select value={pGender} onValueChange={setPGender}>
+            <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="male">Homme</SelectItem>
+              <SelectItem value="female">Femme</SelectItem>
+              <SelectItem value="other">Autre</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Date de naissance</label>
+          <Input type="date" value={pDateOfBirth} onChange={e => setPDateOfBirth(e.target.value)} className="rounded-xl h-11" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Téléphone</label>
+          <Input placeholder="+257 xx xxx xxx" value={pPhone} onChange={e => setPPhone(e.target.value)} className="rounded-xl h-11" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Email (optionnel)</label>
+          <Input type="email" placeholder="email@exemple.com" value={pEmail} onChange={e => setPEmail(e.target.value)} className="rounded-xl h-11" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Quartier / Commune</label>
+          <Input placeholder="ex: Mushasha" value={pNeighborhood} onChange={e => setPNeighborhood(e.target.value)} className="rounded-xl h-11" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Profession</label>
+          <Input placeholder="ex: Étudiant, Entrepreneur" value={pOccupation} onChange={e => setPOccupation(e.target.value)} className="rounded-xl h-11" />
+        </div>
+      </div>
+
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <Building className="h-3 w-3" /> Institution (école, université...)
         </label>
-        <Input placeholder="Ex: Université du Burundi" value={pInstitution} onChange={e => setPInstitution(e.target.value)} />
+        <Input placeholder="Ex: Université du Burundi" value={pInstitution} onChange={e => setPInstitution(e.target.value)} className="rounded-xl h-11" />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Téléphone</label>
-          <Input placeholder="+257..." value={pPhone} onChange={e => setPPhone(e.target.value)} />
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Email</label>
-          <Input placeholder="optionnel" value={pEmail} onChange={e => setPEmail(e.target.value)} />
-        </div>
-      </div>
+
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Lien photo (optionnel)</label>
-        <Input placeholder="https://..." value={pPhoto} onChange={e => setPPhoto(e.target.value)} />
-      </div>
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Rôle</label>
+        <label className="text-xs font-medium text-muted-foreground">Rôle dans le programme <span className="text-destructive">*</span></label>
         <Select value={pRole} onValueChange={setPRole}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger className="rounded-xl h-11"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="eleve">🎓 Élève</SelectItem>
             <SelectItem value="mentor">⭐ Mentor</SelectItem>
           </SelectContent>
         </Select>
       </div>
-      <Button onClick={onSubmit} disabled={isPending} className="w-full" style={{ background: "var(--gradient-primary)" }}>
+
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Lien photo passeport (optionnel)</label>
+        <Input placeholder="https://lh3.googleusercontent.com/d/..." value={pPhoto} onChange={e => setPPhoto(e.target.value)} className="rounded-xl h-11" />
+        <p className="text-[10px] text-muted-foreground">Format Google Drive : https://lh3.googleusercontent.com/d/ID</p>
+      </div>
+
+      <Button onClick={onSubmit} disabled={isPending} className="w-full rounded-xl h-12 text-sm font-semibold" style={{ background: "var(--gradient-primary)" }}>
         {isPending ? "..." : submitLabel}
       </Button>
     </div>
