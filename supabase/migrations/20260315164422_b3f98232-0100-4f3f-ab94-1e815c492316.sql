@@ -1,0 +1,1 @@
+ALTER TABLE public.programs ADD COLUMN logo_url text DEFAULT NULL;
