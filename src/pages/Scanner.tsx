@@ -124,8 +124,8 @@ export default function Scanner() {
         timestamp: now.toISOString(),
       };
 
-      // For multipurpose_room and garden, set expected_checkout on check_in
-      if (action === "check_in" && (room === "multipurpose_room" || room === "garden")) {
+      // Set expected_checkout for all rooms on check_in
+      if (action === "check_in") {
         const hours = parseInt(duration) || DEFAULT_DURATION_HOURS;
         const checkout = new Date(now.getTime() + hours * 60 * 60 * 1000);
         visitData.expected_checkout = checkout.toISOString();
