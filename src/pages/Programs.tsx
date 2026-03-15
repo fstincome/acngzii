@@ -427,12 +427,46 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
     } catch { toast.error("Erreur"); }
   };
 
-  const participantFormContent = (onSubmit: () => void, isPending: boolean, submitLabel: string) => (
+  const participantFormContent = (onSubmit: () => void, isPending: boolean, submitLabel: string, isNew = false) => (
     <div className="space-y-5 pt-2">
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-muted-foreground">Nom complet <span className="text-destructive">*</span></label>
-        <Input placeholder="Entrez le nom complet" value={pName} onChange={e => setPName(e.target.value)} className="rounded-xl h-11" />
+        <div className="flex gap-2">
+          <Input placeholder="Entrez le nom complet" value={pName} onChange={e => setPName(e.target.value)} className="rounded-xl h-11 flex-1" onBlur={() => isNew && handleCheckDuplicates(pName)} />
+          {isNew && (
+            <Button type="button" variant="outline" size="sm" className="rounded-xl h-11 px-3 shrink-0" onClick={() => handleCheckDuplicates(pName)} disabled={checkingDuplicates}>
+              {checkingDuplicates ? "..." : "Vérifier"}
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Duplicate alert */}
+      {isNew && duplicateChecked && duplicates.length > 0 && (
+        <Alert className="border-warning/50 bg-warning/5">
+          <AlertTriangle className="h-4 w-4 text-warning" />
+          <AlertDescription className="space-y-2">
+            <p className="text-sm font-medium">⚠️ Personne(s) similaire(s) trouvée(s) :</p>
+            {duplicates.map(d => (
+              <div key={d.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-background border border-border/50">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{d.full_name}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {d.source === "visitor" ? "Visiteur" : "Participant"} • {d.phone || "—"} • {d.code}
+                  </p>
+                </div>
+                <Button type="button" size="sm" variant="secondary" className="shrink-0 gap-1 text-xs" onClick={() => fillFromDuplicate(d)}>
+                  <Check className="h-3 w-3" /> Utiliser
+                </Button>
+              </div>
+            ))}
+            <p className="text-[10px] text-muted-foreground">Si c'est la même personne, cliquez "Utiliser" pour pré-remplir. Sinon, continuez normalement.</p>
+          </AlertDescription>
+        </Alert>
+      )}
+      {isNew && duplicateChecked && duplicates.length === 0 && (
+        <p className="text-xs text-success flex items-center gap-1"><Check className="h-3 w-3" /> Aucun doublon détecté</p>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
