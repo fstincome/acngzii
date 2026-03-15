@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine } from "lucide-react";
 import { useVisitors, useVisits, computeOccupancy, COMPUTER_LAB_CAPACITY, useVisitsRealtime, ROOM_LABELS } from "@/lib/supabase-store";
-import type { Visitor, RoomType } from "@/lib/supabase-store";
+import type { Visitor, Visit, RoomType } from "@/lib/supabase-store";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -93,7 +93,9 @@ export default function Dashboard() {
         <OccupancyPanel
           icon={Monitor}
           title="Salle Informatique"
+          room="computer_lab"
           occupancy={labOccupancy}
+          visits={visits}
           getVisitor={getVisitor}
           onSelect={setSelectedVisitor}
           color="primary"
@@ -104,7 +106,9 @@ export default function Dashboard() {
         <OccupancyPanel
           icon={DoorOpen}
           title="Salle Polyvalente"
+          room="multipurpose_room"
           occupancy={multiOccupancy}
+          visits={visits}
           getVisitor={getVisitor}
           onSelect={setSelectedVisitor}
           color="accent"
@@ -112,7 +116,9 @@ export default function Dashboard() {
         <OccupancyPanel
           icon={TreePine}
           title="Jardin"
+          room="garden"
           occupancy={gardenOccupancy}
+          visits={visits}
           getVisitor={getVisitor}
           onSelect={setSelectedVisitor}
           color="garden"
@@ -200,17 +206,50 @@ export default function Dashboard() {
   );
 }
 
+function formatTimeRemaining(ms: number): string {
+  if (ms <= 0) return "Expiré";
+  const totalMin = Math.floor(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h > 0) return `${h}h${m.toString().padStart(2, "0")}`;
+  return `${m}min`;
+}
+
+function getTimeRemainingColor(ms: number): string {
+  if (ms <= 0) return "text-destructive";
+  if (ms <= 30 * 60000) return "text-orange-500"; // < 30 min
+  if (ms <= 60 * 60000) return "text-yellow-600"; // < 1h
+  return "text-muted-foreground";
+}
+
 function OccupancyPanel({
-  icon: Icon, title, occupancy, getVisitor, onSelect, color, capacity, labPercent, labCount
+  icon: Icon, title, room, occupancy, visits, getVisitor, onSelect, color, capacity, labPercent, labCount
 }: {
-  icon: React.ElementType; title: string; occupancy: Set<string>;
+  icon: React.ElementType; title: string; room: string; occupancy: Set<string>;
+  visits: Visit[];
   getVisitor: (vid: string) => Visitor | undefined;
   onSelect: (v: Visitor) => void; color: string;
   capacity?: number; labPercent?: number; labCount?: number;
 }) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    if (occupancy.size === 0) return;
+    const interval = setInterval(() => setNow(Date.now()), 30000); // update every 30s
+    return () => clearInterval(interval);
+  }, [occupancy.size]);
+
   const colorClass = color === "accent" ? "text-accent" : color === "garden" ? "text-green-600" : "text-primary";
   const bgClass = color === "accent" ? "bg-accent/5" : color === "garden" ? "bg-green-500/5" : "bg-primary/5";
   const dotClass = color === "accent" ? "bg-accent" : color === "garden" ? "bg-green-500" : "bg-primary";
+
+  // Find the latest check_in for each visitor in this room to get expected_checkout
+  const getExpectedCheckout = (vid: string): string | null => {
+    const roomVisits = visits
+      .filter((v) => v.visitor_id === vid && v.room === room && v.action === "check_in")
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    return roomVisits[0]?.expected_checkout ?? null;
+  };
 
   return (
     <div className="stat-card">
@@ -220,7 +259,7 @@ function OccupancyPanel({
           <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         </div>
         {capacity && (
-          <span className={`rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary`}>
+          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
             {labPercent?.toFixed(0)}%
           </span>
         )}
@@ -243,14 +282,23 @@ function OccupancyPanel({
         <div className="space-y-1.5 max-h-48 overflow-y-auto">
           {Array.from(occupancy).map((vid) => {
             const v = getVisitor(vid);
+            const expectedCheckout = getExpectedCheckout(vid);
+            const remainingMs = expectedCheckout ? new Date(expectedCheckout).getTime() - now : null;
+
             return (
               <button
                 key={vid}
                 onClick={() => v && onSelect(v)}
                 className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors hover:${bgClass}`}
               >
-                <div className={`h-2 w-2 rounded-full ${dotClass} animate-pulse`} />
-                <span className="font-medium text-foreground truncate">{v?.full_name || vid}</span>
+                <div className={`h-2 w-2 rounded-full ${dotClass} animate-pulse shrink-0`} />
+                <span className="font-medium text-foreground truncate flex-1">{v?.full_name || vid}</span>
+                {remainingMs !== null && (
+                  <span className={`flex items-center gap-1 text-[10px] font-semibold shrink-0 ${getTimeRemainingColor(remainingMs)}`}>
+                    <Clock className="h-3 w-3" />
+                    {formatTimeRemaining(remainingMs)}
+                  </span>
+                )}
               </button>
             );
           })}
