@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle } from "lucide-react";
+import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle, Building } from "lucide-react";
 import MembershipCard from "@/components/MembershipCard";
 import jsPDF from "jspdf";
 
@@ -40,6 +40,7 @@ function buildFormPDF(): jsPDF {
     { label: "Email", height: 10 },
     { label: "Quartier / Commune", height: 10 },
     { label: "Profession", height: 10 },
+    { label: "Institution (école, université...)", height: 10 },
   ];
 
   for (const field of fields) {
@@ -143,6 +144,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
     "Email",
     "Quartier / Commune",
     "Profession",
+    "Institution (école, université...)",
   ];
 
   return (
@@ -263,6 +265,7 @@ export default function RegisterVisitor() {
     email: "",
     neighborhood: "",
     occupation: "",
+    institution: "",
     photo: "",
   });
 
@@ -295,6 +298,7 @@ export default function RegisterVisitor() {
       email: d.email || f.email,
       neighborhood: d.neighborhood || f.neighborhood,
       occupation: d.occupation || f.occupation,
+      institution: d.institution || f.institution,
       photo: d.photo || f.photo,
     }));
     toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
@@ -318,6 +322,7 @@ export default function RegisterVisitor() {
         email: form.email || undefined,
         neighborhood: form.neighborhood || "—",
         occupation: form.occupation || "—",
+        institution: form.institution || undefined,
         photo: form.photo || undefined,
       });
 
@@ -351,7 +356,7 @@ export default function RegisterVisitor() {
         <div className="flex gap-3">
           <Button className="flex-1 gap-2 rounded-xl h-11" variant="outline" onClick={() => {
             setStep("form");
-            setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", photo: "" });
+            setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", institution: "", photo: "" });
           }}>
             <UserPlus className="h-4 w-4" />
             Inscrire un autre
@@ -459,7 +464,13 @@ export default function RegisterVisitor() {
           </div>
 
           <div className="sm:col-span-2 space-y-2">
-            <Label htmlFor="photo" className="text-foreground">Lien photo passport</Label>
+            <Label htmlFor="institution" className="text-foreground flex items-center gap-1.5">
+              <Building className="h-3.5 w-3.5" /> Institution (école, université...)
+            </Label>
+            <Input id="institution" value={form.institution} onChange={(e) => update("institution", e.target.value)} placeholder="Ex: Université du Burundi" className="rounded-xl h-11" />
+          </div>
+
+          <div className="sm:col-span-2 space-y-2">
             <Input id="photo" value={form.photo} onChange={(e) => update("photo", e.target.value)} placeholder="https://lh3.googleusercontent.com/d/..." className="rounded-xl h-11" />
             <p className="text-[10px] text-muted-foreground">Format Google Drive : https://lh3.googleusercontent.com/d/ID</p>
           </div>

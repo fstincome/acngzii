@@ -375,29 +375,25 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         photo: pPhoto || undefined,
       });
 
-      // If linking existing duplicate (no modifications), don't create a new visitor
-      if (isLinkingExisting) {
-        toast.success("Participant existant ajouté au programme !");
-      } else {
-        // New person or modified data → also add as visitor
-        if (!selectedDuplicate || selectedDuplicate.source !== "visitor") {
-          try {
-            const visitorId = await generateVisitorId();
-            await addVisitor.mutateAsync({
-              visitor_id: visitorId,
-              full_name: pName.trim(),
-              gender: pGender || "other",
-              phone: pPhone || "—",
-              email: pEmail || undefined,
-              neighborhood: pNeighborhood || "—",
-              occupation: pOccupation || "—",
-              date_of_birth: pDateOfBirth || undefined,
-              photo: pPhoto || undefined,
-            });
-          } catch { /* visitor might already exist, ignore */ }
-        }
-        toast.success("Nouveau participant créé et enregistré comme visiteur !");
+      // Always add as visitor (skip only if the person is already a visitor)
+      if (!selectedDuplicate || selectedDuplicate.source !== "visitor" || fieldsModifiedAfterDuplicate) {
+        try {
+          const visitorId = await generateVisitorId();
+          await addVisitor.mutateAsync({
+            visitor_id: visitorId,
+            full_name: pName.trim(),
+            gender: pGender || "other",
+            phone: pPhone || "—",
+            email: pEmail || undefined,
+            neighborhood: pNeighborhood || "—",
+            occupation: pOccupation || "—",
+            institution: pInstitution.trim() || undefined,
+            date_of_birth: pDateOfBirth || undefined,
+            photo: pPhoto || undefined,
+          });
+        } catch { /* visitor might already exist, ignore */ }
       }
+      toast.success("Participant ajouté au programme !");
 
       setShowAddParticipant(false);
       resetParticipantForm();

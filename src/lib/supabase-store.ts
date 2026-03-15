@@ -11,6 +11,7 @@ export interface Visitor {
   email: string | null;
   neighborhood: string;
   occupation: string;
+  institution: string | null;
   photo: string | null;
   registration_date: string;
 }
@@ -131,6 +132,7 @@ export function useAddVisitor() {
       email?: string;
       neighborhood: string;
       occupation: string;
+      institution?: string;
       photo?: string;
     }) => {
       const { data, error } = await supabase
@@ -160,6 +162,7 @@ export function useUpdateVisitor() {
         email?: string | null;
         neighborhood?: string;
         occupation?: string;
+        institution?: string | null;
         photo?: string | null;
       };
     }) => {

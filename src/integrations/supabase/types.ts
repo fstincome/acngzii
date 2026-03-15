@@ -263,6 +263,7 @@ export type Database = {
           full_name: string
           gender: string
           id: string
+          institution: string | null
           neighborhood: string
           occupation: string
           phone: string
@@ -277,6 +278,7 @@ export type Database = {
           full_name: string
           gender: string
           id?: string
+          institution?: string | null
           neighborhood: string
           occupation: string
           phone: string
@@ -291,6 +293,7 @@ export type Database = {
           full_name?: string
           gender?: string
           id?: string
+          institution?: string | null
           neighborhood?: string
           occupation?: string
           phone?: string
