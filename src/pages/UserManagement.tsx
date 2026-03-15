@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Users, UserPlus, Shield, Trash2, Loader2 } from "lucide-react";
+import { Users, UserPlus, Shield, Trash2, Loader2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type AppRole = "admin" | "director" | "reception";
@@ -22,27 +22,19 @@ const ROLE_LABELS: Record<AppRole, string> = {
 };
 
 const ROLE_COLORS: Record<AppRole, string> = {
-  admin: "destructive" as const,
-  director: "default" as const,
-  reception: "secondary" as const,
+  admin: "destructive",
+  director: "default",
+  reception: "secondary",
 };
 
 function useUsers() {
   return useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      // Get profiles
-      const { data: profiles, error: pErr } = await supabase
-        .from("profiles")
-        .select("*");
+      const { data: profiles, error: pErr } = await supabase.from("profiles").select("*");
       if (pErr) throw pErr;
-
-      // Get roles
-      const { data: roles, error: rErr } = await supabase
-        .from("user_roles")
-        .select("*");
+      const { data: roles, error: rErr } = await supabase.from("user_roles").select("*");
       if (rErr) throw rErr;
-
       return (profiles || []).map((p: any) => ({
         ...p,
         role: (roles || []).find((r: any) => r.user_id === p.id)?.role as AppRole | undefined,
@@ -52,14 +44,19 @@ function useUsers() {
 }
 
 export default function UserManagement() {
-  const { role: currentRole } = useAuth();
+  const { role: currentRole, user: currentUser } = useAuth();
   const { data: users = [], isLoading } = useUsers();
-  const [open, setOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editUser, setEditUser] = useState<any>(null);
+  const [editName, setEditName] = useState("");
+  const [editRole, setEditRole] = useState<AppRole>("reception");
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState<AppRole>("reception");
   const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -75,15 +72,13 @@ export default function UserManagement() {
     e.preventDefault();
     setCreating(true);
     try {
-      // Sign up the new user via edge function
       const res = await supabase.functions.invoke("create-user", {
         body: { email: newEmail, password: newPassword, full_name: newName, role: newRole },
       });
       if (res.error) throw res.error;
       if (res.data?.error) throw new Error(res.data.error);
-
       toast({ title: "Utilisateur créé", description: `${newName} a été ajouté comme ${ROLE_LABELS[newRole]}` });
-      setOpen(false);
+      setCreateOpen(false);
       setNewEmail("");
       setNewPassword("");
       setNewName("");
@@ -95,12 +90,37 @@ export default function UserManagement() {
     setCreating(false);
   };
 
+  const handleEdit = (user: any) => {
+    setEditUser(user);
+    setEditName(user.full_name || "");
+    setEditRole(user.role || "reception");
+    setEditOpen(true);
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editUser) return;
+    setUpdating(true);
+    try {
+      const res = await supabase.functions.invoke("update-user-role", {
+        body: { user_id: editUser.id, full_name: editName, role: editRole },
+      });
+      if (res.error) throw res.error;
+      if (res.data?.error) throw new Error(res.data.error);
+      toast({ title: "Utilisateur modifié", description: `${editName} est maintenant ${ROLE_LABELS[editRole]}` });
+      setEditOpen(false);
+      setEditUser(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    }
+    setUpdating(false);
+  };
+
   const handleDelete = async (userId: string, userName: string) => {
     if (!confirm(`Supprimer l'utilisateur ${userName} ?`)) return;
     try {
-      const res = await supabase.functions.invoke("delete-user", {
-        body: { user_id: userId },
-      });
+      const res = await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
       if (res.error) throw res.error;
       if (res.data?.error) throw new Error(res.data.error);
       toast({ title: "Utilisateur supprimé" });
@@ -123,7 +143,7 @@ export default function UserManagement() {
       </div>
 
       <div className="mb-6">
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <UserPlus className="h-4 w-4 mr-2" />
@@ -167,6 +187,40 @@ export default function UserManagement() {
         </Dialog>
       </div>
 
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier l'utilisateur</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdate} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input value={editUser?.email || ""} disabled className="opacity-60" />
+            </div>
+            <div className="space-y-2">
+              <Label>Nom complet</Label>
+              <Input value={editName} onChange={e => setEditName(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label>Rôle</Label>
+              <Select value={editRole} onValueChange={v => setEditRole(v as AppRole)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrateur</SelectItem>
+                  <SelectItem value="director">Directeur</SelectItem>
+                  <SelectItem value="reception">Agent de réception</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button type="submit" className="w-full" disabled={updating}>
+              {updating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Enregistrer
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Card className="overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center">
@@ -179,7 +233,7 @@ export default function UserManagement() {
                 <TableHead>Nom</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Rôle</TableHead>
-                <TableHead className="w-[80px]">Actions</TableHead>
+                <TableHead className="w-[120px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -197,14 +251,26 @@ export default function UserManagement() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => handleDelete(u.id, u.full_name)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(u)}
+                        title="Modifier"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleDelete(u.id, u.full_name)}
+                        disabled={u.id === currentUser?.id}
+                        title={u.id === currentUser?.id ? "Vous ne pouvez pas vous supprimer" : "Supprimer"}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
