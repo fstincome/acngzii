@@ -352,6 +352,9 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
     setPPhoto(p.photo || "");
   };
 
+  // Determine if we should just link existing person or create new
+  const isLinkingExisting = selectedDuplicate && !fieldsModifiedAfterDuplicate;
+
   const handleAddParticipant = async () => {
     if (!pName.trim()) return;
     try {
@@ -371,25 +374,30 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         photo: pPhoto || undefined,
       });
 
-      // Auto-add as visitor if not already a visitor (selectedDuplicate with source=visitor means already exists)
-      if (!selectedDuplicate || selectedDuplicate.source !== "visitor") {
-        try {
-          const visitorId = await generateVisitorId();
-          await addVisitor.mutateAsync({
-            visitor_id: visitorId,
-            full_name: pName.trim(),
-            gender: pGender || "other",
-            phone: pPhone || "—",
-            email: pEmail || undefined,
-            neighborhood: pNeighborhood || "—",
-            occupation: pOccupation || "—",
-            date_of_birth: pDateOfBirth || undefined,
-            photo: pPhoto || undefined,
-          });
-        } catch { /* visitor might already exist, ignore */ }
+      // If linking existing duplicate (no modifications), don't create a new visitor
+      if (isLinkingExisting) {
+        toast.success("Participant existant ajouté au programme !");
+      } else {
+        // New person or modified data → also add as visitor
+        if (!selectedDuplicate || selectedDuplicate.source !== "visitor") {
+          try {
+            const visitorId = await generateVisitorId();
+            await addVisitor.mutateAsync({
+              visitor_id: visitorId,
+              full_name: pName.trim(),
+              gender: pGender || "other",
+              phone: pPhone || "—",
+              email: pEmail || undefined,
+              neighborhood: pNeighborhood || "—",
+              occupation: pOccupation || "—",
+              date_of_birth: pDateOfBirth || undefined,
+              photo: pPhoto || undefined,
+            });
+          } catch { /* visitor might already exist, ignore */ }
+        }
+        toast.success("Nouveau participant créé et enregistré comme visiteur !");
       }
 
-      toast.success("Participant ajouté et enregistré comme visiteur !");
       setShowAddParticipant(false);
       resetParticipantForm();
     } catch { toast.error("Erreur"); }
