@@ -24,9 +24,9 @@ const DURATION_OPTIONS = [
   { value: "2", label: "2 heures" },
   { value: "3", label: "3 heures" },
   { value: "4", label: "4 heures" },
-  { value: "6", label: "6 heures (défaut)" },
+  { value: "6", label: "6 heures" },
   { value: "8", label: "8 heures" },
-  { value: "10", label: "10 heures" },
+  { value: "9", label: "9 heures (défaut)" },
 ];
 
 export default function Scanner() {
