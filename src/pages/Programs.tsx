@@ -573,8 +573,15 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
       </div>
 
       <Button onClick={onSubmit} disabled={isPending} className="w-full rounded-xl h-12 text-sm font-semibold" style={{ background: "var(--gradient-primary)" }}>
-        {isPending ? "..." : submitLabel}
+        {isPending ? "..." : (isNew && selectedDuplicate && !fieldsModifiedAfterDuplicate ? "➕ Ajouter (existant)" : submitLabel)}
       </Button>
+      {isNew && selectedDuplicate && (
+        <p className="text-[10px] text-center text-muted-foreground">
+          {fieldsModifiedAfterDuplicate 
+            ? "⚡ Des champs ont été modifiés — une nouvelle personne sera créée" 
+            : "✅ Aucune modification — la personne existante sera liée au programme"}
+        </p>
+      )}
     </div>
   );
 
