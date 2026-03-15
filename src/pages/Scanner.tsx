@@ -124,9 +124,10 @@ export default function Scanner() {
         timestamp: now.toISOString(),
       };
 
-      // Set expected_checkout for all rooms on check_in
+      // Set expected_checkout on check_in
       if (action === "check_in") {
-        const hours = parseInt(duration) || DEFAULT_DURATION_HOURS;
+        // Computer lab: always 9h fixed. Polyvalente/Garden: user-selected duration
+        const hours = room === "computer_lab" ? DEFAULT_DURATION_HOURS : (parseInt(duration) || DEFAULT_DURATION_HOURS);
         const checkout = new Date(now.getTime() + hours * 60 * 60 * 1000);
         visitData.expected_checkout = checkout.toISOString();
       }
@@ -231,12 +232,12 @@ export default function Scanner() {
             )}
           </div>
 
-          {/* Duration selector for all rooms */}
-          {(!inLab || !inMulti || !inGarden) && (
+          {/* Duration selector for Polyvalente & Jardin only */}
+          {(!inMulti || !inGarden) && (
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <Clock className="h-3 w-3" />
-                Durée de séjour (sortie automatique)
+                Durée de séjour (Salle Polyvalente / Jardin)
               </Label>
               <Select value={duration} onValueChange={setDuration}>
                 <SelectTrigger className="rounded-xl h-10">
