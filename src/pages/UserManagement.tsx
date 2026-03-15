@@ -209,7 +209,12 @@ export default function UserManagement() {
               </div>
               <div className="space-y-2">
                 <Label>Mot de passe</Label>
-                <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} />
+                <div className="flex gap-2">
+                  <Input type="text" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} />
+                  <Button type="button" variant="outline" size="sm" onClick={() => setNewPassword(generatePassword())} className="shrink-0">
+                    Générer
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Rôle</Label>
