@@ -274,12 +274,37 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
   const [duplicateChecked, setDuplicateChecked] = useState(false);
   const [selectedDuplicate, setSelectedDuplicate] = useState<DuplicateCandidate | null>(null);
+  const [fieldsModifiedAfterDuplicate, setFieldsModifiedAfterDuplicate] = useState(false);
+  // Store snapshot of duplicate values to detect modifications
+  const [duplicateSnapshot, setDuplicateSnapshot] = useState<Record<string, string>>({});
+
+  // Check if current form values differ from the selected duplicate snapshot
+  const checkIfModified = (field: string, value: string, snapshot: Record<string, string>) => {
+    const updated = { ...snapshot, [field]: value };
+    // We don't store updated snapshot, just check if ANY field differs
+    const currentValues: Record<string, string> = {
+      gender: pGender, date_of_birth: pDateOfBirth, phone: pPhone,
+      email: pEmail, neighborhood: pNeighborhood, occupation: pOccupation,
+      photo: pPhoto, institution: pInstitution,
+      [field]: value, // override with new value
+    };
+    const isDifferent = Object.keys(snapshot).some(k => (currentValues[k] || "") !== (snapshot[k] || ""));
+    setFieldsModifiedAfterDuplicate(isDifferent);
+  };
+
+  // Wrap each setter to track modifications
+  const handleFieldChange = (field: string, value: string, setter: (v: string) => void) => {
+    setter(value);
+    if (selectedDuplicate) {
+      checkIfModified(field, value, duplicateSnapshot);
+    }
+  };
 
   const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
 
   const resetParticipantForm = () => {
     setPName(""); setPGender(""); setPDateOfBirth(""); setPPhone(""); setPEmail(""); setPRole("eleve"); setPInstitution(""); setPNeighborhood(""); setPOccupation(""); setPPhoto("");
-    setDuplicates([]); setDuplicateChecked(false); setSelectedDuplicate(null);
+    setDuplicates([]); setDuplicateChecked(false); setSelectedDuplicate(null); setFieldsModifiedAfterDuplicate(false); setDuplicateSnapshot({});
   };
 
   const handleCheckDuplicates = async (name: string) => {
@@ -295,6 +320,14 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
 
   const fillFromDuplicate = (d: DuplicateCandidate) => {
     setSelectedDuplicate(d);
+    setFieldsModifiedAfterDuplicate(false);
+    const snapshot: Record<string, string> = {
+      gender: d.gender || "", date_of_birth: d.date_of_birth || "",
+      phone: d.phone || "", email: d.email || "",
+      neighborhood: d.neighborhood || "", occupation: d.occupation || "",
+      photo: d.photo || "", institution: d.institution || "",
+    };
+    setDuplicateSnapshot(snapshot);
     setPGender(d.gender || "");
     setPDateOfBirth(d.date_of_birth || "");
     setPPhone(d.phone || "");
@@ -306,7 +339,6 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
     toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
   };
 
-  const openEditParticipant = (p: ProgramParticipant) => {
     setEditPart(p);
     setPName(p.full_name);
     setPGender((p as any).gender || "");
@@ -319,6 +351,9 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
     setPOccupation((p as any).occupation || "");
     setPPhoto(p.photo || "");
   };
+
+  // Determine if we should just link existing person or create new
+  const isLinkingExisting = selectedDuplicate && !fieldsModifiedAfterDuplicate;
 
   const handleAddParticipant = async () => {
     if (!pName.trim()) return;
@@ -339,25 +374,30 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         photo: pPhoto || undefined,
       });
 
-      // Auto-add as visitor if not already a visitor (selectedDuplicate with source=visitor means already exists)
-      if (!selectedDuplicate || selectedDuplicate.source !== "visitor") {
-        try {
-          const visitorId = await generateVisitorId();
-          await addVisitor.mutateAsync({
-            visitor_id: visitorId,
-            full_name: pName.trim(),
-            gender: pGender || "other",
-            phone: pPhone || "—",
-            email: pEmail || undefined,
-            neighborhood: pNeighborhood || "—",
-            occupation: pOccupation || "—",
-            date_of_birth: pDateOfBirth || undefined,
-            photo: pPhoto || undefined,
-          });
-        } catch { /* visitor might already exist, ignore */ }
+      // If linking existing duplicate (no modifications), don't create a new visitor
+      if (isLinkingExisting) {
+        toast.success("Participant existant ajouté au programme !");
+      } else {
+        // New person or modified data → also add as visitor
+        if (!selectedDuplicate || selectedDuplicate.source !== "visitor") {
+          try {
+            const visitorId = await generateVisitorId();
+            await addVisitor.mutateAsync({
+              visitor_id: visitorId,
+              full_name: pName.trim(),
+              gender: pGender || "other",
+              phone: pPhone || "—",
+              email: pEmail || undefined,
+              neighborhood: pNeighborhood || "—",
+              occupation: pOccupation || "—",
+              date_of_birth: pDateOfBirth || undefined,
+              photo: pPhoto || undefined,
+            });
+          } catch { /* visitor might already exist, ignore */ }
+        }
+        toast.success("Nouveau participant créé et enregistré comme visiteur !");
       }
 
-      toast.success("Participant ajouté et enregistré comme visiteur !");
       setShowAddParticipant(false);
       resetParticipantForm();
     } catch { toast.error("Erreur"); }
@@ -471,7 +511,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Genre</label>
-          <Select value={pGender} onValueChange={setPGender}>
+          <Select value={pGender} onValueChange={v => handleFieldChange("gender", v, setPGender)}>
             <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="male">Homme</SelectItem>
@@ -482,29 +522,29 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Date de naissance</label>
-          <Input type="date" value={pDateOfBirth} onChange={e => setPDateOfBirth(e.target.value)} className="rounded-xl h-11" />
+          <Input type="date" value={pDateOfBirth} onChange={e => handleFieldChange("date_of_birth", e.target.value, setPDateOfBirth)} className="rounded-xl h-11" />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Téléphone</label>
-          <Input placeholder="+257 xx xxx xxx" value={pPhone} onChange={e => setPPhone(e.target.value)} className="rounded-xl h-11" />
+          <Input placeholder="+257 xx xxx xxx" value={pPhone} onChange={e => handleFieldChange("phone", e.target.value, setPPhone)} className="rounded-xl h-11" />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Email (optionnel)</label>
-          <Input type="email" placeholder="email@exemple.com" value={pEmail} onChange={e => setPEmail(e.target.value)} className="rounded-xl h-11" />
+          <Input type="email" placeholder="email@exemple.com" value={pEmail} onChange={e => handleFieldChange("email", e.target.value, setPEmail)} className="rounded-xl h-11" />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Quartier / Commune</label>
-          <Input placeholder="ex: Mushasha" value={pNeighborhood} onChange={e => setPNeighborhood(e.target.value)} className="rounded-xl h-11" />
+          <Input placeholder="ex: Mushasha" value={pNeighborhood} onChange={e => handleFieldChange("neighborhood", e.target.value, setPNeighborhood)} className="rounded-xl h-11" />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Profession</label>
-          <Input placeholder="ex: Étudiant, Entrepreneur" value={pOccupation} onChange={e => setPOccupation(e.target.value)} className="rounded-xl h-11" />
+          <Input placeholder="ex: Étudiant, Entrepreneur" value={pOccupation} onChange={e => handleFieldChange("occupation", e.target.value, setPOccupation)} className="rounded-xl h-11" />
         </div>
       </div>
 
@@ -512,7 +552,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <Building className="h-3 w-3" /> Institution (école, université...)
         </label>
-        <Input placeholder="Ex: Université du Burundi" value={pInstitution} onChange={e => setPInstitution(e.target.value)} className="rounded-xl h-11" />
+        <Input placeholder="Ex: Université du Burundi" value={pInstitution} onChange={e => handleFieldChange("institution", e.target.value, setPInstitution)} className="rounded-xl h-11" />
       </div>
 
       <div className="space-y-1.5">
@@ -528,13 +568,20 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
 
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-muted-foreground">Lien photo passeport (optionnel)</label>
-        <Input placeholder="https://lh3.googleusercontent.com/d/..." value={pPhoto} onChange={e => setPPhoto(e.target.value)} className="rounded-xl h-11" />
+        <Input placeholder="https://lh3.googleusercontent.com/d/..." value={pPhoto} onChange={e => handleFieldChange("photo", e.target.value, setPPhoto)} className="rounded-xl h-11" />
         <p className="text-[10px] text-muted-foreground">Format Google Drive : https://lh3.googleusercontent.com/d/ID</p>
       </div>
 
       <Button onClick={onSubmit} disabled={isPending} className="w-full rounded-xl h-12 text-sm font-semibold" style={{ background: "var(--gradient-primary)" }}>
-        {isPending ? "..." : submitLabel}
+        {isPending ? "..." : (isNew && selectedDuplicate && !fieldsModifiedAfterDuplicate ? "➕ Ajouter (existant)" : submitLabel)}
       </Button>
+      {isNew && selectedDuplicate && (
+        <p className="text-[10px] text-center text-muted-foreground">
+          {fieldsModifiedAfterDuplicate 
+            ? "⚡ Des champs ont été modifiés — une nouvelle personne sera créée" 
+            : "✅ Aucune modification — la personne existante sera liée au programme"}
+        </p>
+      )}
     </div>
   );
 
