@@ -15,8 +15,12 @@ export interface ProgramParticipant {
   program_id: string;
   participant_code: string;
   full_name: string;
+  gender: string;
+  date_of_birth: string | null;
   phone: string | null;
   email: string | null;
+  neighborhood: string | null;
+  occupation: string | null;
   institution: string | null;
   role: "eleve" | "mentor";
   photo: string | null;
