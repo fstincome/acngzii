@@ -129,6 +129,38 @@ export default function UserManagement() {
     setUpdating(false);
   };
 
+  const handleOpenReset = (user: any) => {
+    setResetUser(user);
+    const pwd = generatePassword();
+    setResetPassword(pwd);
+    setResetOpen(true);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetUser || !resetPassword) return;
+    setResetting(true);
+    try {
+      const res = await supabase.functions.invoke("reset-password", {
+        body: { user_id: resetUser.id, new_password: resetPassword },
+      });
+      if (res.error) throw res.error;
+      if (res.data?.error) throw new Error(res.data.error);
+      setGeneratedCredentials({ email: resetUser.email, password: resetPassword });
+      toast({ title: "Mot de passe réinitialisé", description: `Nouveau mot de passe généré pour ${resetUser.full_name}` });
+      setResetOpen(false);
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    }
+    setResetting(false);
+  };
+
+  const copyCredentials = () => {
+    if (!generatedCredentials) return;
+    navigator.clipboard.writeText(`Email: ${generatedCredentials.email}\nMot de passe: ${generatedCredentials.password}`);
+    toast({ title: "Copié !", description: "Coordonnées copiées dans le presse-papier" });
+  };
+
   const handleDelete = async (userId: string, userName: string) => {
     if (!confirm(`Supprimer l'utilisateur ${userName} ?`)) return;
     try {
