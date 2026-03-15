@@ -533,7 +533,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Email (optionnel)</label>
-          <Input type="email" placeholder="email@exemple.com" value={pEmail} onChange={e => setPEmail(e.target.value)} className="rounded-xl h-11" />
+          <Input type="email" placeholder="email@exemple.com" value={pEmail} onChange={e => handleFieldChange("email", e.target.value, setPEmail)} className="rounded-xl h-11" />
         </div>
       </div>
 
