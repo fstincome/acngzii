@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useOfflineSync } from "@/hooks/useOfflineSync";
 import {
   LayoutDashboard,
   UserPlus,
@@ -16,13 +15,14 @@ import {
   ClipboardCheck,
   ChevronDown,
   Shield,
-  RefreshCw,
-  WifiOff,
 } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { online, pendingCount, syncing, handleSync } = useOfflineSync();
+  const [normalOpen, setNormalOpen] = useState(true);
+  const [programOpen, setProgramOpen] = useState(true);
+  const location = useLocation();
+  const { role, user, signOut } = useAuth();
   const [normalOpen, setNormalOpen] = useState(true);
   const [programOpen, setProgramOpen] = useState(true);
   const location = useLocation();
