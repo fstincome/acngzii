@@ -228,10 +228,14 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const [showAddParticipant, setShowAddParticipant] = useState(false);
   const [editPart, setEditPart] = useState<ProgramParticipant | null>(null);
   const [pName, setPName] = useState("");
+  const [pGender, setPGender] = useState("");
+  const [pDateOfBirth, setPDateOfBirth] = useState("");
   const [pPhone, setPPhone] = useState("");
   const [pEmail, setPEmail] = useState("");
   const [pRole, setPRole] = useState("eleve");
   const [pInstitution, setPInstitution] = useState("");
+  const [pNeighborhood, setPNeighborhood] = useState("");
+  const [pOccupation, setPOccupation] = useState("");
   const [pPhoto, setPPhoto] = useState("");
 
   const [showAddSession, setShowAddSession] = useState(false);
