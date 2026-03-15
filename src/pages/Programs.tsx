@@ -223,7 +223,7 @@ export default function Programs() {
       )}
 
       {/* Edit program dialog */}
-      <Dialog open={!!editProgram} onOpenChange={v => { if (!v) { setEditProgram(null); setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); } }}>
+      <Dialog open={!!editProgram} onOpenChange={v => { if (!v) { setEditProgram(null); setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); setNewLogo(""); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Modifier le programme</DialogTitle></DialogHeader>
           {programFormFields()}
