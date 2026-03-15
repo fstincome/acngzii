@@ -263,6 +263,7 @@ export default function RegisterVisitor() {
     email: "",
     neighborhood: "",
     occupation: "",
+    institution: "",
     photo: "",
   });
 
