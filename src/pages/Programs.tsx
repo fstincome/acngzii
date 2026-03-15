@@ -529,7 +529,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Téléphone</label>
-          <Input placeholder="+257 xx xxx xxx" value={pPhone} onChange={e => setPPhone(e.target.value)} className="rounded-xl h-11" />
+          <Input placeholder="+257 xx xxx xxx" value={pPhone} onChange={e => handleFieldChange("phone", e.target.value, setPPhone)} className="rounded-xl h-11" />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Email (optionnel)</label>
