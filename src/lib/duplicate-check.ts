@@ -1,9 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export interface DuplicateCandidate {
-  source: "visitor" | "participant";
+  source: "visitor";
   id: string;
-  code: string; // visitor_id or participant_code
+  code: string; // visitor_id
   full_name: string;
   phone: string | null;
   email: string | null;
@@ -24,7 +24,6 @@ function similarity(a: string, b: string): number {
   const nb = normalize(b);
   if (na === nb) return 1;
   if (na.includes(nb) || nb.includes(na)) return 0.8;
-  // Simple word overlap
   const wa = na.split(" ");
   const wb = nb.split(" ");
   const common = wa.filter(w => wb.includes(w)).length;
@@ -36,7 +35,6 @@ export async function findDuplicates(fullName: string): Promise<DuplicateCandida
 
   const results: DuplicateCandidate[] = [];
 
-  // Search visitors
   const { data: visitors } = await supabase.from("visitors").select("*");
   if (visitors) {
     for (const v of visitors) {
@@ -53,36 +51,15 @@ export async function findDuplicates(fullName: string): Promise<DuplicateCandida
           neighborhood: v.neighborhood,
           occupation: v.occupation,
           photo: v.photo,
+          institution: v.institution,
         });
       }
     }
   }
 
-  // Search participants
-  const { data: participants } = await supabase.from("program_participants").select("*");
-  if (participants) {
-    for (const p of participants) {
-      if (similarity(fullName, p.full_name) >= 0.6) {
-        // Avoid duplicates if already found as visitor with same name
-        if (!results.some(r => normalize(r.full_name) === normalize(p.full_name) && r.phone === p.phone)) {
-          results.push({
-            source: "participant",
-            id: p.id,
-            code: p.participant_code,
-            full_name: p.full_name,
-            phone: p.phone,
-            email: p.email,
-            gender: p.gender,
-            date_of_birth: p.date_of_birth,
-            neighborhood: p.neighborhood,
-            occupation: p.occupation,
-            photo: p.photo,
-            institution: p.institution,
-          });
-        }
-      }
-    }
-  }
-
   return results;
+}
+
+export async function searchVisitorsByName(name: string): Promise<DuplicateCandidate[]> {
+  return findDuplicates(name);
 }

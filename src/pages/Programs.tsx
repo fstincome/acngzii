@@ -7,8 +7,7 @@ import {
   type Program, type ProgramParticipant, type ProgramSession,
   PARTICIPANT_ROLES,
 } from "@/lib/program-store";
-import { useAddVisitor, generateVisitorId } from "@/lib/supabase-store";
-import { findDuplicates, type DuplicateCandidate } from "@/lib/duplicate-check";
+import { searchVisitorsByName, type DuplicateCandidate } from "@/lib/duplicate-check";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,11 +17,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, ArrowLeft, Users, Calendar, CreditCard, Pencil, BookOpen, GraduationCap, Building, Trash2, AlertTriangle, Check, Link as LinkIcon } from "lucide-react";
+import { Plus, ArrowLeft, Users, Calendar, CreditCard, Pencil, BookOpen, GraduationCap, Building, Trash2, AlertTriangle, Check, Link as LinkIcon, Search, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import MembershipCard from "@/components/MembershipCard";
+import { useNavigate } from "react-router-dom";
 
 export default function Programs() {
   const { role } = useAuth();
@@ -82,7 +82,6 @@ export default function Programs() {
       setSelectedProgram(prev => prev?.id === editProgram.id ? { ...prev, name: newName.trim(), description: newDesc.trim() || null, start_date: newStart || null, end_date: newEnd || null, logo_url: newLogo.trim() || null } : prev);
       setEditProgram(null);
       setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); setNewLogo("");
-      setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd("");
     } catch { toast.error("Erreur"); }
   };
 
@@ -239,6 +238,7 @@ export default function Programs() {
 // ---- Program Detail ----
 
 function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: { program: Program; onBack: () => void; onEditProgram: (p: Program) => void; canEdit: boolean; canDelete: boolean }) {
+  const navigate = useNavigate();
   const { data: participants = [] } = useProgramParticipants(program.id);
   const { data: sessions = [] } = useProgramSessions(program.id);
   const addParticipant = useAddParticipant();
@@ -248,16 +248,24 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const updateSession = useUpdateSession();
   const deleteSession = useDeleteSession();
   const createAttendance = useCreateAttendanceRecords();
-  const addVisitor = useAddVisitor();
 
   const [showAddParticipant, setShowAddParticipant] = useState(false);
   const [editPart, setEditPart] = useState<ProgramParticipant | null>(null);
+
+  // Search-based add flow
+  const [searchName, setSearchName] = useState("");
+  const [searchResults, setSearchResults] = useState<DuplicateCandidate[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [selectedVisitor, setSelectedVisitor] = useState<DuplicateCandidate | null>(null);
+  const [pRole, setPRole] = useState("eleve");
+
+  // Edit form fields
   const [pName, setPName] = useState("");
   const [pGender, setPGender] = useState("");
   const [pDateOfBirth, setPDateOfBirth] = useState("");
   const [pPhone, setPPhone] = useState("");
   const [pEmail, setPEmail] = useState("");
-  const [pRole, setPRole] = useState("eleve");
   const [pInstitution, setPInstitution] = useState("");
   const [pNeighborhood, setPNeighborhood] = useState("");
   const [pOccupation, setPOccupation] = useState("");
@@ -269,74 +277,71 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
 
   const [cardParticipant, setCardParticipant] = useState<typeof participants[0] | null>(null);
 
-  // Duplicate detection
-  const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
-  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
-  const [duplicateChecked, setDuplicateChecked] = useState(false);
-  const [selectedDuplicate, setSelectedDuplicate] = useState<DuplicateCandidate | null>(null);
-  const [fieldsModifiedAfterDuplicate, setFieldsModifiedAfterDuplicate] = useState(false);
-  // Store snapshot of duplicate values to detect modifications
-  const [duplicateSnapshot, setDuplicateSnapshot] = useState<Record<string, string>>({});
-
-  // Check if current form values differ from the selected duplicate snapshot
-  const checkIfModified = (field: string, value: string, snapshot: Record<string, string>) => {
-    const updated = { ...snapshot, [field]: value };
-    // We don't store updated snapshot, just check if ANY field differs
-    const currentValues: Record<string, string> = {
-      gender: pGender, date_of_birth: pDateOfBirth, phone: pPhone,
-      email: pEmail, neighborhood: pNeighborhood, occupation: pOccupation,
-      photo: pPhoto, institution: pInstitution,
-      [field]: value, // override with new value
-    };
-    const isDifferent = Object.keys(snapshot).some(k => (currentValues[k] || "") !== (snapshot[k] || ""));
-    setFieldsModifiedAfterDuplicate(isDifferent);
-  };
-
-  // Wrap each setter to track modifications
-  const handleFieldChange = (field: string, value: string, setter: (v: string) => void) => {
-    setter(value);
-    if (selectedDuplicate) {
-      checkIfModified(field, value, duplicateSnapshot);
-    }
-  };
-
   const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
 
-  const resetParticipantForm = () => {
-    setPName(""); setPGender(""); setPDateOfBirth(""); setPPhone(""); setPEmail(""); setPRole("eleve"); setPInstitution(""); setPNeighborhood(""); setPOccupation(""); setPPhoto("");
-    setDuplicates([]); setDuplicateChecked(false); setSelectedDuplicate(null); setFieldsModifiedAfterDuplicate(false); setDuplicateSnapshot({});
+  const resetAddForm = () => {
+    setSearchName("");
+    setSearchResults([]);
+    setSearched(false);
+    setSelectedVisitor(null);
+    setPRole("eleve");
   };
 
-  const handleCheckDuplicates = async (name: string) => {
-    if (name.trim().length < 3) { setDuplicates([]); setDuplicateChecked(false); return; }
-    setCheckingDuplicates(true);
+  const resetEditForm = () => {
+    setPName(""); setPGender(""); setPDateOfBirth(""); setPPhone(""); setPEmail("");
+    setPInstitution(""); setPNeighborhood(""); setPOccupation(""); setPPhoto("");
+  };
+
+  const handleSearch = async () => {
+    if (searchName.trim().length < 2) {
+      toast.error("Entrez au moins 2 caractères");
+      return;
+    }
+    setSearching(true);
     try {
-      const results = await findDuplicates(name.trim());
-      setDuplicates(results);
-      setDuplicateChecked(true);
+      const results = await searchVisitorsByName(searchName.trim());
+      setSearchResults(results);
+      setSearched(true);
     } catch { /* ignore */ }
-    setCheckingDuplicates(false);
+    setSearching(false);
   };
 
-  const fillFromDuplicate = (d: DuplicateCandidate) => {
-    setSelectedDuplicate(d);
-    setFieldsModifiedAfterDuplicate(false);
-    const snapshot: Record<string, string> = {
-      gender: d.gender || "", date_of_birth: d.date_of_birth || "",
-      phone: d.phone || "", email: d.email || "",
-      neighborhood: d.neighborhood || "", occupation: d.occupation || "",
-      photo: d.photo || "", institution: d.institution || "",
-    };
-    setDuplicateSnapshot(snapshot);
-    setPGender(d.gender || "");
-    setPDateOfBirth(d.date_of_birth || "");
-    setPPhone(d.phone || "");
-    setPEmail(d.email || "");
-    setPNeighborhood(d.neighborhood || "");
-    setPOccupation(d.occupation || "");
-    setPPhoto(d.photo || "");
-    if (d.institution) setPInstitution(d.institution);
-    toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
+  const handleSelectVisitor = (v: DuplicateCandidate) => {
+    setSelectedVisitor(v);
+  };
+
+  const handleAddFromVisitor = async () => {
+    if (!selectedVisitor) return;
+    try {
+      // Check if already a participant in this program
+      const alreadyExists = participants.some(
+        p => p.full_name.toLowerCase().trim() === selectedVisitor.full_name.toLowerCase().trim()
+      );
+      if (alreadyExists) {
+        toast.error("Cette personne est déjà inscrite dans ce programme");
+        return;
+      }
+
+      const code = await generateParticipantCode(programPrefix);
+      await addParticipant.mutateAsync({
+        program_id: program.id,
+        participant_code: code,
+        full_name: selectedVisitor.full_name,
+        gender: selectedVisitor.gender || "other",
+        date_of_birth: selectedVisitor.date_of_birth || undefined,
+        phone: selectedVisitor.phone || undefined,
+        email: selectedVisitor.email || undefined,
+        neighborhood: selectedVisitor.neighborhood || "—",
+        occupation: selectedVisitor.occupation || "—",
+        institution: selectedVisitor.institution || undefined,
+        role: pRole,
+        photo: selectedVisitor.photo || undefined,
+      });
+
+      toast.success("Participant ajouté au programme !");
+      setShowAddParticipant(false);
+      resetAddForm();
+    } catch { toast.error("Erreur"); }
   };
 
   const openEditParticipant = (p: ProgramParticipant) => {
@@ -351,53 +356,6 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
     setPNeighborhood((p as any).neighborhood || "");
     setPOccupation((p as any).occupation || "");
     setPPhoto(p.photo || "");
-  };
-
-  // Determine if we should just link existing person or create new
-  const isLinkingExisting = selectedDuplicate && !fieldsModifiedAfterDuplicate;
-
-  const handleAddParticipant = async () => {
-    if (!pName.trim()) return;
-    try {
-      const code = await generateParticipantCode(programPrefix);
-      await addParticipant.mutateAsync({
-        program_id: program.id,
-        participant_code: code,
-        full_name: pName.trim(),
-        gender: pGender || "other",
-        date_of_birth: pDateOfBirth || undefined,
-        phone: pPhone || undefined,
-        email: pEmail || undefined,
-        neighborhood: pNeighborhood || "—",
-        occupation: pOccupation || "—",
-        institution: pInstitution.trim() || undefined,
-        role: pRole,
-        photo: pPhoto || undefined,
-      });
-
-      // Always add as visitor (skip only if the person is already a visitor)
-      if (!selectedDuplicate || selectedDuplicate.source !== "visitor" || fieldsModifiedAfterDuplicate) {
-        try {
-          const visitorId = await generateVisitorId();
-          await addVisitor.mutateAsync({
-            visitor_id: visitorId,
-            full_name: pName.trim(),
-            gender: pGender || "other",
-            phone: pPhone || "—",
-            email: pEmail || undefined,
-            neighborhood: pNeighborhood || "—",
-            occupation: pOccupation || "—",
-            institution: pInstitution.trim() || undefined,
-            date_of_birth: pDateOfBirth || undefined,
-            photo: pPhoto || undefined,
-          });
-        } catch { /* visitor might already exist, ignore */ }
-      }
-      toast.success("Participant ajouté au programme !");
-
-      setShowAddParticipant(false);
-      resetParticipantForm();
-    } catch { toast.error("Erreur"); }
   };
 
   const handleUpdateParticipant = async () => {
@@ -419,7 +377,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
       });
       toast.success("Participant modifié !");
       setEditPart(null);
-      resetParticipantForm();
+      resetEditForm();
     } catch { toast.error("Erreur"); }
   };
 
@@ -464,51 +422,17 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
     } catch { toast.error("Erreur"); }
   };
 
-  const participantFormContent = (onSubmit: () => void, isPending: boolean, submitLabel: string, isNew = false) => (
+  // Edit participant form (for editing only, no search)
+  const editParticipantForm = () => (
     <div className="space-y-5 pt-2">
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-muted-foreground">Nom complet <span className="text-destructive">*</span></label>
-        <div className="flex gap-2">
-          <Input placeholder="Entrez le nom complet" value={pName} onChange={e => setPName(e.target.value)} className="rounded-xl h-11 flex-1" onBlur={() => isNew && handleCheckDuplicates(pName)} />
-          {isNew && (
-            <Button type="button" variant="outline" size="sm" className="rounded-xl h-11 px-3 shrink-0" onClick={() => handleCheckDuplicates(pName)} disabled={checkingDuplicates}>
-              {checkingDuplicates ? "..." : "Vérifier"}
-            </Button>
-          )}
-        </div>
+        <Input placeholder="Nom complet" value={pName} onChange={e => setPName(e.target.value)} className="rounded-xl h-11" />
       </div>
-
-      {/* Duplicate alert */}
-      {isNew && duplicateChecked && duplicates.length > 0 && (
-        <Alert className="border-warning/50 bg-warning/5">
-          <AlertTriangle className="h-4 w-4 text-warning" />
-          <AlertDescription className="space-y-2">
-            <p className="text-sm font-medium">⚠️ Personne(s) similaire(s) trouvée(s) :</p>
-            {duplicates.map(d => (
-              <div key={d.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-background border border-border/50">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{d.full_name}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {d.source === "visitor" ? "Visiteur" : "Participant"} • {d.phone || "—"} • {d.code}
-                  </p>
-                </div>
-                <Button type="button" size="sm" variant="secondary" className="shrink-0 gap-1 text-xs" onClick={() => fillFromDuplicate(d)}>
-                  <Check className="h-3 w-3" /> Utiliser
-                </Button>
-              </div>
-            ))}
-            <p className="text-[10px] text-muted-foreground">Si c'est la même personne, cliquez "Utiliser" pour pré-remplir. Sinon, continuez normalement.</p>
-          </AlertDescription>
-        </Alert>
-      )}
-      {isNew && duplicateChecked && duplicates.length === 0 && (
-        <p className="text-xs text-success flex items-center gap-1"><Check className="h-3 w-3" /> Aucun doublon détecté</p>
-      )}
-
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Genre</label>
-          <Select value={pGender} onValueChange={v => handleFieldChange("gender", v, setPGender)}>
+          <Select value={pGender} onValueChange={setPGender}>
             <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="male">Homme</SelectItem>
@@ -519,41 +443,37 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Date de naissance</label>
-          <Input type="date" value={pDateOfBirth} onChange={e => handleFieldChange("date_of_birth", e.target.value, setPDateOfBirth)} className="rounded-xl h-11" />
+          <Input type="date" value={pDateOfBirth} onChange={e => setPDateOfBirth(e.target.value)} className="rounded-xl h-11" />
         </div>
       </div>
-
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Téléphone</label>
-          <Input placeholder="+257 xx xxx xxx" value={pPhone} onChange={e => handleFieldChange("phone", e.target.value, setPPhone)} className="rounded-xl h-11" />
+          <Input placeholder="+257 xx xxx xxx" value={pPhone} onChange={e => setPPhone(e.target.value)} className="rounded-xl h-11" />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Email (optionnel)</label>
-          <Input type="email" placeholder="email@exemple.com" value={pEmail} onChange={e => handleFieldChange("email", e.target.value, setPEmail)} className="rounded-xl h-11" />
+          <label className="text-xs font-medium text-muted-foreground">Email</label>
+          <Input type="email" value={pEmail} onChange={e => setPEmail(e.target.value)} className="rounded-xl h-11" />
         </div>
       </div>
-
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Quartier / Commune</label>
-          <Input placeholder="ex: Mushasha" value={pNeighborhood} onChange={e => handleFieldChange("neighborhood", e.target.value, setPNeighborhood)} className="rounded-xl h-11" />
+          <label className="text-xs font-medium text-muted-foreground">Quartier</label>
+          <Input value={pNeighborhood} onChange={e => setPNeighborhood(e.target.value)} className="rounded-xl h-11" />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Profession</label>
-          <Input placeholder="ex: Étudiant, Entrepreneur" value={pOccupation} onChange={e => handleFieldChange("occupation", e.target.value, setPOccupation)} className="rounded-xl h-11" />
+          <Input value={pOccupation} onChange={e => setPOccupation(e.target.value)} className="rounded-xl h-11" />
         </div>
       </div>
-
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-          <Building className="h-3 w-3" /> Institution (école, université...)
+          <Building className="h-3 w-3" /> Institution
         </label>
-        <Input placeholder="Ex: Université du Burundi" value={pInstitution} onChange={e => handleFieldChange("institution", e.target.value, setPInstitution)} className="rounded-xl h-11" />
+        <Input value={pInstitution} onChange={e => setPInstitution(e.target.value)} className="rounded-xl h-11" />
       </div>
-
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Rôle dans le programme <span className="text-destructive">*</span></label>
+        <label className="text-xs font-medium text-muted-foreground">Rôle <span className="text-destructive">*</span></label>
         <Select value={pRole} onValueChange={setPRole}>
           <SelectTrigger className="rounded-xl h-11"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -562,22 +482,145 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
           </SelectContent>
         </Select>
       </div>
-
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Lien photo passeport (optionnel)</label>
-        <Input placeholder="https://lh3.googleusercontent.com/d/..." value={pPhoto} onChange={e => handleFieldChange("photo", e.target.value, setPPhoto)} className="rounded-xl h-11" />
-        <p className="text-[10px] text-muted-foreground">Format Google Drive : https://lh3.googleusercontent.com/d/ID</p>
+        <label className="text-xs font-medium text-muted-foreground">Lien photo (optionnel)</label>
+        <Input value={pPhoto} onChange={e => setPPhoto(e.target.value)} className="rounded-xl h-11" />
+      </div>
+      <Button onClick={handleUpdateParticipant} disabled={updateParticipant.isPending} className="w-full rounded-xl h-12 text-sm font-semibold" style={{ background: "var(--gradient-primary)" }}>
+        {updateParticipant.isPending ? "..." : "Enregistrer"}
+      </Button>
+    </div>
+  );
+
+  // Add participant dialog content: search → select → choose role → add
+  const addParticipantContent = () => (
+    <div className="space-y-5 pt-2">
+      {/* Step 1: Search */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Rechercher un visiteur inscrit</label>
+        <div className="flex gap-2">
+          <Input
+            placeholder="Tapez le nom du visiteur..."
+            value={searchName}
+            onChange={e => { setSearchName(e.target.value); setSearched(false); setSelectedVisitor(null); }}
+            className="rounded-xl h-11 flex-1"
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSearch(); } }}
+          />
+          <Button type="button" variant="outline" className="rounded-xl h-11 px-4 shrink-0 gap-1.5" onClick={handleSearch} disabled={searching}>
+            <Search className="h-4 w-4" />
+            {searching ? "..." : "Chercher"}
+          </Button>
+        </div>
       </div>
 
-      <Button onClick={onSubmit} disabled={isPending} className="w-full rounded-xl h-12 text-sm font-semibold" style={{ background: "var(--gradient-primary)" }}>
-        {isPending ? "..." : (isNew && selectedDuplicate && !fieldsModifiedAfterDuplicate ? "➕ Ajouter (existant)" : submitLabel)}
-      </Button>
-      {isNew && selectedDuplicate && (
-        <p className="text-[10px] text-center text-muted-foreground">
-          {fieldsModifiedAfterDuplicate 
-            ? "⚡ Des champs ont été modifiés — une nouvelle personne sera créée" 
-            : "✅ Aucune modification — la personne existante sera liée au programme"}
-        </p>
+      {/* Search results */}
+      {searched && searchResults.length > 0 && !selectedVisitor && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">{searchResults.length} résultat(s) trouvé(s) :</p>
+          {searchResults.map(v => (
+            <div
+              key={v.id}
+              className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/40 border border-border/50 hover:border-primary/30 transition-colors cursor-pointer"
+              onClick={() => handleSelectVisitor(v)}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                {v.photo ? (
+                  <img src={v.photo} alt={v.full_name} className="h-10 w-10 rounded-full object-cover ring-2 ring-border" />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold shrink-0">
+                    {v.full_name.charAt(0)}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{v.full_name}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {v.code} • {v.phone || "—"} {v.institution ? `• ${v.institution}` : ""}
+                  </p>
+                </div>
+              </div>
+              <Button type="button" size="sm" variant="secondary" className="shrink-0 gap-1 text-xs">
+                <Check className="h-3 w-3" /> Sélectionner
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Not found message */}
+      {searched && searchResults.length === 0 && (
+        <Alert className="border-destructive/50 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4 text-destructive" />
+          <AlertDescription className="space-y-3">
+            <p className="text-sm font-medium">Aucun visiteur trouvé pour "{searchName}"</p>
+            <p className="text-xs text-muted-foreground">
+              Cette personne doit d'abord être inscrite comme visiteur avant d'être ajoutée à un programme.
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="gap-1.5 rounded-xl"
+              onClick={() => {
+                setShowAddParticipant(false);
+                resetAddForm();
+                navigate("/register");
+              }}
+            >
+              <UserPlus className="h-3.5 w-3.5" /> Inscrire un visiteur
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Selected visitor → choose role and confirm */}
+      {selectedVisitor && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl bg-success/5 border border-success/30">
+            <div className="flex items-center gap-3">
+              {selectedVisitor.photo ? (
+                <img src={selectedVisitor.photo} alt={selectedVisitor.full_name} className="h-12 w-12 rounded-full object-cover ring-2 ring-success/30" />
+              ) : (
+                <div className="h-12 w-12 rounded-full bg-success/10 text-success flex items-center justify-center text-lg font-bold shrink-0">
+                  {selectedVisitor.full_name.charAt(0)}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-foreground">{selectedVisitor.full_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {selectedVisitor.code} • {selectedVisitor.phone || "—"}
+                </p>
+                {selectedVisitor.institution && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <Building className="h-3 w-3" /> {selectedVisitor.institution}
+                  </p>
+                )}
+              </div>
+              <Button type="button" size="sm" variant="ghost" className="text-xs text-muted-foreground" onClick={() => setSelectedVisitor(null)}>
+                Changer
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Rôle dans le programme <span className="text-destructive">*</span></label>
+            <Select value={pRole} onValueChange={setPRole}>
+              <SelectTrigger className="rounded-xl h-11"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="eleve">🎓 Élève</SelectItem>
+                <SelectItem value="mentor">⭐ Mentor</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            onClick={handleAddFromVisitor}
+            disabled={addParticipant.isPending}
+            className="w-full rounded-xl h-12 text-sm font-semibold"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            {addParticipant.isPending ? "Ajout..." : `➕ Ajouter ${selectedVisitor.full_name} au programme`}
+          </Button>
+        </div>
       )}
     </div>
   );
@@ -652,7 +695,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         <TabsContent value="participants" className="space-y-4">
           {canEdit && (
             <div className="flex justify-end">
-              <Dialog open={showAddParticipant} onOpenChange={v => { setShowAddParticipant(v); if (!v) resetParticipantForm(); }}>
+              <Dialog open={showAddParticipant} onOpenChange={v => { setShowAddParticipant(v); if (!v) resetAddForm(); }}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="gap-2 rounded-xl shadow-sm" style={{ background: "var(--gradient-primary)" }}>
                     <Plus className="h-4 w-4" /> Ajouter un participant
@@ -660,7 +703,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader><DialogTitle>Ajouter un participant</DialogTitle></DialogHeader>
-                  {participantFormContent(handleAddParticipant, addParticipant.isPending, "Ajouter", true)}
+                  {addParticipantContent()}
                 </DialogContent>
               </Dialog>
             </div>
@@ -794,10 +837,10 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
       </Tabs>
 
       {/* Edit participant dialog */}
-      <Dialog open={!!editPart} onOpenChange={v => { if (!v) { setEditPart(null); resetParticipantForm(); } }}>
+      <Dialog open={!!editPart} onOpenChange={v => { if (!v) { setEditPart(null); resetEditForm(); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Modifier le participant</DialogTitle></DialogHeader>
-          {participantFormContent(handleUpdateParticipant, updateParticipant.isPending, "Enregistrer")}
+          {editParticipantForm()}
         </DialogContent>
       </Dialog>
 
