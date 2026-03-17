@@ -5,8 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Sparkles, LogIn, Loader2 } from "lucide-react";
+import { LogIn, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import logoGss from "@/assets/logo-gss.png";
 
 export default function Login() {
   const { user, loading, signIn } = useAuth();
