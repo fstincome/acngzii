@@ -14,6 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
+  const { role } = useAuth();
+  const { toast } = useToast();
+  const [backingUp, setBackingUp] = useState(false);
   useVisitsRealtime();
   const { data: visitors = [] } = useVisitors();
   const { data: visits = [] } = useVisits();
