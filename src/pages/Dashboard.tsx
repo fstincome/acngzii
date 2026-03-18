@@ -69,11 +69,39 @@ export default function Dashboard() {
     return b.time.localeCompare(a.time);
   });
 
+  const handleBackup = async () => {
+    setBackingUp(true);
+    try {
+      const res = await supabase.functions.invoke("backup-database");
+      if (res.error) throw res.error;
+      if (res.data?.error) throw new Error(res.data.error);
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `backup-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: "Backup téléchargé", description: "Le fichier de sauvegarde a été téléchargé avec succès." });
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    }
+    setBackingUp(false);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Tableau de bord</h1>
-        <p className="page-subtitle">Données du jour — {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
+      <div className="page-header flex items-center justify-between">
+        <div>
+          <h1 className="page-title">Tableau de bord</h1>
+          <p className="page-subtitle">Données du jour — {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
+        </div>
+        {role === "admin" && (
+          <Button variant="outline" onClick={handleBackup} disabled={backingUp}>
+            {backingUp ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+            Backup
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
