@@ -146,7 +146,7 @@ export default function RestaurantManualOrder() {
 
   const reset = () => {
     setVisitorId(null); setVisitorName(""); setVisitorQuery("");
-    setCart([]); setTableNumber(""); setOrderDone(null);
+    setCart([]); setTableNumber(""); setOrderDone(null); setDoneInvoice(null);
   };
 
   if (orderDone) {
