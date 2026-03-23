@@ -44,8 +44,12 @@ export default function ProgramAttendance() {
   };
 
   const presentList = participants.filter(p => getAttendanceForParticipant(p.id)?.status === "present");
-  const waitingList = participants.filter(p => getAttendanceForParticipant(p.id)?.status === "en_attente");
   const absentList = participants.filter(p => getAttendanceForParticipant(p.id)?.status === "absent");
+  // Participants with "en_attente" status OR no attendance record at all appear in waiting list
+  const waitingList = participants.filter(p => {
+    const att = getAttendanceForParticipant(p.id);
+    return !att || att.status === "en_attente";
+  });
 
   const filteredParticipants = (list: typeof participants) => {
     if (!searchQuery.trim()) return list;
