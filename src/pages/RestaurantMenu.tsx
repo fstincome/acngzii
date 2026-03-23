@@ -80,6 +80,15 @@ export default function RestaurantMenu() {
           unit_price: c.product.price,
         })),
       });
+      setConfirmedInvoice({
+        orderCode,
+        visitorId: visitorId!,
+        tableNumber: parseInt(tableNumber),
+        items: cart.map(c => ({ name: c.product.name, quantity: c.quantity, unitPrice: c.product.price })),
+        totalAmount: total,
+        paymentStatus: "unpaid",
+        createdAt: new Date().toISOString(),
+      });
       setOrderConfirmed(orderCode);
       setCart([]);
       setShowCheckout(false);
