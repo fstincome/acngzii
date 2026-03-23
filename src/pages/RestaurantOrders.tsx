@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle, CreditCard } from "lucide-react";
+import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import type { OrderItem } from "@/lib/restaurant-store";
+import InvoiceActions from "@/components/InvoiceActions";
+import type { InvoiceData } from "@/lib/invoice";
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
   pending: <Clock className="h-4 w-4" />,
