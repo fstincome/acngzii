@@ -392,20 +392,6 @@ function roundedRect(
   ctx.fill();
 }
 
-function dashedLine(
-  ctx: CanvasRenderingContext2D,
-  x1: number, y1: number, x2: number, y2: number,
-  s: number
-) {
-  ctx.strokeStyle = "#d1d5db";
-  ctx.lineWidth = 0.5 * s;
-  ctx.setLineDash([2 * s, 1.5 * s]);
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
 
 // ── Print ───────────────────────────────────────────────────────
 
