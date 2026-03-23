@@ -65,7 +65,19 @@ export default function ProgramAttendance() {
     }
     const att = getAttendanceForParticipant(participant.id);
     if (!att) {
-      toast.error("Pas de présence initialisée pour cette session");
+      // Auto-create attendance record if missing, then mark present
+      if (!selectedSessionId) return;
+      try {
+        const { data, error } = await supabase
+          .from("program_attendance")
+          .insert({ participant_id: participant.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString() })
+          .select()
+          .single();
+        if (error) throw error;
+        toast.success(`${participant.full_name} — Présent(e) ✓`);
+      } catch {
+        toast.error("Erreur lors du pointage");
+      }
       return;
     }
     if (att.status === "present") {
@@ -82,7 +94,7 @@ export default function ProgramAttendance() {
     } catch {
       toast.error("Erreur lors du pointage");
     }
-  }, [participants, attendance, markPresent]);
+  }, [participants, attendance, markPresent, selectedSessionId]);
 
   const handleManualScan = () => {
     if (scanCode.trim()) {
