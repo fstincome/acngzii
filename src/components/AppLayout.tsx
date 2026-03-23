@@ -22,6 +22,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [normalOpen, setNormalOpen] = useState(true);
   const [programOpen, setProgramOpen] = useState(true);
+  const [restaurantOpen, setRestaurantOpen] = useState(true);
   const location = useLocation();
   const { role, user, signOut } = useAuth();
 
