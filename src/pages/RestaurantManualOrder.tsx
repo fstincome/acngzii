@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Plus, Minus, Trash2, ShoppingCart, Check, Camera, X } from "lucide-react";
 import { toast } from "sonner";
+import InvoiceActions from "@/components/InvoiceActions";
+import type { InvoiceData } from "@/lib/invoice";
 
 export default function RestaurantManualOrder() {
   const { data: products = [] } = useProducts();
