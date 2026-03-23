@@ -15,6 +15,7 @@ import {
   ClipboardCheck,
   ChevronDown,
   Shield,
+  UtensilsCrossed,
 } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
