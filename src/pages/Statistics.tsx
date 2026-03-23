@@ -93,6 +93,32 @@ export default function Statistics() {
   const multiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length;
   const gardenCheckIns = checkIns.filter((v) => v.room === "garden").length;
 
+  // Restaurant revenue & profit
+  const filteredOrders = useMemo(() => {
+    if (period === "month" && selectedMonth) {
+      return orders.filter((o) => o.created_at.startsWith(selectedMonth));
+    }
+    const start = getStartDate(period);
+    if (!start) return orders;
+    return orders.filter((o) => new Date(o.created_at) >= start);
+  }, [orders, period, selectedMonth]);
+
+  const productMap = useMemo(() => {
+    const map: Record<string, { price: number; cost_price: number }> = {};
+    products.forEach(p => { map[p.id] = { price: p.price, cost_price: p.cost_price }; });
+    return map;
+  }, [products]);
+
+  const totalRevenue = filteredOrders.reduce((sum, o) => sum + o.total_amount, 0);
+  const totalProfit = useMemo(() => {
+    // Estimate profit: revenue - cost (using avg cost ratio from products)
+    const avgCostRatio = products.length > 0
+      ? products.reduce((s, p) => s + (p.price > 0 ? p.cost_price / p.price : 0), 0) / products.length
+      : 0.5;
+    return Math.round(totalRevenue * (1 - avgCostRatio));
+  }, [totalRevenue, products]);
+  const totalOrdersCount = filteredOrders.length;
+
   // Comparison percentages
   const comparePercent = (current: number, prev: number) => {
     if (prev === 0) return current > 0 ? 100 : 0;
