@@ -21,6 +21,7 @@ export default function RestaurantManualOrder() {
   const [tableNumber, setTableNumber] = useState("");
   const [searchProduct, setSearchProduct] = useState("");
   const [orderDone, setOrderDone] = useState<string | null>(null);
+  const [doneInvoice, setDoneInvoice] = useState<InvoiceData | null>(null);
 
   // QR camera state
   const [cameraActive, setCameraActive] = useState(false);
