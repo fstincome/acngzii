@@ -24,6 +24,7 @@ export default function RestaurantMenu() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [tableNumber, setTableNumber] = useState<string>("");
   const [orderConfirmed, setOrderConfirmed] = useState<string | null>(null);
+  const [confirmedInvoice, setConfirmedInvoice] = useState<InvoiceData | null>(null);
 
   const filtered = useMemo(() => {
     const available = products.filter(p => p.is_available && p.stock > 0);
