@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { useVisitors, useVisits, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visit, RoomType } from "@/lib/supabase-store";
-import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { useOrders, useProducts } from "@/lib/restaurant-store";
+import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, DollarSign, ShoppingCart } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -56,6 +57,8 @@ function getPreviousPeriodStart(period: Period): [Date, Date] | null {
 export default function Statistics() {
   const { data: visitors = [] } = useVisitors();
   const { data: visits = [] } = useVisits();
+  const { data: orders = [] } = useOrders();
+  const { data: products = [] } = useProducts();
   const [period, setPeriod] = useState<Period>("week");
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -89,6 +92,32 @@ export default function Statistics() {
   const labCheckIns = checkIns.filter((v) => v.room === "computer_lab").length;
   const multiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length;
   const gardenCheckIns = checkIns.filter((v) => v.room === "garden").length;
+
+  // Restaurant revenue & profit
+  const filteredOrders = useMemo(() => {
+    if (period === "month" && selectedMonth) {
+      return orders.filter((o) => o.created_at.startsWith(selectedMonth));
+    }
+    const start = getStartDate(period);
+    if (!start) return orders;
+    return orders.filter((o) => new Date(o.created_at) >= start);
+  }, [orders, period, selectedMonth]);
+
+  const productMap = useMemo(() => {
+    const map: Record<string, { price: number; cost_price: number }> = {};
+    products.forEach(p => { map[p.id] = { price: p.price, cost_price: p.cost_price }; });
+    return map;
+  }, [products]);
+
+  const totalRevenue = filteredOrders.reduce((sum, o) => sum + o.total_amount, 0);
+  const totalProfit = useMemo(() => {
+    // Estimate profit: revenue - cost (using avg cost ratio from products)
+    const avgCostRatio = products.length > 0
+      ? products.reduce((s, p) => s + (p.price > 0 ? p.cost_price / p.price : 0), 0) / products.length
+      : 0.5;
+    return Math.round(totalRevenue * (1 - avgCostRatio));
+  }, [totalRevenue, products]);
+  const totalOrdersCount = filteredOrders.length;
 
   // Comparison percentages
   const comparePercent = (current: number, prev: number) => {
@@ -266,6 +295,13 @@ export default function Statistics() {
         <RoomStat icon={Monitor} label="Salle Info" value={labCheckIns} color="primary" />
         <RoomStat icon={DoorOpen} label="Salle Poly" value={multiCheckIns} color="accent" />
         <RoomStat icon={TreePine} label="Jardin" value={gardenCheckIns} color="garden" />
+      </div>
+
+      {/* Restaurant Revenue */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        <KpiCard icon={DollarSign} label="Revenus restaurant" value={`${totalRevenue.toLocaleString()} BIF`} />
+        <KpiCard icon={TrendingUp} label="Bénéfice estimé" value={`${totalProfit.toLocaleString()} BIF`} />
+        <KpiCard icon={ShoppingCart} label="Commandes" value={totalOrdersCount} />
       </div>
 
       {/* Charts row 1 */}
