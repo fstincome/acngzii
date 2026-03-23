@@ -297,6 +297,13 @@ export default function Statistics() {
         <RoomStat icon={TreePine} label="Jardin" value={gardenCheckIns} color="garden" />
       </div>
 
+      {/* Restaurant Revenue */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        <KpiCard icon={DollarSign} label="Revenus restaurant" value={`${totalRevenue.toLocaleString()} BIF`} />
+        <KpiCard icon={TrendingUp} label="Bénéfice estimé" value={`${totalProfit.toLocaleString()} BIF`} />
+        <KpiCard icon={ShoppingCart} label="Commandes" value={totalOrdersCount} />
+      </div>
+
       {/* Charts row 1 */}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
