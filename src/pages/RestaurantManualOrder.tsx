@@ -1,12 +1,11 @@
-import { useState } from "react";
-import { useProducts, CartItem, CATEGORIES, generateOrderCode, useCreateOrder, TABLE_COUNT } from "@/lib/restaurant-store";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useProducts, CartItem, generateOrderCode, useCreateOrder, TABLE_COUNT } from "@/lib/restaurant-store";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Minus, Trash2, ShoppingCart, Check, UtensilsCrossed } from "lucide-react";
+import { Search, Plus, Minus, Trash2, ShoppingCart, Check, Camera, X } from "lucide-react";
 import { toast } from "sonner";
 
 export default function RestaurantManualOrder() {
@@ -21,18 +20,75 @@ export default function RestaurantManualOrder() {
   const [searchProduct, setSearchProduct] = useState("");
   const [orderDone, setOrderDone] = useState<string | null>(null);
 
-  const lookupVisitor = async () => {
-    const q = visitorQuery.trim().toUpperCase();
+  // QR camera state
+  const [cameraActive, setCameraActive] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const scanIntervalRef = useRef<number | null>(null);
+
+  const lookupVisitor = async (id?: string) => {
+    const q = (id || visitorQuery).trim().toUpperCase();
     if (!q) return;
     const { data } = await supabase.from("visitors").select("visitor_id, full_name").eq("visitor_id", q).maybeSingle();
     if (data) {
       setVisitorId(data.visitor_id);
       setVisitorName(data.full_name);
+      setVisitorQuery(data.visitor_id);
       toast.success(`Visiteur trouvé : ${data.full_name}`);
     } else {
       toast.error("Visiteur introuvable");
     }
   };
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      streamRef.current = stream;
+      setCameraActive(true);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+          startQRScanning();
+        }
+      }, 100);
+    } catch {
+      toast.error("Impossible d'accéder à la caméra.");
+      setCameraActive(false);
+    }
+  };
+
+  const startQRScanning = () => {
+    import("jsqr").then((jsQRModule) => {
+      const jsQR = jsQRModule.default;
+      const interval = window.setInterval(() => {
+        if (!videoRef.current || !canvasRef.current) return;
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        if (!ctx || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
+        if (qrCode) {
+          stopCamera();
+          lookupVisitor(qrCode.data);
+        }
+      }, 300);
+      scanIntervalRef.current = interval;
+    });
+  };
+
+  const stopCamera = useCallback(() => {
+    if (scanIntervalRef.current) { clearInterval(scanIntervalRef.current); scanIntervalRef.current = null; }
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+    setCameraActive(false);
+  }, []);
+
+  useEffect(() => () => { stopCamera(); }, [stopCamera]);
 
   const available = products.filter(p => p.is_available && p.stock > 0 && p.name.toLowerCase().includes(searchProduct.toLowerCase()));
 
@@ -107,7 +163,7 @@ export default function RestaurantManualOrder() {
       {/* Step 1: Visitor */}
       <Card>
         <CardHeader><CardTitle className="text-base">1. Identifier le visiteur</CardTitle></CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           {visitorId ? (
             <div className="flex items-center justify-between">
               <div>
@@ -117,11 +173,32 @@ export default function RestaurantManualOrder() {
               <Button variant="outline" size="sm" onClick={() => { setVisitorId(null); setVisitorName(""); }}>Changer</Button>
             </div>
           ) : (
-            <div className="flex gap-2">
-              <Input placeholder="GSS-XXXXXX" value={visitorQuery} onChange={e => setVisitorQuery(e.target.value)} className="font-mono"
-                onKeyDown={e => e.key === "Enter" && lookupVisitor()} />
-              <Button onClick={lookupVisitor}><Search className="h-4 w-4" /></Button>
-            </div>
+            <>
+              {cameraActive && (
+                <div className="relative rounded-xl overflow-hidden border border-border">
+                  <video ref={videoRef} className="w-full" playsInline muted />
+                  <canvas ref={canvasRef} className="hidden" />
+                  <div className="absolute inset-0 border-2 border-primary/30 rounded-xl pointer-events-none" />
+                  <div className="absolute top-1/2 left-1/4 right-1/4 h-0.5 bg-primary/50 animate-pulse" />
+                  <Button size="icon" variant="destructive" className="absolute top-3 right-3 rounded-full shadow-lg" onClick={stopCamera}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  variant={cameraActive ? "destructive" : "outline"}
+                  className="gap-2"
+                  onClick={cameraActive ? stopCamera : startCamera}
+                >
+                  <Camera className="h-4 w-4" />
+                  {cameraActive ? "Fermer" : "Scanner"}
+                </Button>
+                <Input placeholder="GSS-XXXXXX" value={visitorQuery} onChange={e => setVisitorQuery(e.target.value)} className="font-mono"
+                  onKeyDown={e => e.key === "Enter" && lookupVisitor()} />
+                <Button onClick={() => lookupVisitor()}><Search className="h-4 w-4" /></Button>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

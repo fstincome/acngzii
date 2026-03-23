@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScanLine, Search, CheckCircle2, Clock, XCircle, Camera, X, Building, Fingerprint } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -44,8 +45,12 @@ export default function ProgramAttendance() {
   };
 
   const presentList = participants.filter(p => getAttendanceForParticipant(p.id)?.status === "present");
-  const waitingList = participants.filter(p => getAttendanceForParticipant(p.id)?.status === "en_attente");
   const absentList = participants.filter(p => getAttendanceForParticipant(p.id)?.status === "absent");
+  // Participants with "en_attente" status OR no attendance record at all appear in waiting list
+  const waitingList = participants.filter(p => {
+    const att = getAttendanceForParticipant(p.id);
+    return !att || att.status === "en_attente";
+  });
 
   const filteredParticipants = (list: typeof participants) => {
     if (!searchQuery.trim()) return list;
@@ -61,7 +66,19 @@ export default function ProgramAttendance() {
     }
     const att = getAttendanceForParticipant(participant.id);
     if (!att) {
-      toast.error("Pas de présence initialisée pour cette session");
+      // Auto-create attendance record if missing, then mark present
+      if (!selectedSessionId) return;
+      try {
+        const { data, error } = await supabase
+          .from("program_attendance")
+          .insert({ participant_id: participant.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString() })
+          .select()
+          .single();
+        if (error) throw error;
+        toast.success(`${participant.full_name} — Présent(e) ✓`);
+      } catch {
+        toast.error("Erreur lors du pointage");
+      }
       return;
     }
     if (att.status === "present") {
@@ -78,7 +95,7 @@ export default function ProgramAttendance() {
     } catch {
       toast.error("Erreur lors du pointage");
     }
-  }, [participants, attendance, markPresent]);
+  }, [participants, attendance, markPresent, selectedSessionId]);
 
   const handleManualScan = () => {
     if (scanCode.trim()) {
@@ -323,10 +340,20 @@ export default function ProgramAttendance() {
               {filteredParticipants(waitingList).length === 0 ? (
                 <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant en attente</p>
               ) : (
-                filteredParticipants(waitingList).map(p => (
-                  <ParticipantRow key={p.id} participant={p} status="en_attente" onMark={() => {
+                 filteredParticipants(waitingList).map(p => (
+                  <ParticipantRow key={p.id} participant={p} status="en_attente" onMark={async () => {
                     const att = getAttendanceForParticipant(p.id);
-                    if (att) markPresent.mutateAsync({ attendanceId: att.id }).then(() => toast.success(`${p.full_name} — Présent(e) ✓`));
+                    if (att) {
+                      await markPresent.mutateAsync({ attendanceId: att.id });
+                      toast.success(`${p.full_name} — Présent(e) ✓`);
+                    } else if (selectedSessionId) {
+                      // Auto-create attendance record when missing
+                      const { error } = await supabase
+                        .from("program_attendance")
+                        .insert({ participant_id: p.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString() });
+                      if (!error) toast.success(`${p.full_name} — Présent(e) ✓`);
+                      else toast.error("Erreur lors du pointage");
+                    }
                   }} />
                 ))
               )}
