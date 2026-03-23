@@ -12,15 +12,6 @@ export interface InvoiceData {
   createdAt: string;
 }
 
-const COLORS = {
-  primary: [30, 64, 175] as [number, number, number],
-  dark: [15, 23, 42] as [number, number, number],
-  muted: [100, 116, 139] as [number, number, number],
-  border: [226, 232, 240] as [number, number, number],
-  bg: [248, 250, 252] as [number, number, number],
-  white: [255, 255, 255] as [number, number, number],
-};
-
 const PAYMENT_LABELS: Record<string, string> = {
   unpaid: "Non payé",
   cash: "Cash",
@@ -28,305 +19,376 @@ const PAYMENT_LABELS: Record<string, string> = {
   bitcoin: "Bitcoin",
 };
 
+// ── PDF Generation ──────────────────────────────────────────────
+
 export function generateInvoicePDF(data: InvoiceData): jsPDF {
-  const doc = new jsPDF({ unit: "mm", format: [80, 200] }); // Receipt-style narrow format
+  const doc = new jsPDF({ unit: "mm", format: [80, 200] });
   const w = 80;
-  let y = 8;
+  const mx = 5;
+  let y = 6;
 
-  // Header
-  doc.setFillColor(...COLORS.primary);
-  doc.rect(0, 0, w, 28, "F");
+  // ── Header band ──
+  doc.setFillColor(30, 64, 175);
+  doc.rect(0, 0, w, 26, "F");
 
-  doc.setTextColor(...COLORS.white);
-  doc.setFontSize(12);
+  // Try to add logo (will be added async in PNG version)
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.text("GITEGA STUDY SPACE", w / 2, y + 4, { align: "center" });
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.text("Restaurant — Facture", w / 2, y + 10, { align: "center" });
+  doc.text("GITEGA STUDY SPACE", w / 2, y + 6, { align: "center" });
   doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text("Restaurant — Facture", w / 2, y + 11, { align: "center" });
+  doc.setFontSize(6);
   doc.text("Tél: +257 61 154 065", w / 2, y + 15, { align: "center" });
 
-  y = 32;
+  y = 30;
 
-  // Order info
-  doc.setTextColor(...COLORS.dark);
+  // ── Order code badge ──
+  doc.setFillColor(240, 245, 255);
+  doc.roundedRect(mx, y - 4, w - mx * 2, 10, 2, 2, "F");
+  doc.setTextColor(30, 64, 175);
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
-  doc.text(data.orderCode, w / 2, y, { align: "center" });
-  y += 6;
+  doc.text(data.orderCode, w / 2, y + 1, { align: "center" });
+  y += 10;
 
+  // ── Info section ──
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(...COLORS.muted);
+  doc.setTextColor(100, 116, 139);
 
-  const infoLines = [
-    `Date: ${new Date(data.createdAt).toLocaleString("fr")}`,
-    `Visiteur: ${data.visitorName || data.visitorId}`,
-    `Table: ${data.tableNumber}`,
+  const infoPairs = [
+    ["Date", new Date(data.createdAt).toLocaleString("fr")],
+    ["Visiteur", data.visitorName || data.visitorId],
+    ["Table", String(data.tableNumber)],
   ];
-  infoLines.forEach(line => {
-    doc.text(line, 6, y);
+  infoPairs.forEach(([label, value]) => {
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(60, 60, 60);
+    doc.text(`${label}:`, mx + 1, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text(value, mx + 18, y);
     y += 4;
   });
 
   y += 2;
 
-  // Separator
-  doc.setDrawColor(...COLORS.border);
-  doc.setLineDashPattern([1, 1], 0);
-  doc.line(6, y, w - 6, y);
-  y += 4;
-
-  // Items header
+  // ── Dashed separator ──
+  doc.setDrawColor(200, 210, 225);
+  doc.setLineDashPattern([1.5, 1], 0);
+  doc.line(mx, y, w - mx, y);
   doc.setLineDashPattern([], 0);
-  doc.setTextColor(...COLORS.dark);
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "bold");
-  doc.text("Article", 6, y);
-  doc.text("Qté", 46, y, { align: "center" });
-  doc.text("Total", w - 6, y, { align: "right" });
-  y += 1;
-  doc.setDrawColor(...COLORS.border);
-  doc.line(6, y, w - 6, y);
   y += 4;
 
-  // Items
+  // ── Items table header ──
+  doc.setFillColor(245, 247, 250);
+  doc.rect(mx, y - 3, w - mx * 2, 6, "F");
+  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(6.5);
+  doc.setFont("helvetica", "bold");
+  doc.text("ARTICLE", mx + 2, y);
+  doc.text("QTÉ", 48, y, { align: "center" });
+  doc.text("TOTAL", w - mx - 1, y, { align: "right" });
+  y += 5;
+
+  // ── Items rows ──
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
-  data.items.forEach(item => {
-    doc.setTextColor(...COLORS.dark);
-    const name = item.name.length > 18 ? item.name.substring(0, 17) + "…" : item.name;
-    doc.text(name, 6, y);
-    doc.text(String(item.quantity), 46, y, { align: "center" });
-    doc.text(`${(item.unitPrice * item.quantity).toLocaleString()}`, w - 6, y, { align: "right" });
-    y += 4;
+  data.items.forEach((item, idx) => {
+    if (idx % 2 === 0) {
+      doc.setFillColor(252, 252, 255);
+      doc.rect(mx, y - 3, w - mx * 2, 5, "F");
+    }
+    doc.setTextColor(30, 30, 30);
+    const name = item.name.length > 16 ? item.name.substring(0, 15) + "…" : item.name;
+    doc.text(name, mx + 2, y);
+    doc.setTextColor(100, 100, 100);
+    doc.text(String(item.quantity), 48, y, { align: "center" });
+    doc.setTextColor(30, 30, 30);
+    doc.text(`${(item.unitPrice * item.quantity).toLocaleString()}`, w - mx - 1, y, { align: "right" });
+    y += 5;
   });
 
-  // Total separator
-  y += 1;
-  doc.setDrawColor(...COLORS.border);
-  doc.setLineDashPattern([1, 1], 0);
-  doc.line(6, y, w - 6, y);
+  y += 2;
+
+  // ── Total section ──
+  doc.setDrawColor(200, 210, 225);
+  doc.setLineDashPattern([1.5, 1], 0);
+  doc.line(mx, y, w - mx, y);
+  doc.setLineDashPattern([], 0);
   y += 5;
 
-  // Total
-  doc.setLineDashPattern([], 0);
-  doc.setFontSize(10);
+  doc.setFillColor(30, 64, 175);
+  doc.roundedRect(mx, y - 4, w - mx * 2, 10, 2, 2, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(...COLORS.primary);
-  doc.text("TOTAL", 6, y);
-  doc.text(`${data.totalAmount.toLocaleString()} BIF`, w - 6, y, { align: "right" });
-  y += 6;
+  doc.text("TOTAL", mx + 3, y + 1);
+  doc.text(`${data.totalAmount.toLocaleString()} BIF`, w - mx - 3, y + 1, { align: "right" });
+  y += 12;
 
-  // Payment status
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...COLORS.muted);
+  // ── Payment badge ──
   const payLabel = PAYMENT_LABELS[data.paymentStatus] || data.paymentStatus;
-  doc.text(`Paiement: ${payLabel}`, 6, y);
-  y += 8;
+  const isPaid = data.paymentStatus !== "unpaid";
+  if (isPaid) {
+    doc.setFillColor(220, 252, 231);
+    doc.setTextColor(22, 101, 52);
+  } else {
+    doc.setFillColor(254, 242, 242);
+    doc.setTextColor(153, 27, 27);
+  }
+  doc.roundedRect(mx, y - 3, w - mx * 2, 7, 1.5, 1.5, "F");
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Paiement: ${payLabel}`, w / 2, y + 1, { align: "center" });
+  y += 10;
 
-  // Footer
-  doc.setDrawColor(...COLORS.border);
+  // ── Footer ──
+  doc.setDrawColor(220, 225, 235);
   doc.setLineDashPattern([1, 1], 0);
-  doc.line(6, y, w - 6, y);
-  y += 5;
+  doc.line(mx, y, w - mx, y);
   doc.setLineDashPattern([], 0);
+  y += 5;
   doc.setFontSize(6);
-  doc.setTextColor(...COLORS.muted);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(140, 140, 140);
   doc.text("Merci pour votre visite !", w / 2, y, { align: "center" });
   y += 3;
   doc.text("Gitega Study Space — Multipurpose Room", w / 2, y, { align: "center" });
 
-  // Trim page height
-  const pageHeight = y + 8;
-  // We can't resize after creation, but the 200mm height is fine for receipts
-
   return doc;
 }
+
+// ── PDF Download ────────────────────────────────────────────────
 
 export function downloadInvoice(doc: jsPDF, orderCode: string) {
   doc.save(`facture-${orderCode}.pdf`);
 }
 
-export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
-  const doc = generateInvoicePDF(data);
-  const pageWidth = 80;
-  const pageHeight = 200;
-  const scale = 3; // High resolution
+// ── PNG Generation via Canvas ───────────────────────────────────
 
+export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
+  const scale = 4;
+  const cw = 80 * scale; // canvas width
+  const ch = 260 * scale; // canvas height (generous)
   const canvas = document.createElement("canvas");
-  canvas.width = pageWidth * scale;
-  canvas.height = pageHeight * scale;
+  canvas.width = cw;
+  canvas.height = ch;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  // Render PDF page to canvas via image
-  const pdfBlob = doc.output("blob");
-  const pdfUrl = URL.createObjectURL(pdfBlob);
-
-  // Use jsPDF's built-in output to get data URL and draw on canvas
-  const imgData = doc.output("datauristring");
-
-  return new Promise<void>((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `facture-${data.orderCode}.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-        }
-        URL.revokeObjectURL(pdfUrl);
-        resolve();
-      }, "image/png");
-    };
-    img.onerror = () => {
-      // Fallback: generate PNG from scratch using canvas
-      generateInvoiceCanvas(data, ctx, canvas.width, canvas.height, scale);
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `facture-${data.orderCode}.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-        }
-        resolve();
-      }, "image/png");
-    };
-    img.src = imgData;
-  });
-}
-
-function generateInvoiceCanvas(data: InvoiceData, ctx: CanvasRenderingContext2D, w: number, h: number, scale: number) {
   const s = scale;
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, w, h);
+  const mx = 6 * s;
+  let y = 0;
 
-  // Header
-  ctx.fillStyle = "rgb(30, 64, 175)";
-  ctx.fillRect(0, 0, w, 28 * s);
+  // ── Background ──
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, cw, ch);
+
+  // ── Header band ──
+  const headerH = 30 * s;
+  ctx.fillStyle = "#1e40af";
+  ctx.fillRect(0, 0, cw, headerH);
+
+  // Load and draw logo
+  try {
+    const logo = await loadImage("/gss-logo.png");
+    const logoSize = 10 * s;
+    ctx.drawImage(logo, cw / 2 - logoSize / 2, 2 * s, logoSize, logoSize);
+    y = 14 * s;
+  } catch {
+    y = 8 * s;
+  }
 
   ctx.fillStyle = "#ffffff";
-  ctx.font = `bold ${12 * s}px Helvetica, Arial, sans-serif`;
   ctx.textAlign = "center";
-  ctx.fillText("GITEGA STUDY SPACE", w / 2, 12 * s);
-  ctx.font = `${8 * s}px Helvetica, Arial, sans-serif`;
-  ctx.fillText("Restaurant — Facture", w / 2, 20 * s);
-  ctx.font = `${7 * s}px Helvetica, Arial, sans-serif`;
-  ctx.fillText("Tél: +257 61 154 065", w / 2, 26 * s);
+  ctx.font = `bold ${9 * s}px Helvetica, Arial, sans-serif`;
+  ctx.fillText("GITEGA STUDY SPACE", cw / 2, y);
+  y += 4 * s;
+  ctx.font = `${6 * s}px Helvetica, Arial, sans-serif`;
+  ctx.fillText("Restaurant — Facture", cw / 2, y);
+  y += 3.5 * s;
+  ctx.font = `${5 * s}px Helvetica, Arial, sans-serif`;
+  ctx.fillText("Tél: +257 61 154 065", cw / 2, y);
 
-  let y = 34 * s;
+  y = headerH + 5 * s;
 
-  // Order code
-  ctx.fillStyle = "rgb(15, 23, 42)";
-  ctx.font = `bold ${10 * s}px Helvetica, Arial, sans-serif`;
-  ctx.fillText(data.orderCode, w / 2, y);
-  y += 7 * s;
+  // ── Order code badge ──
+  const badgeH = 9 * s;
+  roundedRect(ctx, mx, y - 2 * s, cw - mx * 2, badgeH, 3 * s, "#eef2ff");
+  ctx.fillStyle = "#1e40af";
+  ctx.font = `bold ${9 * s}px Helvetica, Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText(data.orderCode, cw / 2, y + 4 * s);
+  y += badgeH + 4 * s;
 
-  // Info
-  ctx.font = `${7 * s}px Helvetica, Arial, sans-serif`;
-  ctx.fillStyle = "rgb(100, 116, 139)";
-  ctx.textAlign = "left";
-  const infoLines = [
-    `Date: ${new Date(data.createdAt).toLocaleString("fr")}`,
-    `Visiteur: ${data.visitorName || data.visitorId}`,
-    `Table: ${data.tableNumber}`,
+  // ── Info pairs ──
+  const infoPairs = [
+    ["Date", new Date(data.createdAt).toLocaleString("fr")],
+    ["Visiteur", data.visitorName || data.visitorId],
+    ["Table", String(data.tableNumber)],
   ];
-  infoLines.forEach(line => {
-    ctx.fillText(line, 6 * s, y);
+  ctx.textAlign = "left";
+  infoPairs.forEach(([label, value]) => {
+    ctx.font = `bold ${6 * s}px Helvetica, Arial, sans-serif`;
+    ctx.fillStyle = "#374151";
+    ctx.fillText(`${label}:`, mx + 1 * s, y);
+    ctx.font = `${6 * s}px Helvetica, Arial, sans-serif`;
+    ctx.fillStyle = "#6b7280";
+    ctx.fillText(value, mx + 18 * s, y);
     y += 4 * s;
   });
-  y += 3 * s;
+  y += 2 * s;
 
-  // Separator
-  ctx.strokeStyle = "rgb(226, 232, 240)";
-  ctx.setLineDash([s, s]);
-  ctx.beginPath();
-  ctx.moveTo(6 * s, y);
-  ctx.lineTo(w - 6 * s, y);
-  ctx.stroke();
-  y += 5 * s;
+  // ── Dashed line ──
+  dashedLine(ctx, mx, y, cw - mx, y, s);
+  y += 4 * s;
 
-  // Items header
-  ctx.setLineDash([]);
-  ctx.fillStyle = "rgb(15, 23, 42)";
-  ctx.font = `bold ${7 * s}px Helvetica, Arial, sans-serif`;
+  // ── Table header ──
+  roundedRect(ctx, mx, y - 3 * s, cw - mx * 2, 6 * s, 1.5 * s, "#f3f4f6");
+  ctx.fillStyle = "#4b5563";
+  ctx.font = `bold ${5.5 * s}px Helvetica, Arial, sans-serif`;
   ctx.textAlign = "left";
-  ctx.fillText("Article", 6 * s, y);
+  ctx.fillText("ARTICLE", mx + 2 * s, y + 1 * s);
   ctx.textAlign = "center";
-  ctx.fillText("Qté", 46 * s, y);
+  ctx.fillText("QTÉ", 48 * s, y + 1 * s);
   ctx.textAlign = "right";
-  ctx.fillText("Total", w - 6 * s, y);
+  ctx.fillText("TOTAL", cw - mx - 1 * s, y + 1 * s);
   y += 5 * s;
 
-  // Items
-  ctx.font = `${7 * s}px Helvetica, Arial, sans-serif`;
-  data.items.forEach(item => {
-    ctx.fillStyle = "rgb(15, 23, 42)";
+  // ── Items ──
+  ctx.font = `${6 * s}px Helvetica, Arial, sans-serif`;
+  data.items.forEach((item, idx) => {
+    if (idx % 2 === 0) {
+      ctx.fillStyle = "#fafbff";
+      ctx.fillRect(mx, y - 3 * s, cw - mx * 2, 5 * s);
+    }
+    ctx.fillStyle = "#1f2937";
     ctx.textAlign = "left";
-    const name = item.name.length > 18 ? item.name.substring(0, 17) + "…" : item.name;
-    ctx.fillText(name, 6 * s, y);
+    const name = item.name.length > 16 ? item.name.substring(0, 15) + "…" : item.name;
+    ctx.fillText(name, mx + 2 * s, y);
+    ctx.fillStyle = "#6b7280";
     ctx.textAlign = "center";
-    ctx.fillText(String(item.quantity), 46 * s, y);
+    ctx.fillText(String(item.quantity), 48 * s, y);
+    ctx.fillStyle = "#1f2937";
     ctx.textAlign = "right";
-    ctx.fillText(`${(item.unitPrice * item.quantity).toLocaleString()}`, w - 6 * s, y);
-    y += 4 * s;
+    ctx.fillText(`${(item.unitPrice * item.quantity).toLocaleString()}`, cw - mx - 1 * s, y);
+    y += 5 * s;
   });
+  y += 2 * s;
 
-  y += 3 * s;
-  // Total separator
-  ctx.strokeStyle = "rgb(226, 232, 240)";
-  ctx.setLineDash([s, s]);
-  ctx.beginPath();
-  ctx.moveTo(6 * s, y);
-  ctx.lineTo(w - 6 * s, y);
-  ctx.stroke();
-  y += 6 * s;
+  // ── Dashed line ──
+  dashedLine(ctx, mx, y, cw - mx, y, s);
+  y += 5 * s;
 
-  // Total
-  ctx.setLineDash([]);
-  ctx.fillStyle = "rgb(30, 64, 175)";
-  ctx.font = `bold ${10 * s}px Helvetica, Arial, sans-serif`;
+  // ── Total badge ──
+  const totalBadgeH = 10 * s;
+  roundedRect(ctx, mx, y - 4 * s, cw - mx * 2, totalBadgeH, 3 * s, "#1e40af");
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold ${8 * s}px Helvetica, Arial, sans-serif`;
   ctx.textAlign = "left";
-  ctx.fillText("TOTAL", 6 * s, y);
+  ctx.fillText("TOTAL", mx + 3 * s, y + 2 * s);
   ctx.textAlign = "right";
-  ctx.fillText(`${data.totalAmount.toLocaleString()} BIF`, w - 6 * s, y);
-  y += 7 * s;
+  ctx.fillText(`${data.totalAmount.toLocaleString()} BIF`, cw - mx - 3 * s, y + 2 * s);
+  y += totalBadgeH + 4 * s;
 
-  // Payment
-  ctx.font = `${7 * s}px Helvetica, Arial, sans-serif`;
-  ctx.fillStyle = "rgb(100, 116, 139)";
-  ctx.textAlign = "left";
-  const payLabels: Record<string, string> = { unpaid: "Non payé", cash: "Cash", mobile_money: "Mobile Money", bitcoin: "Bitcoin" };
-  ctx.fillText(`Paiement: ${payLabels[data.paymentStatus] || data.paymentStatus}`, 6 * s, y);
+  // ── Payment status badge ──
+  const payLabel = PAYMENT_LABELS[data.paymentStatus] || data.paymentStatus;
+  const isPaid = data.paymentStatus !== "unpaid";
+  const payBg = isPaid ? "#dcfce7" : "#fef2f2";
+  const payFg = isPaid ? "#166534" : "#991b1b";
+  roundedRect(ctx, mx, y - 3 * s, cw - mx * 2, 7 * s, 2 * s, payBg);
+  ctx.fillStyle = payFg;
+  ctx.font = `bold ${6 * s}px Helvetica, Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText(`Paiement: ${payLabel}`, cw / 2, y + 1.5 * s);
   y += 10 * s;
 
-  // Footer
-  ctx.strokeStyle = "rgb(226, 232, 240)";
-  ctx.setLineDash([s, s]);
-  ctx.beginPath();
-  ctx.moveTo(6 * s, y);
-  ctx.lineTo(w - 6 * s, y);
-  ctx.stroke();
-  y += 6 * s;
-  ctx.setLineDash([]);
-  ctx.font = `${6 * s}px Helvetica, Arial, sans-serif`;
+  // ── Footer ──
+  dashedLine(ctx, mx, y, cw - mx, y, s);
+  y += 5 * s;
+  ctx.fillStyle = "#9ca3af";
+  ctx.font = `${5 * s}px Helvetica, Arial, sans-serif`;
   ctx.textAlign = "center";
-  ctx.fillText("Merci pour votre visite !", w / 2, y);
-  y += 4 * s;
-  ctx.fillText("Gitega Study Space — Multipurpose Room", w / 2, y);
+  ctx.fillText("Merci pour votre visite !", cw / 2, y);
+  y += 3 * s;
+  ctx.fillText("Gitega Study Space — Multipurpose Room", cw / 2, y);
+  y += 5 * s;
+
+  // ── Crop to actual content height and download ──
+  const finalH = y;
+  const croppedCanvas = document.createElement("canvas");
+  croppedCanvas.width = cw;
+  croppedCanvas.height = finalH;
+  const croppedCtx = croppedCanvas.getContext("2d");
+  if (!croppedCtx) return;
+  croppedCtx.drawImage(canvas, 0, 0, cw, finalH, 0, 0, cw, finalH);
+
+  return new Promise<void>((resolve) => {
+    croppedCanvas.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `facture-${data.orderCode}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      resolve();
+    }, "image/png");
+  });
 }
+
+// ── Helpers ──────────────────────────────────────────────────────
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function roundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number,
+  r: number, fill: string
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function dashedLine(
+  ctx: CanvasRenderingContext2D,
+  x1: number, y1: number, x2: number, y2: number,
+  s: number
+) {
+  ctx.strokeStyle = "#d1d5db";
+  ctx.lineWidth = 0.5 * s;
+  ctx.setLineDash([2 * s, 1.5 * s]);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// ── Print ───────────────────────────────────────────────────────
 
 export function printInvoice(doc: jsPDF) {
   const blob = doc.output("blob");
@@ -338,6 +400,8 @@ export function printInvoice(doc: jsPDF) {
     });
   }
 }
+
+// ── Share WhatsApp ──────────────────────────────────────────────
 
 export function shareInvoiceWhatsApp(data: InvoiceData) {
   const items = data.items.map(i => `• ${i.name} x${i.quantity} = ${(i.unitPrice * i.quantity).toLocaleString()} BIF`).join("\n");
@@ -352,6 +416,8 @@ export function shareInvoiceWhatsApp(data: InvoiceData) {
   );
   window.open(`https://wa.me/?text=${msg}`, "_blank");
 }
+
+// ── Share Email ─────────────────────────────────────────────────
 
 export function shareInvoiceEmail(data: InvoiceData, recipientEmail?: string) {
   const items = data.items.map(i => `- ${i.name} x${i.quantity} = ${(i.unitPrice * i.quantity).toLocaleString()} BIF`).join("\n");
