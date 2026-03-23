@@ -340,10 +340,20 @@ export default function ProgramAttendance() {
               {filteredParticipants(waitingList).length === 0 ? (
                 <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant en attente</p>
               ) : (
-                filteredParticipants(waitingList).map(p => (
-                  <ParticipantRow key={p.id} participant={p} status="en_attente" onMark={() => {
+                 filteredParticipants(waitingList).map(p => (
+                  <ParticipantRow key={p.id} participant={p} status="en_attente" onMark={async () => {
                     const att = getAttendanceForParticipant(p.id);
-                    if (att) markPresent.mutateAsync({ attendanceId: att.id }).then(() => toast.success(`${p.full_name} — Présent(e) ✓`));
+                    if (att) {
+                      await markPresent.mutateAsync({ attendanceId: att.id });
+                      toast.success(`${p.full_name} — Présent(e) ✓`);
+                    } else if (selectedSessionId) {
+                      // Auto-create attendance record when missing
+                      const { error } = await supabase
+                        .from("program_attendance")
+                        .insert({ participant_id: p.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString() });
+                      if (!error) toast.success(`${p.full_name} — Présent(e) ✓`);
+                      else toast.error("Erreur lors du pointage");
+                    }
                   }} />
                 ))
               )}
