@@ -126,6 +126,16 @@ export default function RestaurantManualOrder() {
         order: { order_code: orderCode, visitor_id: visitorId, table_number: parseInt(tableNumber), total_amount: total },
         items: cart.map(c => ({ product_id: c.product.id, quantity: c.quantity, unit_price: c.product.price })),
       });
+      setDoneInvoice({
+        orderCode,
+        visitorId: visitorId!,
+        visitorName,
+        tableNumber: parseInt(tableNumber),
+        items: cart.map(c => ({ name: c.product.name, quantity: c.quantity, unitPrice: c.product.price })),
+        totalAmount: total,
+        paymentStatus: "unpaid",
+        createdAt: new Date().toISOString(),
+      });
       setOrderDone(orderCode);
       setCart([]);
       toast.success("Commande créée !");
