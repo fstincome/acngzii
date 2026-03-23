@@ -159,6 +159,7 @@ export default function RestaurantManualOrder() {
             </div>
             <h2 className="text-xl font-bold">Commande créée</h2>
             <p className="font-mono text-lg text-primary">{orderDone}</p>
+            {doneInvoice && <InvoiceActions data={doneInvoice} />}
             <Button onClick={reset} className="w-full">Nouvelle commande</Button>
           </CardContent>
         </Card>

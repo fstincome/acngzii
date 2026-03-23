@@ -98,18 +98,7 @@ export default function RestaurantMenu() {
     }
   };
 
-  const shareWhatsApp = () => {
-    if (!orderConfirmed) return;
-    const items = cart.length > 0
-      ? cart.map(c => `${c.product.name} x${c.quantity}`).join("\n")
-      : "Voir détails sur le système";
-    const msg = encodeURIComponent(
-      `Bonjour,\nVoici ma commande:\n\n${items}\n\nTotal: ${total.toLocaleString()} BIF\nTable: ${tableNumber}\nCommande: ${orderConfirmed}`
-    );
-    window.open(`https://wa.me/?text=${msg}`, "_blank");
-  };
-
-  if (orderConfirmed) {
+  if (orderConfirmed && confirmedInvoice) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-sm text-center">
@@ -119,15 +108,27 @@ export default function RestaurantMenu() {
             </div>
             <h2 className="text-xl font-bold">Commande confirmée !</h2>
             <p className="font-mono text-lg text-primary">{orderConfirmed}</p>
-            <p className="text-sm text-muted-foreground">Table {tableNumber}</p>
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="flex-1" onClick={shareWhatsApp}>
-                <Send className="h-4 w-4 mr-1" /> WhatsApp
-              </Button>
-              <Button className="flex-1" onClick={() => { setOrderConfirmed(null); setTableNumber(""); }}>
-                Nouveau
-              </Button>
+            <p className="text-sm text-muted-foreground">Table {confirmedInvoice.tableNumber}</p>
+
+            {/* Invoice items recap */}
+            <div className="border rounded-lg p-3 text-left space-y-1">
+              {confirmedInvoice.items.map((item, i) => (
+                <div key={i} className="flex justify-between text-sm">
+                  <span>{item.name} ×{item.quantity}</span>
+                  <span>{(item.unitPrice * item.quantity).toLocaleString()} BIF</span>
+                </div>
+              ))}
+              <div className="border-t pt-2 mt-2 flex justify-between font-bold">
+                <span>Total</span>
+                <span className="text-primary">{confirmedInvoice.totalAmount.toLocaleString()} BIF</span>
+              </div>
             </div>
+
+            <InvoiceActions data={confirmedInvoice} />
+
+            <Button className="w-full" onClick={() => { setOrderConfirmed(null); setConfirmedInvoice(null); setTableNumber(""); }}>
+              Nouvelle commande
+            </Button>
           </CardContent>
         </Card>
       </div>
