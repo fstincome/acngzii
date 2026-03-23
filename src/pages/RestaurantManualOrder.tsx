@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Plus, Minus, Trash2, ShoppingCart, Check, Camera, X } from "lucide-react";
 import { toast } from "sonner";
+import InvoiceActions from "@/components/InvoiceActions";
+import type { InvoiceData } from "@/lib/invoice";
 
 export default function RestaurantManualOrder() {
   const { data: products = [] } = useProducts();
@@ -19,6 +21,7 @@ export default function RestaurantManualOrder() {
   const [tableNumber, setTableNumber] = useState("");
   const [searchProduct, setSearchProduct] = useState("");
   const [orderDone, setOrderDone] = useState<string | null>(null);
+  const [doneInvoice, setDoneInvoice] = useState<InvoiceData | null>(null);
 
   // QR camera state
   const [cameraActive, setCameraActive] = useState(false);
@@ -123,6 +126,16 @@ export default function RestaurantManualOrder() {
         order: { order_code: orderCode, visitor_id: visitorId, table_number: parseInt(tableNumber), total_amount: total },
         items: cart.map(c => ({ product_id: c.product.id, quantity: c.quantity, unit_price: c.product.price })),
       });
+      setDoneInvoice({
+        orderCode,
+        visitorId: visitorId!,
+        visitorName,
+        tableNumber: parseInt(tableNumber),
+        items: cart.map(c => ({ name: c.product.name, quantity: c.quantity, unitPrice: c.product.price })),
+        totalAmount: total,
+        paymentStatus: "unpaid",
+        createdAt: new Date().toISOString(),
+      });
       setOrderDone(orderCode);
       setCart([]);
       toast.success("Commande créée !");
@@ -133,7 +146,7 @@ export default function RestaurantManualOrder() {
 
   const reset = () => {
     setVisitorId(null); setVisitorName(""); setVisitorQuery("");
-    setCart([]); setTableNumber(""); setOrderDone(null);
+    setCart([]); setTableNumber(""); setOrderDone(null); setDoneInvoice(null);
   };
 
   if (orderDone) {
@@ -146,6 +159,7 @@ export default function RestaurantManualOrder() {
             </div>
             <h2 className="text-xl font-bold">Commande créée</h2>
             <p className="font-mono text-lg text-primary">{orderDone}</p>
+            {doneInvoice && <InvoiceActions data={doneInvoice} />}
             <Button onClick={reset} className="w-full">Nouvelle commande</Button>
           </CardContent>
         </Card>

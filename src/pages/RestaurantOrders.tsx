@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle, CreditCard } from "lucide-react";
+import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import type { OrderItem } from "@/lib/restaurant-store";
+import InvoiceActions from "@/components/InvoiceActions";
+import type { InvoiceData } from "@/lib/invoice";
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
   pending: <Clock className="h-4 w-4" />,
@@ -201,6 +203,28 @@ export default function RestaurantOrders() {
                     <SelectItem value="bitcoin">Bitcoin</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Invoice actions */}
+              <div>
+                <label className="text-sm font-medium mb-1 block">Facture</label>
+                <InvoiceActions
+                  compact
+                  data={{
+                    orderCode: selOrder.order_code,
+                    visitorId: selOrder.visitor_id,
+                    tableNumber: selOrder.table_number,
+                    items: selectedItems.map(item => ({
+                      name: productMap.get(item.product_id) || "Produit",
+                      quantity: item.quantity,
+                      unitPrice: item.unit_price,
+                    })),
+                    totalAmount: selOrder.total_amount,
+                    paymentStatus: selOrder.payment_status,
+                    paymentMethod: selOrder.payment_method,
+                    createdAt: selOrder.created_at,
+                  } as InvoiceData}
+                />
               </div>
 
               {selOrder.status !== "cancelled" && selOrder.status !== "delivered" && (
