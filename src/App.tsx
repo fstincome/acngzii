@@ -18,6 +18,12 @@ import ProgramReport from "@/pages/ProgramReport";
 import RegistrationForm from "@/pages/RegistrationForm";
 import Login from "@/pages/Login";
 import UserManagement from "@/pages/UserManagement";
+import RestaurantEntry from "@/pages/RestaurantEntry";
+import RestaurantMenu from "@/pages/RestaurantMenu";
+import RestaurantOrders from "@/pages/RestaurantOrders";
+import RestaurantProducts from "@/pages/RestaurantProducts";
+import RestaurantAnalytics from "@/pages/RestaurantAnalytics";
+import RestaurantManualOrder from "@/pages/RestaurantManualOrder";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
