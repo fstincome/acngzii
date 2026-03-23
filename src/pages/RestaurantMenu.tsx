@@ -6,9 +6,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ShoppingCart, Plus, Minus, Trash2, UtensilsCrossed, ArrowLeft, Check, Send } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, UtensilsCrossed, ArrowLeft, Check } from "lucide-react";
 import { toast } from "sonner";
 import { TABLE_COUNT } from "@/lib/restaurant-store";
+import InvoiceActions from "@/components/InvoiceActions";
+import type { InvoiceData } from "@/lib/invoice";
 
 export default function RestaurantMenu() {
   const { visitorId } = useParams<{ visitorId: string }>();
