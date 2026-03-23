@@ -59,6 +59,16 @@ const App = () => (
             {/* Admin only */}
             <Route path="/users" element={<ProtectedRoute allowedRoles={["admin"]}><AppLayout><UserManagement /></AppLayout></ProtectedRoute>} />
 
+            {/* Restaurant - public entry */}
+            <Route path="/restaurant" element={<RestaurantEntry />} />
+            <Route path="/restaurant/menu/:visitorId" element={<RestaurantMenu />} />
+
+            {/* Restaurant - staff */}
+            <Route path="/restaurant/orders" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantOrders /></AppLayout></ProtectedRoute>} />
+            <Route path="/restaurant/products" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantProducts /></AppLayout></ProtectedRoute>} />
+            <Route path="/restaurant/analytics" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantAnalytics /></AppLayout></ProtectedRoute>} />
+            <Route path="/restaurant/manual-order" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantManualOrder /></AppLayout></ProtectedRoute>} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
