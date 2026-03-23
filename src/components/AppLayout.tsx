@@ -47,6 +47,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const showPrograms = isAdmin || isDirector || isReception;
 
+  const restaurantNavItems = [
+    { to: "/restaurant/orders", icon: UtensilsCrossed, label: "Commandes" },
+    { to: "/restaurant/manual-order", icon: UserPlus, label: "Commande manuelle" },
+    { to: "/restaurant/products", icon: UtensilsCrossed, label: "Produits" },
+    { to: "/restaurant/analytics", icon: BarChart3, label: "Analytiques" },
+  ];
+
+  const showRestaurant = isAdmin || isDirector;
+
   const adminNavItems = [
     { to: "/users", icon: Shield, label: "Utilisateurs" },
   ];
