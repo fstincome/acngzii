@@ -57,6 +57,8 @@ function getPreviousPeriodStart(period: Period): [Date, Date] | null {
 export default function Statistics() {
   const { data: visitors = [] } = useVisitors();
   const { data: visits = [] } = useVisits();
+  const { data: orders = [] } = useOrders();
+  const { data: products = [] } = useProducts();
   const [period, setPeriod] = useState<Period>("week");
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
