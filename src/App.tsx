@@ -18,6 +18,12 @@ import ProgramReport from "@/pages/ProgramReport";
 import RegistrationForm from "@/pages/RegistrationForm";
 import Login from "@/pages/Login";
 import UserManagement from "@/pages/UserManagement";
+import RestaurantEntry from "@/pages/RestaurantEntry";
+import RestaurantMenu from "@/pages/RestaurantMenu";
+import RestaurantOrders from "@/pages/RestaurantOrders";
+import RestaurantProducts from "@/pages/RestaurantProducts";
+import RestaurantAnalytics from "@/pages/RestaurantAnalytics";
+import RestaurantManualOrder from "@/pages/RestaurantManualOrder";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +58,16 @@ const App = () => (
 
             {/* Admin only */}
             <Route path="/users" element={<ProtectedRoute allowedRoles={["admin"]}><AppLayout><UserManagement /></AppLayout></ProtectedRoute>} />
+
+            {/* Restaurant - public entry */}
+            <Route path="/restaurant" element={<RestaurantEntry />} />
+            <Route path="/restaurant/menu/:visitorId" element={<RestaurantMenu />} />
+
+            {/* Restaurant - staff */}
+            <Route path="/restaurant/orders" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantOrders /></AppLayout></ProtectedRoute>} />
+            <Route path="/restaurant/products" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantProducts /></AppLayout></ProtectedRoute>} />
+            <Route path="/restaurant/analytics" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantAnalytics /></AppLayout></ProtectedRoute>} />
+            <Route path="/restaurant/manual-order" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantManualOrder /></AppLayout></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -15,12 +15,14 @@ import {
   ClipboardCheck,
   ChevronDown,
   Shield,
+  UtensilsCrossed,
 } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [normalOpen, setNormalOpen] = useState(true);
   const [programOpen, setProgramOpen] = useState(true);
+  const [restaurantOpen, setRestaurantOpen] = useState(true);
   const location = useLocation();
   const { role, user, signOut } = useAuth();
 
@@ -44,6 +46,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   ];
 
   const showPrograms = isAdmin || isDirector || isReception;
+
+  const restaurantNavItems = [
+    { to: "/restaurant/orders", icon: UtensilsCrossed, label: "Commandes" },
+    { to: "/restaurant/manual-order", icon: UserPlus, label: "Commande manuelle" },
+    { to: "/restaurant/products", icon: UtensilsCrossed, label: "Produits" },
+    { to: "/restaurant/analytics", icon: BarChart3, label: "Analytiques" },
+  ];
+
+  const showRestaurant = isAdmin || isDirector;
 
   const adminNavItems = [
     { to: "/users", icon: Shield, label: "Utilisateurs" },
@@ -153,6 +164,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {programOpen && (
                 <div className="space-y-1 mb-4">
                   {programNavItems.map(renderNavItem)}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Restaurant group */}
+          {showRestaurant && (
+            <>
+              <button
+                onClick={() => setRestaurantOpen(!restaurantOpen)}
+                className="flex w-full items-center justify-between px-3 mb-2"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+                  Restaurant
+                </p>
+                <ChevronDown className={`h-3 w-3 text-sidebar-foreground/30 transition-transform ${restaurantOpen ? "" : "-rotate-90"}`} />
+              </button>
+              {restaurantOpen && (
+                <div className="space-y-1 mb-4">
+                  {restaurantNavItems.map(renderNavItem)}
                 </div>
               )}
             </>
