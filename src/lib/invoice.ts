@@ -170,161 +170,169 @@ export function downloadInvoice(doc: jsPDF, orderCode: string) {
 // ── PNG Generation via Canvas ───────────────────────────────────
 
 export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
-  const scale = 4;
-  const cw = 80 * scale; // canvas width
-  const ch = 260 * scale; // canvas height (generous)
+  // Use a wider base for better text rendering, then output as tall narrow image
+  const W = 420; // base pixel width
+  const H = 1200; // generous height, will crop
   const canvas = document.createElement("canvas");
-  canvas.width = cw;
-  canvas.height = ch;
+  canvas.width = W;
+  canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const s = scale;
-  const mx = 6 * s;
+  const px = 28; // horizontal padding
   let y = 0;
 
-  // ── Background ──
+  // ── White background ──
   ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, cw, ch);
+  ctx.fillRect(0, 0, W, H);
 
-  // ── Header band ──
-  const headerH = 30 * s;
-  ctx.fillStyle = "#1e40af";
-  ctx.fillRect(0, 0, cw, headerH);
+  // ── Header ──
+  const headerH = 120;
+  const grad = ctx.createLinearGradient(0, 0, W, headerH);
+  grad.addColorStop(0, "#1e3a8a");
+  grad.addColorStop(1, "#1e40af");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, headerH);
 
-  // Load and draw logo
+  // Logo
+  let logoLoaded = false;
   try {
     const logo = await loadImage("/gss-logo.png");
-    const logoSize = 10 * s;
-    ctx.drawImage(logo, cw / 2 - logoSize / 2, 2 * s, logoSize, logoSize);
-    y = 14 * s;
-  } catch {
-    y = 8 * s;
-  }
+    ctx.drawImage(logo, W / 2 - 18, 10, 36, 36);
+    logoLoaded = true;
+  } catch { /* skip */ }
 
+  y = logoLoaded ? 54 : 28;
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
-  ctx.font = `bold ${9 * s}px Helvetica, Arial, sans-serif`;
-  ctx.fillText("GITEGA STUDY SPACE", cw / 2, y);
-  y += 4 * s;
-  ctx.font = `${6 * s}px Helvetica, Arial, sans-serif`;
-  ctx.fillText("Restaurant — Facture", cw / 2, y);
-  y += 3.5 * s;
-  ctx.font = `${5 * s}px Helvetica, Arial, sans-serif`;
-  ctx.fillText("Tél: +257 61 154 065", cw / 2, y);
+  ctx.font = "bold 20px Helvetica, Arial, sans-serif";
+  ctx.fillText("GITEGA STUDY SPACE", W / 2, y);
+  y += 18;
+  ctx.font = "300 13px Helvetica, Arial, sans-serif";
+  ctx.fillText("Restaurant — Facture", W / 2, y);
+  y += 14;
+  ctx.font = "300 11px Helvetica, Arial, sans-serif";
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  ctx.fillText("Tél: +257 61 154 065", W / 2, y);
 
-  y = headerH + 5 * s;
+  y = headerH + 16;
 
-  // ── Order code badge ──
-  const badgeH = 9 * s;
-  roundedRect(ctx, mx, y - 2 * s, cw - mx * 2, badgeH, 3 * s, "#eef2ff");
+  // ── Order code pill ──
+  const pillH = 32;
+  roundedRect(ctx, px, y, W - px * 2, pillH, 8, "#eef2ff");
   ctx.fillStyle = "#1e40af";
-  ctx.font = `bold ${9 * s}px Helvetica, Arial, sans-serif`;
+  ctx.font = "bold 16px Helvetica, Arial, sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText(data.orderCode, cw / 2, y + 4 * s);
-  y += badgeH + 4 * s;
+  ctx.fillText(data.orderCode, W / 2, y + 21);
+  y += pillH + 14;
 
-  // ── Info pairs ──
-  const infoPairs = [
+  // ── Info section ──
+  const infoPairs: [string, string][] = [
     ["Date", new Date(data.createdAt).toLocaleString("fr")],
     ["Visiteur", data.visitorName || data.visitorId],
     ["Table", String(data.tableNumber)],
   ];
   ctx.textAlign = "left";
   infoPairs.forEach(([label, value]) => {
-    ctx.font = `bold ${6 * s}px Helvetica, Arial, sans-serif`;
+    ctx.font = "600 11px Helvetica, Arial, sans-serif";
     ctx.fillStyle = "#374151";
-    ctx.fillText(`${label}:`, mx + 1 * s, y);
-    ctx.font = `${6 * s}px Helvetica, Arial, sans-serif`;
+    ctx.fillText(label + " :", px + 4, y);
+    ctx.font = "400 11px Helvetica, Arial, sans-serif";
     ctx.fillStyle = "#6b7280";
-    ctx.fillText(value, mx + 18 * s, y);
-    y += 4 * s;
+    ctx.fillText(value, px + 70, y);
+    y += 16;
   });
-  y += 2 * s;
+  y += 6;
 
-  // ── Dashed line ──
-  dashedLine(ctx, mx, y, cw - mx, y, s);
-  y += 4 * s;
+  // ── Separator ──
+  drawSeparator(ctx, px, y, W - px);
+  y += 12;
 
   // ── Table header ──
-  roundedRect(ctx, mx, y - 3 * s, cw - mx * 2, 6 * s, 1.5 * s, "#f3f4f6");
-  ctx.fillStyle = "#4b5563";
-  ctx.font = `bold ${5.5 * s}px Helvetica, Arial, sans-serif`;
+  roundedRect(ctx, px, y, W - px * 2, 22, 4, "#f1f5f9");
+  ctx.fillStyle = "#475569";
+  ctx.font = "600 10px Helvetica, Arial, sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText("ARTICLE", mx + 2 * s, y + 1 * s);
+  ctx.fillText("ARTICLE", px + 8, y + 15);
   ctx.textAlign = "center";
-  ctx.fillText("QTÉ", 48 * s, y + 1 * s);
+  ctx.fillText("QTÉ", W / 2 + 30, y + 15);
   ctx.textAlign = "right";
-  ctx.fillText("TOTAL", cw - mx - 1 * s, y + 1 * s);
-  y += 5 * s;
+  ctx.fillText("TOTAL", W - px - 8, y + 15);
+  y += 28;
 
   // ── Items ──
-  ctx.font = `${6 * s}px Helvetica, Arial, sans-serif`;
+  ctx.font = "400 11px Helvetica, Arial, sans-serif";
   data.items.forEach((item, idx) => {
+    // Alternate row bg
     if (idx % 2 === 0) {
       ctx.fillStyle = "#fafbff";
-      ctx.fillRect(mx, y - 3 * s, cw - mx * 2, 5 * s);
+      ctx.fillRect(px, y - 4, W - px * 2, 20);
     }
-    ctx.fillStyle = "#1f2937";
+    // Name
+    ctx.fillStyle = "#1e293b";
     ctx.textAlign = "left";
-    const name = item.name.length > 16 ? item.name.substring(0, 15) + "…" : item.name;
-    ctx.fillText(name, mx + 2 * s, y);
-    ctx.fillStyle = "#6b7280";
+    const name = item.name.length > 22 ? item.name.substring(0, 21) + "…" : item.name;
+    ctx.fillText(name, px + 8, y + 10);
+    // Qty
+    ctx.fillStyle = "#64748b";
     ctx.textAlign = "center";
-    ctx.fillText(String(item.quantity), 48 * s, y);
-    ctx.fillStyle = "#1f2937";
+    ctx.fillText(String(item.quantity), W / 2 + 30, y + 10);
+    // Subtotal
+    ctx.fillStyle = "#1e293b";
     ctx.textAlign = "right";
-    ctx.fillText(`${(item.unitPrice * item.quantity).toLocaleString()}`, cw - mx - 1 * s, y);
-    y += 5 * s;
+    ctx.fillText(`${(item.unitPrice * item.quantity).toLocaleString()}`, W - px - 8, y + 10);
+    y += 20;
   });
-  y += 2 * s;
+  y += 8;
 
-  // ── Dashed line ──
-  dashedLine(ctx, mx, y, cw - mx, y, s);
-  y += 5 * s;
+  // ── Separator ──
+  drawSeparator(ctx, px, y, W - px);
+  y += 14;
 
-  // ── Total badge ──
-  const totalBadgeH = 10 * s;
-  roundedRect(ctx, mx, y - 4 * s, cw - mx * 2, totalBadgeH, 3 * s, "#1e40af");
+  // ── TOTAL badge ──
+  const totalH = 36;
+  roundedRect(ctx, px, y, W - px * 2, totalH, 8, "#1e40af");
   ctx.fillStyle = "#ffffff";
-  ctx.font = `bold ${8 * s}px Helvetica, Arial, sans-serif`;
+  ctx.font = "bold 14px Helvetica, Arial, sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText("TOTAL", mx + 3 * s, y + 2 * s);
+  ctx.fillText("TOTAL", px + 14, y + 23);
+  ctx.font = "bold 16px Helvetica, Arial, sans-serif";
   ctx.textAlign = "right";
-  ctx.fillText(`${data.totalAmount.toLocaleString()} BIF`, cw - mx - 3 * s, y + 2 * s);
-  y += totalBadgeH + 4 * s;
+  ctx.fillText(`${data.totalAmount.toLocaleString()} BIF`, W - px - 14, y + 23);
+  y += totalH + 12;
 
-  // ── Payment status badge ──
+  // ── Payment status ──
   const payLabel = PAYMENT_LABELS[data.paymentStatus] || data.paymentStatus;
   const isPaid = data.paymentStatus !== "unpaid";
   const payBg = isPaid ? "#dcfce7" : "#fef2f2";
   const payFg = isPaid ? "#166534" : "#991b1b";
-  roundedRect(ctx, mx, y - 3 * s, cw - mx * 2, 7 * s, 2 * s, payBg);
+  const payH = 26;
+  roundedRect(ctx, px, y, W - px * 2, payH, 6, payBg);
   ctx.fillStyle = payFg;
-  ctx.font = `bold ${6 * s}px Helvetica, Arial, sans-serif`;
+  ctx.font = "600 11px Helvetica, Arial, sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText(`Paiement: ${payLabel}`, cw / 2, y + 1.5 * s);
-  y += 10 * s;
+  ctx.fillText(`Paiement: ${payLabel}`, W / 2, y + 17);
+  y += payH + 16;
 
   // ── Footer ──
-  dashedLine(ctx, mx, y, cw - mx, y, s);
-  y += 5 * s;
+  drawSeparator(ctx, px, y, W - px);
+  y += 14;
   ctx.fillStyle = "#9ca3af";
-  ctx.font = `${5 * s}px Helvetica, Arial, sans-serif`;
+  ctx.font = "400 10px Helvetica, Arial, sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("Merci pour votre visite !", cw / 2, y);
-  y += 3 * s;
-  ctx.fillText("Gitega Study Space — Multipurpose Room", cw / 2, y);
-  y += 5 * s;
+  ctx.fillText("Merci pour votre visite !", W / 2, y);
+  y += 14;
+  ctx.font = "400 9px Helvetica, Arial, sans-serif";
+  ctx.fillText("Gitega Study Space — Multipurpose Room", W / 2, y);
+  y += 20;
 
-  // ── Crop to actual content height and download ──
-  const finalH = y;
+  // ── Crop & download ──
   const croppedCanvas = document.createElement("canvas");
-  croppedCanvas.width = cw;
-  croppedCanvas.height = finalH;
-  const croppedCtx = croppedCanvas.getContext("2d");
-  if (!croppedCtx) return;
-  croppedCtx.drawImage(canvas, 0, 0, cw, finalH, 0, 0, cw, finalH);
+  croppedCanvas.width = W;
+  croppedCanvas.height = y;
+  const cc = croppedCanvas.getContext("2d");
+  if (!cc) return;
+  cc.drawImage(canvas, 0, 0, W, y, 0, 0, W, y);
 
   return new Promise<void>((resolve) => {
     croppedCanvas.toBlob((blob) => {
@@ -339,6 +347,17 @@ export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
       resolve();
     }, "image/png");
   });
+}
+
+function drawSeparator(ctx: CanvasRenderingContext2D, x1: number, y: number, x2: number) {
+  ctx.strokeStyle = "#e2e8f0";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath();
+  ctx.moveTo(x1, y);
+  ctx.lineTo(x2, y);
+  ctx.stroke();
+  ctx.setLineDash([]);
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -373,20 +392,6 @@ function roundedRect(
   ctx.fill();
 }
 
-function dashedLine(
-  ctx: CanvasRenderingContext2D,
-  x1: number, y1: number, x2: number, y2: number,
-  s: number
-) {
-  ctx.strokeStyle = "#d1d5db";
-  ctx.lineWidth = 0.5 * s;
-  ctx.setLineDash([2 * s, 1.5 * s]);
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
 
 // ── Print ───────────────────────────────────────────────────────
 
