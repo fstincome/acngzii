@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Download, Printer, Send, Mail } from "lucide-react";
-import { InvoiceData, generateInvoicePDF, downloadInvoice, printInvoice, shareInvoiceWhatsApp, shareInvoiceEmail } from "@/lib/invoice";
+import { Download, Printer, Send, Mail, Image } from "lucide-react";
+import { InvoiceData, generateInvoicePDF, downloadInvoice, downloadInvoicePNG, printInvoice, shareInvoiceWhatsApp, shareInvoiceEmail } from "@/lib/invoice";
 
 interface InvoiceActionsProps {
   data: InvoiceData;
@@ -13,6 +13,10 @@ export default function InvoiceActions({ data, compact }: InvoiceActionsProps) {
     downloadInvoice(doc, data.orderCode);
   };
 
+  const handleDownloadPNG = () => {
+    downloadInvoicePNG(data);
+  };
+
   const handlePrint = () => {
     const doc = generateInvoicePDF(data);
     printInvoice(doc);
@@ -23,6 +27,9 @@ export default function InvoiceActions({ data, compact }: InvoiceActionsProps) {
       <div className="flex gap-1.5 flex-wrap">
         <Button size="sm" variant="outline" onClick={handleDownload}>
           <Download className="h-3.5 w-3.5 mr-1" /> PDF
+        </Button>
+        <Button size="sm" variant="outline" onClick={handleDownloadPNG}>
+          <Image className="h-3.5 w-3.5 mr-1" /> PNG
         </Button>
         <Button size="sm" variant="outline" onClick={handlePrint}>
           <Printer className="h-3.5 w-3.5 mr-1" /> Imprimer
@@ -38,19 +45,27 @@ export default function InvoiceActions({ data, compact }: InvoiceActionsProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2">
-      <Button variant="outline" className="gap-2" onClick={handleDownload}>
-        <Download className="h-4 w-4" /> Télécharger
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2">
+        <Button variant="default" className="gap-2" onClick={handleDownload}>
+          <Download className="h-4 w-4" /> Télécharger PDF
+        </Button>
+        <Button variant="outline" className="gap-2" onClick={handleDownloadPNG}>
+          <Image className="h-4 w-4" /> Télécharger PNG
+        </Button>
+      </div>
+      <Button variant="outline" className="gap-2 w-full" onClick={handlePrint}>
+        <Printer className="h-4 w-4" /> Imprimer la facture
       </Button>
-      <Button variant="outline" className="gap-2" onClick={handlePrint}>
-        <Printer className="h-4 w-4" /> Imprimer
-      </Button>
-      <Button variant="outline" className="gap-2" onClick={() => shareInvoiceWhatsApp(data)}>
-        <Send className="h-4 w-4" /> WhatsApp
-      </Button>
-      <Button variant="outline" className="gap-2" onClick={() => shareInvoiceEmail(data)}>
-        <Mail className="h-4 w-4" /> Email
-      </Button>
+      <div className="flex items-center gap-4 pt-1">
+        <span className="text-sm text-muted-foreground">Partager :</span>
+        <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => shareInvoiceWhatsApp(data)}>
+          <Send className="h-4 w-4" /> WhatsApp
+        </Button>
+        <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => shareInvoiceEmail(data)}>
+          <Mail className="h-4 w-4" /> Email
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { useVisitors, useVisits, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visit, RoomType } from "@/lib/supabase-store";
-import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { useOrders, useProducts } from "@/lib/restaurant-store";
+import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, DollarSign, ShoppingCart } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
