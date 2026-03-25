@@ -24,6 +24,7 @@ import RestaurantOrders from "@/pages/RestaurantOrders";
 import RestaurantProducts from "@/pages/RestaurantProducts";
 import RestaurantAnalytics from "@/pages/RestaurantAnalytics";
 import RestaurantManualOrder from "@/pages/RestaurantManualOrder";
+import OrderTracking from "@/pages/OrderTracking";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const App = () => (
             {/* Restaurant - public entry */}
             <Route path="/restaurant" element={<RestaurantEntry />} />
             <Route path="/restaurant/menu/:visitorId" element={<RestaurantMenu />} />
+            <Route path="/track/:orderCode" element={<OrderTracking />} />
 
             {/* Restaurant - staff */}
             <Route path="/restaurant/orders" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantOrders /></AppLayout></ProtectedRoute>} />
