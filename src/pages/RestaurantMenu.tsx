@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProducts, CartItem, CATEGORIES, generateOrderCode, useCreateOrder } from "@/lib/restaurant-store";
 import { Button } from "@/components/ui/button";
@@ -6,11 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ShoppingCart, Plus, Minus, Trash2, UtensilsCrossed, ArrowLeft, Check } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, UtensilsCrossed, ArrowLeft, Check, Send } from "lucide-react";
 import { toast } from "sonner";
 import { TABLE_COUNT } from "@/lib/restaurant-store";
 import InvoiceActions from "@/components/InvoiceActions";
 import type { InvoiceData } from "@/lib/invoice";
+import { openClientWhatsApp, getTrackingUrl } from "@/lib/whatsapp-order";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function RestaurantMenu() {
   const { visitorId } = useParams<{ visitorId: string }>();
@@ -25,6 +27,16 @@ export default function RestaurantMenu() {
   const [tableNumber, setTableNumber] = useState<string>("");
   const [orderConfirmed, setOrderConfirmed] = useState<string | null>(null);
   const [confirmedInvoice, setConfirmedInvoice] = useState<InvoiceData | null>(null);
+  const [visitorName, setVisitorName] = useState("");
+
+  // Fetch visitor name
+  useEffect(() => {
+    if (visitorId) {
+      supabase.from("visitors").select("full_name").eq("visitor_id", visitorId).maybeSingle().then(({ data }) => {
+        if (data) setVisitorName(data.full_name);
+      });
+    }
+  }, [visitorId]);
 
   const filtered = useMemo(() => {
     const available = products.filter(p => p.is_available && p.stock > 0);
@@ -83,6 +95,7 @@ export default function RestaurantMenu() {
       setConfirmedInvoice({
         orderCode,
         visitorId: visitorId!,
+        visitorName: visitorName || visitorId!,
         tableNumber: parseInt(tableNumber),
         items: cart.map(c => ({ name: c.product.name, quantity: c.quantity, unitPrice: c.product.price })),
         totalAmount: total,
@@ -124,9 +137,22 @@ export default function RestaurantMenu() {
               </div>
             </div>
 
+            {/* WhatsApp confirmation CTA */}
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 space-y-2">
+              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                📲 Pour confirmer votre commande, envoyez-la sur WhatsApp au serveur :
+              </p>
+              <Button
+                className="w-full bg-[#25D366] hover:bg-[#20BD5A] text-white gap-2"
+                onClick={() => openClientWhatsApp(confirmedInvoice!)}
+              >
+                <Send className="h-4 w-4" /> Envoyer sur WhatsApp
+              </Button>
+            </div>
+
             <InvoiceActions data={confirmedInvoice} />
 
-            <Button className="w-full" onClick={() => { setOrderConfirmed(null); setConfirmedInvoice(null); setTableNumber(""); }}>
+            <Button variant="outline" className="w-full" onClick={() => { setOrderConfirmed(null); setConfirmedInvoice(null); setTableNumber(""); }}>
               Nouvelle commande
             </Button>
           </CardContent>

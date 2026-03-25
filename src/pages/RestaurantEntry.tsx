@@ -21,13 +21,30 @@ export default function RestaurantEntry() {
     const trimmed = id.trim().toUpperCase();
     if (!trimmed) return;
     setLoading(true);
-    const { data } = await supabase.from("visitors").select("visitor_id").eq("visitor_id", trimmed).maybeSingle();
-    setLoading(false);
-    if (data) {
-      navigate(`/restaurant/menu/${trimmed}`);
-    } else {
+    // Check visitor exists
+    const { data: visitor } = await supabase.from("visitors").select("visitor_id").eq("visitor_id", trimmed).maybeSingle();
+    if (!visitor) {
+      setLoading(false);
       toast.error("Visiteur introuvable. Vérifiez votre identifiant.");
+      return;
     }
+    // Check visitor is currently checked in (has a check-in without a matching check-out today)
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const { data: visits } = await supabase
+      .from("visits")
+      .select("action")
+      .eq("visitor_id", trimmed)
+      .gte("timestamp", todayStart.toISOString())
+      .order("timestamp", { ascending: false })
+      .limit(1);
+    setLoading(false);
+    const lastAction = visits?.[0]?.action;
+    if (lastAction !== "check-in") {
+      toast.error("Vous devez d'abord pointer votre arrivée au centre avant de commander.", { duration: 5000 });
+      return;
+    }
+    navigate(`/restaurant/menu/${trimmed}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Minus, Trash2, ShoppingCart, Check, Camera, X } from "lucide-react";
+import { Search, Plus, Minus, Trash2, ShoppingCart, Check, Camera, X, Send } from "lucide-react";
 import { toast } from "sonner";
 import InvoiceActions from "@/components/InvoiceActions";
 import type { InvoiceData } from "@/lib/invoice";
+import { openClientWhatsApp } from "@/lib/whatsapp-order";
 
 export default function RestaurantManualOrder() {
   const { data: products = [] } = useProducts();
@@ -159,7 +160,22 @@ export default function RestaurantManualOrder() {
             </div>
             <h2 className="text-xl font-bold">Commande créée</h2>
             <p className="font-mono text-lg text-primary">{orderDone}</p>
-            {doneInvoice && <InvoiceActions data={doneInvoice} />}
+            {doneInvoice && (
+              <>
+                <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 space-y-2">
+                  <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                    📲 Envoyer la commande au client sur WhatsApp :
+                  </p>
+                  <Button
+                    className="w-full bg-[#25D366] hover:bg-[#20BD5A] text-white gap-2"
+                    onClick={() => openClientWhatsApp(doneInvoice)}
+                  >
+                    <Send className="h-4 w-4" /> Envoyer sur WhatsApp
+                  </Button>
+                </div>
+                <InvoiceActions data={doneInvoice} />
+              </>
+            )}
             <Button onClick={reset} className="w-full">Nouvelle commande</Button>
           </CardContent>
         </Card>
