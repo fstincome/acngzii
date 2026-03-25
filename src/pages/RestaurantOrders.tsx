@@ -249,6 +249,30 @@ export default function RestaurantOrders() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Staff confirmation message dialog */}
+      <Dialog open={!!confirmationMsg} onOpenChange={() => { setConfirmationMsg(null); setCopied(false); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Message de confirmation</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">Copiez ce message et envoyez-le au client sur WhatsApp :</p>
+          <div className="bg-muted rounded-lg p-3 text-sm whitespace-pre-wrap font-mono leading-relaxed max-h-60 overflow-y-auto">
+            {confirmationMsg}
+          </div>
+          <Button
+            className="w-full gap-2"
+            onClick={() => {
+              navigator.clipboard.writeText(confirmationMsg || "");
+              setCopied(true);
+              toast.success("Message copié !");
+            }}
+          >
+            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            {copied ? "Copié !" : "Copier le message"}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
