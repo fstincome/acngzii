@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProducts, CartItem, CATEGORIES, generateOrderCode, useCreateOrder } from "@/lib/restaurant-store";
 import { Button } from "@/components/ui/button";
@@ -30,13 +30,13 @@ export default function RestaurantMenu() {
   const [visitorName, setVisitorName] = useState("");
 
   // Fetch visitor name
-  useState(() => {
+  useEffect(() => {
     if (visitorId) {
       supabase.from("visitors").select("full_name").eq("visitor_id", visitorId).maybeSingle().then(({ data }) => {
         if (data) setVisitorName(data.full_name);
       });
     }
-  });
+  }, [visitorId]);
 
   const filtered = useMemo(() => {
     const available = products.filter(p => p.is_available && p.stock > 0);
