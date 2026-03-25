@@ -8,11 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle } from "lucide-react";
+import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import type { OrderItem } from "@/lib/restaurant-store";
 import InvoiceActions from "@/components/InvoiceActions";
 import type { InvoiceData } from "@/lib/invoice";
+import { buildStaffConfirmationMessage } from "@/lib/whatsapp-order";
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
   pending: <Clock className="h-4 w-4" />,
@@ -31,6 +32,8 @@ export default function RestaurantOrders() {
   const updatePayment = useUpdatePaymentStatus();
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("active");
+  const [confirmationMsg, setConfirmationMsg] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const { data: selectedItems = [] } = useQuery({
     queryKey: ["order-items", selectedOrder],
@@ -71,6 +74,16 @@ export default function RestaurantOrders() {
     try {
       await updateStatus.mutateAsync({ id: orderId, status });
       toast.success(`Statut → ${STATUS_LABELS[status]}`);
+      // Show copyable confirmation message for staff
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        const msg = buildStaffConfirmationMessage(
+          { ...order, status },
+          STATUS_LABELS[status]
+        );
+        setConfirmationMsg(msg);
+        setCopied(false);
+      }
     } catch {
       toast.error("Erreur");
     }
