@@ -40,7 +40,7 @@ export default function RestaurantEntry() {
       .limit(1);
     setLoading(false);
     const lastAction = visits?.[0]?.action;
-    if (lastAction !== "check-in") {
+    if (lastAction !== "check_in") {
       toast.error("Vous devez d'abord pointer votre arrivée au centre avant de commander.", { duration: 5000 });
       return;
     }
