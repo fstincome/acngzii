@@ -49,17 +49,35 @@ export default function RestaurantAnalytics() {
     return m;
   }, [products]);
 
-  // Profit
+  // Profit — use order_items when available, fallback to avg margin estimate
   const profit = useMemo(() => {
     const paidIds = new Set(paidOrders.map(o => o.id));
-    return allItems
-      .filter(i => paidIds.has(i.order_id))
-      .reduce((s, i) => {
-        const p = productMap.get(i.product_id);
-        if (!p) return s;
-        return s + (p.price - p.cost_price) * i.quantity;
-      }, 0);
-  }, [paidOrders, allItems, productMap]);
+    const itemsForPaid = allItems.filter(i => paidIds.has(i.order_id));
+
+    // Calculate precise profit from items that have matching products
+    let preciseProfit = 0;
+    let preciseRevenue = 0;
+    itemsForPaid.forEach(i => {
+      const p = productMap.get(i.product_id);
+      if (p) {
+        preciseProfit += (p.price - p.cost_price) * i.quantity;
+        preciseRevenue += p.price * i.quantity;
+      }
+    });
+
+    // For orders without items, estimate using avg margin
+    const ordersWithItems = new Set(itemsForPaid.map(i => i.order_id));
+    const revenueWithoutItems = paidOrders
+      .filter(o => !ordersWithItems.has(o.id))
+      .reduce((s, o) => s + o.total_amount, 0);
+
+    if (revenueWithoutItems > 0 && products.length > 0) {
+      const avgMargin = products.reduce((s, p) => s + (p.price > 0 ? (p.price - p.cost_price) / p.price : 0), 0) / products.length;
+      preciseProfit += Math.round(revenueWithoutItems * avgMargin);
+    }
+
+    return preciseProfit;
+  }, [paidOrders, allItems, productMap, products]);
 
   // Top products
   const topProducts = useMemo(() => {
