@@ -2,6 +2,9 @@ import { useState, useMemo } from "react";
 import { useVisitors, useVisits, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visit, RoomType } from "@/lib/supabase-store";
 import { useOrders, useProducts } from "@/lib/restaurant-store";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import type { OrderItem } from "@/lib/restaurant-store";
 import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, DollarSign, ShoppingCart } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -59,6 +62,14 @@ export default function Statistics() {
   const { data: visits = [] } = useVisits();
   const { data: orders = [] } = useOrders();
   const { data: products = [] } = useProducts();
+  const { data: allOrderItems = [] } = useQuery({
+    queryKey: ["all-order-items"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("order_items").select("*");
+      if (error) throw error;
+      return (data ?? []) as OrderItem[];
+    },
+  });
   const [period, setPeriod] = useState<Period>("week");
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -109,14 +120,18 @@ export default function Statistics() {
     return map;
   }, [products]);
 
-  const totalRevenue = filteredOrders.reduce((sum, o) => sum + o.total_amount, 0);
+  const paidOrders = filteredOrders.filter(o => o.payment_status !== "unpaid" && o.status !== "cancelled");
+  const totalRevenue = paidOrders.reduce((sum, o) => sum + o.total_amount, 0);
   const totalProfit = useMemo(() => {
-    // Estimate profit: revenue - cost (using avg cost ratio from products)
-    const avgCostRatio = products.length > 0
-      ? products.reduce((s, p) => s + (p.price > 0 ? p.cost_price / p.price : 0), 0) / products.length
-      : 0.5;
-    return Math.round(totalRevenue * (1 - avgCostRatio));
-  }, [totalRevenue, products]);
+    const paidIds = new Set(paidOrders.map(o => o.id));
+    return allOrderItems
+      .filter(i => paidIds.has(i.order_id))
+      .reduce((s, i) => {
+        const p = productMap[i.product_id];
+        if (!p) return s;
+        return s + (p.price - p.cost_price) * i.quantity;
+      }, 0);
+  }, [paidOrders, allOrderItems, productMap]);
   const totalOrdersCount = filteredOrders.length;
 
   // Comparison percentages
