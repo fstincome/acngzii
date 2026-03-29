@@ -127,7 +127,7 @@ export default function Statistics() {
     return allOrderItems
       .filter(i => paidIds.has(i.order_id))
       .reduce((s, i) => {
-        const p = productMap.get(i.product_id);
+        const p = productMap[i.product_id];
         if (!p) return s;
         return s + (p.price - p.cost_price) * i.quantity;
       }, 0);
