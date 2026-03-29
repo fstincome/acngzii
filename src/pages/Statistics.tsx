@@ -120,14 +120,18 @@ export default function Statistics() {
     return map;
   }, [products]);
 
-  const totalRevenue = filteredOrders.reduce((sum, o) => sum + o.total_amount, 0);
+  const paidOrders = filteredOrders.filter(o => o.payment_status !== "unpaid" && o.status !== "cancelled");
+  const totalRevenue = paidOrders.reduce((sum, o) => sum + o.total_amount, 0);
   const totalProfit = useMemo(() => {
-    // Estimate profit: revenue - cost (using avg cost ratio from products)
-    const avgCostRatio = products.length > 0
-      ? products.reduce((s, p) => s + (p.price > 0 ? p.cost_price / p.price : 0), 0) / products.length
-      : 0.5;
-    return Math.round(totalRevenue * (1 - avgCostRatio));
-  }, [totalRevenue, products]);
+    const paidIds = new Set(paidOrders.map(o => o.id));
+    return allOrderItems
+      .filter(i => paidIds.has(i.order_id))
+      .reduce((s, i) => {
+        const p = productMap.get(i.product_id);
+        if (!p) return s;
+        return s + (p.price - p.cost_price) * i.quantity;
+      }, 0);
+  }, [paidOrders, allOrderItems, productMap]);
   const totalOrdersCount = filteredOrders.length;
 
   // Comparison percentages
