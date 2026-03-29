@@ -62,6 +62,14 @@ export default function Statistics() {
   const { data: visits = [] } = useVisits();
   const { data: orders = [] } = useOrders();
   const { data: products = [] } = useProducts();
+  const { data: allOrderItems = [] } = useQuery({
+    queryKey: ["all-order-items"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("order_items").select("*");
+      if (error) throw error;
+      return (data ?? []) as OrderItem[];
+    },
+  });
   const [period, setPeriod] = useState<Period>("week");
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
