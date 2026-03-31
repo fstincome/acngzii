@@ -1,19 +1,22 @@
 import { useState, useMemo } from "react";
-import { useOrders, useOrdersRealtime, useProducts, useUpdateOrderStatus, useUpdatePaymentStatus, STATUS_LABELS, STATUS_COLORS, PAYMENT_LABELS, ORDER_STATUSES } from "@/lib/restaurant-store";
+import { useOrders, useOrdersRealtime, useProducts, useUpdateOrderStatus, useUpdatePaymentStatus, useDeleteOrder, useUpdateOrder, STATUS_LABELS, STATUS_COLORS, PAYMENT_LABELS, ORDER_STATUSES, TABLE_COUNT } from "@/lib/restaurant-store";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle, Copy, Check } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle, Copy, Check, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import type { OrderItem } from "@/lib/restaurant-store";
 import InvoiceActions from "@/components/InvoiceActions";
 import type { InvoiceData } from "@/lib/invoice";
 import { buildStaffConfirmationMessage } from "@/lib/whatsapp-order";
+import { useAuth } from "@/hooks/useAuth";
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
   pending: <Clock className="h-4 w-4" />,
@@ -26,14 +29,22 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
 
 export default function RestaurantOrders() {
   useOrdersRealtime();
+  const { role } = useAuth();
+  const isAdmin = role === "admin";
   const { data: orders = [] } = useOrders();
   const { data: products = [] } = useProducts();
   const updateStatus = useUpdateOrderStatus();
   const updatePayment = useUpdatePaymentStatus();
+  const deleteOrder = useDeleteOrder();
+  const updateOrder = useUpdateOrder();
+  const qc = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("active");
   const [confirmationMsg, setConfirmationMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editTable, setEditTable] = useState<number>(1);
 
   const { data: selectedItems = [] } = useQuery({
     queryKey: ["order-items", selectedOrder],
@@ -74,13 +85,9 @@ export default function RestaurantOrders() {
     try {
       await updateStatus.mutateAsync({ id: orderId, status });
       toast.success(`Statut → ${STATUS_LABELS[status]}`);
-      // Show copyable confirmation message for staff
       const order = orders.find(o => o.id === orderId);
       if (order) {
-        const msg = buildStaffConfirmationMessage(
-          { ...order, status },
-          STATUS_LABELS[status]
-        );
+        const msg = buildStaffConfirmationMessage({ ...order, status }, STATUS_LABELS[status]);
         setConfirmationMsg(msg);
         setCopied(false);
       }
@@ -95,6 +102,29 @@ export default function RestaurantOrders() {
       toast.success("Paiement mis à jour");
     } catch {
       toast.error("Erreur");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteOrder.mutateAsync(deleteId);
+      toast.success("Commande supprimée");
+      setDeleteId(null);
+      if (selectedOrder === deleteId) setSelectedOrder(null);
+    } catch {
+      toast.error("Erreur de suppression");
+    }
+  };
+
+  const handleEditSave = async () => {
+    if (!selOrder) return;
+    try {
+      await updateOrder.mutateAsync({ id: selOrder.id, updates: { table_number: editTable } });
+      toast.success("Commande modifiée");
+      setEditMode(false);
+    } catch {
+      toast.error("Erreur de modification");
     }
   };
 
@@ -133,7 +163,7 @@ export default function RestaurantOrders() {
       <div className="space-y-3">
         {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Aucune commande</p>}
         {filtered.map(order => (
-          <Card key={order.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedOrder(order.id)}>
+          <Card key={order.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setSelectedOrder(order.id); setEditMode(false); setEditTable(order.table_number); }}>
             <CardContent className="py-3 px-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -148,14 +178,25 @@ export default function RestaurantOrders() {
                     Table {order.table_number} • {order.visitor_id} • {new Date(order.created_at).toLocaleTimeString("fr")}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold">{order.total_amount.toLocaleString()} BIF</p>
-                  <Badge variant="outline" className="text-xs">
-                    {PAYMENT_LABELS[order.payment_status] || order.payment_status}
-                  </Badge>
+                <div className="text-right flex items-center gap-2">
+                  <div>
+                    <p className="font-bold">{order.total_amount.toLocaleString()} BIF</p>
+                    <Badge variant="outline" className="text-xs">
+                      {PAYMENT_LABELS[order.payment_status] || order.payment_status}
+                    </Badge>
+                  </div>
+                  {isAdmin && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive h-8 w-8"
+                      onClick={(e) => { e.stopPropagation(); setDeleteId(order.id); }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
-              {/* Quick action */}
               {nextStatus(order.status) && (
                 <Button size="sm" className="mt-2 w-full" onClick={(e) => { e.stopPropagation(); handleStatusChange(order.id, nextStatus(order.status)!); }}>
                   → {STATUS_LABELS[nextStatus(order.status)!]}
@@ -167,19 +208,49 @@ export default function RestaurantOrders() {
       </div>
 
       {/* Order detail dialog */}
-      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-        <DialogContent className="max-w-md">
+      <Dialog open={!!selectedOrder} onOpenChange={() => { setSelectedOrder(null); setEditMode(false); }}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selOrder?.order_code}</DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>{selOrder?.order_code}</DialogTitle>
+              {isAdmin && selOrder && (
+                <div className="flex gap-1">
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => { setEditMode(!editMode); setEditTable(selOrder.table_number); }}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteId(selOrder.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </DialogHeader>
           {selOrder && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div><span className="text-muted-foreground">Table:</span> {selOrder.table_number}</div>
-                <div><span className="text-muted-foreground">Visiteur:</span> {selOrder.visitor_id}</div>
-                <div><span className="text-muted-foreground">Date:</span> {new Date(selOrder.created_at).toLocaleString("fr")}</div>
-                <div><span className="text-muted-foreground">Total:</span> <strong>{selOrder.total_amount.toLocaleString()} BIF</strong></div>
-              </div>
+              {editMode ? (
+                <div className="space-y-3 border rounded-lg p-3 bg-muted/50">
+                  <p className="text-sm font-medium">Modifier la commande</p>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Numéro de table</label>
+                    <Select value={String(editTable)} onValueChange={(v) => setEditTable(Number(v))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: TABLE_COUNT }, (_, i) => i + 1).map(n => (
+                          <SelectItem key={n} value={String(n)}>Table {n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button className="w-full" onClick={handleEditSave}>Enregistrer</Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div><span className="text-muted-foreground">Table:</span> {selOrder.table_number}</div>
+                  <div><span className="text-muted-foreground">Visiteur:</span> {selOrder.visitor_id}</div>
+                  <div><span className="text-muted-foreground">Date:</span> {new Date(selOrder.created_at).toLocaleString("fr")}</div>
+                  <div><span className="text-muted-foreground">Total:</span> <strong>{selOrder.total_amount.toLocaleString()} BIF</strong></div>
+                </div>
+              )}
 
               <div className="border rounded-lg p-3 space-y-1">
                 <p className="font-medium text-sm mb-2">Articles</p>
@@ -249,6 +320,24 @@ export default function RestaurantOrders() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette commande ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. La commande et tous ses articles seront définitivement supprimés.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Staff confirmation message dialog */}
       <Dialog open={!!confirmationMsg} onOpenChange={() => { setConfirmationMsg(null); setCopied(false); }}>
