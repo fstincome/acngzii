@@ -241,6 +241,34 @@ export function useUpdatePaymentStatus() {
   });
 }
 
+export function useDeleteOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // Delete order items first
+      const { error: itemErr } = await supabase.from("order_items").delete().eq("order_id", id);
+      if (itemErr) throw itemErr;
+      const { error } = await supabase.from("orders").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      qc.invalidateQueries({ queryKey: ["order-items"] });
+    },
+  });
+}
+
+export function useUpdateOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: { table_number?: number; total_amount?: number } }) => {
+      const { error } = await supabase.from("orders").update(updates).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
+  });
+}
+
 export function useOrdersRealtime() {
   const qc = useQueryClient();
   const channel = supabase
