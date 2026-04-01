@@ -159,11 +159,6 @@ export default function RegistrationForm() {
             </div>
           </div>
 
-          <div className="px-6 py-3 bg-muted/20 border-t border-border/30">
-            <p className="text-[9px] text-muted-foreground italic text-center">
-              Ce formulaire est à remplir par le visiteur. Le Directeur se chargera de saisir les données dans le système.
-            </p>
-          </div>
         </div>
 
         {/* Actions */}
