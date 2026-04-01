@@ -17,69 +17,72 @@ const fields = [
 function buildFormPDF(): jsPDF {
   const doc = new jsPDF("p", "mm", "a4");
   const w = 210;
-  const margin = 20;
+  const h = 297;
+  const margin = 18;
   const contentW = w - margin * 2;
-  let y = 20;
+  let y = 22;
 
-  doc.setFontSize(16);
+  // Header
+  doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
   doc.text("GITEGA STUDY SPACE", w / 2, y, { align: "center" });
-  y += 8;
-  doc.setFontSize(11);
+  y += 9;
+  doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
   doc.text("Formulaire d'inscription — Visiteur", w / 2, y, { align: "center" });
-  y += 4;
+  y += 6;
   doc.setDrawColor(60, 60, 60);
   doc.setLineWidth(0.5);
   doc.line(margin, y, w - margin, y);
-  y += 10;
+  y += 12;
 
   const pdfFields = [
-    { label: "Nom complet *", height: 10 },
-    { label: "Genre (Homme / Femme / Autre)", height: 10 },
-    { label: "Date de naissance (JJ/MM/AAAA)", height: 10 },
-    { label: "Téléphone", height: 10 },
-    { label: "Email", height: 10 },
-    { label: "Quartier / Commune", height: 10 },
-    { label: "Profession", height: 10 },
-    { label: "Institution (école, université...)", height: 10 },
+    "Nom complet *",
+    "Genre (Homme / Femme / Autre)",
+    "Date de naissance (JJ/MM/AAAA)",
+    "Téléphone",
+    "Email",
+    "Quartier / Commune",
+    "Profession",
+    "Institution (école, université...)",
   ];
 
-  for (const field of pdfFields) {
-    doc.setFontSize(10);
+  const fieldH = 14;
+  const fieldGap = 6;
+
+  for (const label of pdfFields) {
+    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
-    doc.text(field.label, margin, y);
-    y += 5;
+    doc.text(label, margin, y);
+    y += 6;
     doc.setDrawColor(180, 180, 180);
     doc.setLineWidth(0.3);
-    doc.rect(margin, y, contentW, field.height);
-    y += field.height + 8;
+    doc.rect(margin, y, contentW, fieldH);
+    y += fieldH + fieldGap;
   }
 
-  doc.setFontSize(10);
+  // Photo section
+  doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text("Photo passeport (coller ici)", margin, y);
-  y += 5;
+  y += 6;
   doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.3);
   doc.rect(margin, y, 35, 45);
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.text("3.5 x 4.5 cm", margin + 17.5, y + 25, { align: "center" });
 
-  const sigY = y + 55;
-  doc.setFontSize(10);
+  // Signature & Date at bottom
+  const sigY = h - 40;
+  doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text("Signature du visiteur :", margin, sigY);
-  doc.line(margin + 45, sigY, margin + contentW, sigY);
+  doc.line(margin + 48, sigY, w - margin, sigY);
 
-  const dateY = sigY + 12;
+  const dateY = sigY + 14;
   doc.text("Date :", margin, dateY);
-  doc.line(margin + 20, dateY, margin + 80, dateY);
-
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "italic");
-  doc.text("Ce formulaire est à remplir par le visiteur. Le Directeur se chargera de saisir les données dans le système.", margin, 285);
+  doc.line(margin + 20, dateY, margin + 90, dateY);
 
   return doc;
 }
