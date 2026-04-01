@@ -17,24 +17,23 @@ const fields = [
 function buildFormPDF(): jsPDF {
   const doc = new jsPDF("p", "mm", "a4");
   const w = 210;
-  const h = 297;
-  const margin = 18;
+  const margin = 15;
   const contentW = w - margin * 2;
-  let y = 22;
+  let y = 18;
 
   // Header
-  doc.setFontSize(18);
+  doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.text("GITEGA STUDY SPACE", w / 2, y, { align: "center" });
-  y += 9;
-  doc.setFontSize(12);
+  y += 6;
+  doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text("Formulaire d'inscription — Visiteur", w / 2, y, { align: "center" });
-  y += 6;
-  doc.setDrawColor(60, 60, 60);
-  doc.setLineWidth(0.5);
+  y += 4;
+  doc.setDrawColor(80, 80, 80);
+  doc.setLineWidth(0.4);
   doc.line(margin, y, w - margin, y);
-  y += 12;
+  y += 8;
 
   const pdfFields = [
     "Nom complet *",
@@ -47,42 +46,44 @@ function buildFormPDF(): jsPDF {
     "Institution (école, université...)",
   ];
 
-  const fieldH = 14;
-  const fieldGap = 6;
+  const fieldH = 8;
 
   for (const label of pdfFields) {
-    doc.setFontSize(11);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.text(label, margin, y);
-    y += 6;
+    y += 4;
     doc.setDrawColor(180, 180, 180);
-    doc.setLineWidth(0.3);
+    doc.setLineWidth(0.25);
     doc.rect(margin, y, contentW, fieldH);
-    y += fieldH + fieldGap;
+    y += fieldH + 4;
   }
 
-  // Photo section
-  doc.setFontSize(11);
+  // Photo
+  y += 2;
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.text("Photo passeport (coller ici)", margin, y);
-  y += 6;
+  y += 4;
   doc.setDrawColor(180, 180, 180);
-  doc.setLineWidth(0.3);
-  doc.rect(margin, y, 35, 45);
-  doc.setFontSize(9);
+  doc.setLineWidth(0.25);
+  doc.rect(margin, y, 30, 40);
+  doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("3.5 x 4.5 cm", margin + 17.5, y + 25, { align: "center" });
+  doc.text("3.5 x 4.5 cm", margin + 15, y + 22, { align: "center" });
 
-  // Signature & Date at bottom
-  const sigY = h - 40;
-  doc.setFontSize(11);
+  // Signature & Date
+  const sigY = y + 48;
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.text("Signature du visiteur :", margin, sigY);
-  doc.line(margin + 48, sigY, w - margin, sigY);
+  doc.setLineWidth(0.3);
+  doc.setDrawColor(120, 120, 120);
+  doc.line(margin + 40, sigY, w - margin, sigY);
 
-  const dateY = sigY + 14;
+  const dateY = sigY + 10;
   doc.text("Date :", margin, dateY);
-  doc.line(margin + 20, dateY, margin + 90, dateY);
+  doc.line(margin + 16, dateY, margin + 70, dateY);
 
   return doc;
 }
