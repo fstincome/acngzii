@@ -78,11 +78,9 @@ export const TABLE_COUNT = 10;
 // Generate order code like CMD-2026-00045
 export async function generateOrderCode(): Promise<string> {
   const year = new Date().getFullYear();
-  const { count } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true });
-  const num = ((count ?? 0) + 1).toString().padStart(5, "0");
-  return `CMD-${year}-${num}`;
+  const ts = Date.now().toString(36);
+  const rand = Math.random().toString(36).substring(2, 6);
+  return `CMD-${year}-${ts}${rand}`.toUpperCase();
 }
 
 // ---- Hooks ----
