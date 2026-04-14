@@ -128,9 +128,9 @@ export default function Statistics() {
   const uniqueVisitors = new Set(checkIns.map((v) => v.visitor_id)).size;
   const prevUniqueVisitors = new Set(prevCheckIns.map((v) => v.visitor_id)).size;
 
-  const labCheckIns = checkIns.filter((v) => v.room === "computer_lab").length;
-  const multiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length;
-  const gardenCheckIns = checkIns.filter((v) => v.room === "garden").length;
+  const rawLabCheckIns = checkIns.filter((v) => v.room === "computer_lab").length;
+  const rawMultiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length;
+  const rawGardenCheckIns = checkIns.filter((v) => v.room === "garden").length;
 
   // Restaurant revenue & profit
   const filteredOrders = useMemo(() => {
@@ -198,6 +198,11 @@ export default function Statistics() {
   const progLabCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "computer_lab").length;
   const progMultiCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "multipurpose_room").length;
   const progGardenCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "garden").length;
+
+  // Merged room counts (visits + program)
+  const labCheckIns = rawLabCheckIns + progLabCount;
+  const multiCheckIns = rawMultiCheckIns + progMultiCount;
+  const gardenCheckIns = rawGardenCheckIns + progGardenCount;
 
   const comparePercent = (current: number, prev: number) => {
     if (prev === 0) return current > 0 ? 100 : 0;

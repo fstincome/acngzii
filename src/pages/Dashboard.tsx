@@ -46,21 +46,52 @@ export default function Dashboard() {
       if (todaySessionIds.length === 0) return [];
       const { data, error } = await supabase
         .from("program_attendance")
-        .select("*")
+        .select("id, status, room, participant_id")
         .in("session_id", todaySessionIds);
       if (error) throw error;
-      return (data ?? []) as { id: string; status: string; room: string | null }[];
+      return (data ?? []) as { id: string; status: string; room: string | null; participant_id: string }[];
     },
     enabled: todaySessionIds.length > 0,
   });
+
+  // Fetch participant names for present program attendees
+  const presentAttendeeIds = useMemo(() => 
+    todayProgramAttendance.filter(a => a.status === "present").map(a => a.participant_id),
+    [todayProgramAttendance]
+  );
+
+  const { data: programParticipants = [] } = useQuery({
+    queryKey: ["dashboard_program_participants", presentAttendeeIds],
+    queryFn: async () => {
+      if (presentAttendeeIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("program_participants")
+        .select("id, full_name")
+        .in("id", presentAttendeeIds);
+      if (error) throw error;
+      return (data ?? []) as { id: string; full_name: string }[];
+    },
+    enabled: presentAttendeeIds.length > 0,
+  });
+
+  const participantNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    programParticipants.forEach(p => { map[p.id] = p.full_name; });
+    return map;
+  }, [programParticipants]);
 
   const programPresentToday = todayProgramAttendance.filter(a => a.status === "present").length;
   const programTotalToday = todayProgramAttendance.length;
 
   // Program room breakdown today
-  const programLabToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "computer_lab").length;
-  const programMultiToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "multipurpose_room").length;
-  const programGardenToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "garden").length;
+  const programPresentByRoom = useMemo(() => {
+    const present = todayProgramAttendance.filter(a => a.status === "present");
+    return {
+      computer_lab: present.filter(a => a.room === "computer_lab"),
+      multipurpose_room: present.filter(a => a.room === "multipurpose_room"),
+      garden: present.filter(a => a.room === "garden"),
+    };
+  }, [todayProgramAttendance]);
 
   const labOccupancy = computeOccupancy(visits, "computer_lab");
   const multiOccupancy = computeOccupancy(visits, "multipurpose_room");
@@ -69,11 +100,12 @@ export default function Dashboard() {
   const todayVisits = visits.filter((v) => v.timestamp.startsWith(today));
   const todayCheckIns = todayVisits.filter((v) => v.action === "check_in");
   const uniqueTodayIds = [...new Set(todayCheckIns.map((v) => v.visitor_id))];
-  const uniqueToday = uniqueTodayIds.length;
 
-  const labCount = labOccupancy.size;
-  const multiCount = multiOccupancy.size;
-  const gardenCount = gardenOccupancy.size;
+  // Merge program present into room counts
+  const labCount = labOccupancy.size + programPresentByRoom.computer_lab.length;
+  const multiCount = multiOccupancy.size + programPresentByRoom.multipurpose_room.length;
+  const gardenCount = gardenOccupancy.size + programPresentByRoom.garden.length;
+  const uniqueToday = uniqueTodayIds.length + programPresentToday;
   const labFull = labCount >= COMPUTER_LAB_CAPACITY;
   const labPercent = Math.min((labCount / COMPUTER_LAB_CAPACITY) * 100, 100);
 
@@ -165,17 +197,17 @@ export default function Dashboard() {
             <div className="flex items-center gap-2 rounded-xl bg-primary/5 px-3 py-2">
               <Monitor className="h-4 w-4 text-primary" />
               <span className="text-xs text-muted-foreground">Salle Info</span>
-              <span className="ml-auto text-sm font-bold text-foreground">{programLabToday}</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programPresentByRoom.computer_lab.length}</span>
             </div>
             <div className="flex items-center gap-2 rounded-xl bg-accent/5 px-3 py-2">
               <DoorOpen className="h-4 w-4 text-accent" />
               <span className="text-xs text-muted-foreground">Salle Poly</span>
-              <span className="ml-auto text-sm font-bold text-foreground">{programMultiToday}</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programPresentByRoom.multipurpose_room.length}</span>
             </div>
             <div className="flex items-center gap-2 rounded-xl bg-green-500/5 px-3 py-2">
               <TreePine className="h-4 w-4 text-green-600" />
               <span className="text-xs text-muted-foreground">Jardin</span>
-              <span className="ml-auto text-sm font-bold text-foreground">{programGardenToday}</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programPresentByRoom.garden.length}</span>
             </div>
           </div>
         </div>
@@ -206,6 +238,7 @@ export default function Dashboard() {
           capacity={COMPUTER_LAB_CAPACITY}
           labPercent={labPercent}
           labCount={labCount}
+          programAttendees={programPresentByRoom.computer_lab.map(a => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant" }))}
         />
         <OccupancyPanel
           icon={DoorOpen}
@@ -216,6 +249,7 @@ export default function Dashboard() {
           getVisitor={getVisitor}
           onSelect={setSelectedVisitor}
           color="accent"
+          programAttendees={programPresentByRoom.multipurpose_room.map(a => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant" }))}
         />
         <OccupancyPanel
           icon={TreePine}
@@ -226,6 +260,7 @@ export default function Dashboard() {
           getVisitor={getVisitor}
           onSelect={setSelectedVisitor}
           color="garden"
+          programAttendees={programPresentByRoom.garden.map(a => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant" }))}
         />
       </div>
 
@@ -236,7 +271,7 @@ export default function Dashboard() {
           <h3 className="text-sm font-semibold text-foreground">Visiteurs d'aujourd'hui</h3>
           <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">{uniqueToday}</span>
         </div>
-        {todayVisitorsList.length > 0 ? (
+        {(todayVisitorsList.length > 0 || programPresentToday > 0) ? (
           <div className="space-y-1 max-h-64 overflow-y-auto">
             {todayVisitorsList.map((entry) => {
               const isPresent = entry.isInLab || entry.isInMulti || entry.isInGarden;
@@ -255,6 +290,22 @@ export default function Dashboard() {
                     <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-medium text-green-600 shrink-0">Présent</span>
                   )}
                 </button>
+              );
+            })}
+            {todayProgramAttendance.filter(a => a.status === "present" && a.room).map((a) => {
+              const roomLabel = ROOM_LABELS[a.room as RoomType] || a.room;
+              return (
+                <div
+                  key={`prog-today-${a.id}`}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm bg-primary/5"
+                >
+                  <div className="h-2 w-2 rounded-full shrink-0 bg-green-500 animate-pulse" />
+                  <span className="font-medium text-foreground truncate flex-1">{participantNameMap[a.participant_id] || "Participant"}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">{roomLabel}</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary shrink-0">
+                    <GraduationCap className="h-3 w-3 inline mr-0.5" />Programme
+                  </span>
+                </div>
               );
             })}
           </div>
@@ -327,27 +378,28 @@ function getTimeRemainingColor(ms: number): string {
 }
 
 function OccupancyPanel({
-  icon: Icon, title, room, occupancy, visits, getVisitor, onSelect, color, capacity, labPercent, labCount
+  icon: Icon, title, room, occupancy, visits, getVisitor, onSelect, color, capacity, labPercent, labCount, programAttendees = []
 }: {
   icon: React.ElementType; title: string; room: string; occupancy: Set<string>;
   visits: Visit[];
   getVisitor: (vid: string) => Visitor | undefined;
   onSelect: (v: Visitor) => void; color: string;
   capacity?: number; labPercent?: number; labCount?: number;
+  programAttendees?: { id: string; name: string }[];
 }) {
   const [now, setNow] = useState(Date.now());
+  const totalCount = occupancy.size + programAttendees.length;
 
   useEffect(() => {
-    if (occupancy.size === 0) return;
-    const interval = setInterval(() => setNow(Date.now()), 30000); // update every 30s
+    if (totalCount === 0) return;
+    const interval = setInterval(() => setNow(Date.now()), 30000);
     return () => clearInterval(interval);
-  }, [occupancy.size]);
+  }, [totalCount]);
 
   const colorClass = color === "accent" ? "text-accent" : color === "garden" ? "text-green-600" : "text-primary";
   const bgClass = color === "accent" ? "bg-accent/5" : color === "garden" ? "bg-green-500/5" : "bg-primary/5";
   const dotClass = color === "accent" ? "bg-accent" : color === "garden" ? "bg-green-500" : "bg-primary";
 
-  // Find the latest check_in for each visitor in this room to get expected_checkout
   const getExpectedCheckout = (vid: string): string | null => {
     const roomVisits = visits
       .filter((v) => v.visitor_id === vid && v.room === room && v.action === "check_in")
@@ -378,11 +430,11 @@ function OccupancyPanel({
       )}
       {!capacity && (
         <div className="flex items-baseline gap-2 mb-3">
-          <span className="text-4xl font-bold gradient-text">{occupancy.size}</span>
+          <span className="text-4xl font-bold gradient-text">{totalCount}</span>
           <span className="text-sm text-muted-foreground">visiteurs</span>
         </div>
       )}
-      {occupancy.size > 0 ? (
+      {totalCount > 0 ? (
         <div className="space-y-1.5 max-h-48 overflow-y-auto">
           {Array.from(occupancy).map((vid) => {
             const v = getVisitor(vid);
@@ -406,6 +458,18 @@ function OccupancyPanel({
               </button>
             );
           })}
+          {programAttendees.map((pa) => (
+            <div
+              key={`prog-${pa.id}`}
+              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm ${bgClass}`}
+            >
+              <div className={`h-2 w-2 rounded-full ${dotClass} animate-pulse shrink-0`} />
+              <span className="font-medium text-foreground truncate flex-1">{pa.name}</span>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary shrink-0">
+                <GraduationCap className="h-3 w-3 inline mr-0.5" />Programme
+              </span>
+            </div>
+          ))}
         </div>
       ) : (
         <p className="text-xs text-muted-foreground italic">Aucun visiteur actuellement</p>
