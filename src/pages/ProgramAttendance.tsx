@@ -411,11 +411,13 @@ export default function ProgramAttendance() {
   );
 }
 
-function ParticipantRow({ participant, status, onMark }: {
+function ParticipantRow({ participant, status, room, onMark }: {
   participant: { id: string; full_name: string; participant_code: string; role: string; photo: string | null; institution?: string | null };
   status: string;
+  room?: string;
   onMark?: () => void;
 }) {
+  const roomEmojis: Record<string, string> = { computer_lab: "🖥️", multipurpose_room: "🏠", garden: "🌿" };
   return (
     <Card className="flex items-center gap-3 p-3.5 transition-all hover:shadow-md group">
       {participant.photo ? (
@@ -450,7 +452,14 @@ function ParticipantRow({ participant, status, onMark }: {
         </Button>
       )}
       {status === "present" && (
-        <Badge className="bg-success/10 text-success border-success/20 shrink-0">✓ Présent</Badge>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {room && ROOM_LABELS[room as keyof typeof ROOM_LABELS] && (
+            <Badge variant="outline" className="text-xs">
+              {roomEmojis[room] || ""} {ROOM_LABELS[room as keyof typeof ROOM_LABELS]}
+            </Badge>
+          )}
+          <Badge className="bg-success/10 text-success border-success/20">✓ Présent</Badge>
+        </div>
       )}
       {status === "absent" && (
         <Badge variant="destructive" className="shrink-0">✗ Absent</Badge>
