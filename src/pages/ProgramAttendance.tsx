@@ -6,9 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScanLine, Search, CheckCircle2, Clock, XCircle, Camera, X, Building, Fingerprint } from "lucide-react";
+import { ScanLine, Search, CheckCircle2, Clock, XCircle, Camera, X, Building, Fingerprint, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { RoomType, ROOM_LABELS, DEFAULT_DURATION_HOURS } from "@/lib/supabase-store";
 import { format, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
 
