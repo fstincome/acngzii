@@ -388,9 +388,10 @@ export default function ProgramAttendance() {
               {filteredParticipants(presentList).length === 0 ? (
                 <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant présent</p>
               ) : (
-                filteredParticipants(presentList).map(p => (
-                  <ParticipantRow key={p.id} participant={p} status="present" />
-                ))
+                filteredParticipants(presentList).map(p => {
+                  const att = getAttendanceForParticipant(p.id);
+                  return <ParticipantRow key={p.id} participant={p} status="present" room={att?.room as RoomType | undefined} />;
+                })
               )}
             </TabsContent>
 
