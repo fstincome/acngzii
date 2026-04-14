@@ -155,6 +155,7 @@ export type Database = {
           id: string
           marked_at: string | null
           participant_id: string
+          room: string | null
           session_id: string
           status: string
         }
@@ -163,6 +164,7 @@ export type Database = {
           id?: string
           marked_at?: string | null
           participant_id: string
+          room?: string | null
           session_id: string
           status?: string
         }
@@ -171,6 +173,7 @@ export type Database = {
           id?: string
           marked_at?: string | null
           participant_id?: string
+          room?: string | null
           session_id?: string
           status?: string
         }

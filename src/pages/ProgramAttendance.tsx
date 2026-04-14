@@ -6,9 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScanLine, Search, CheckCircle2, Clock, XCircle, Camera, X, Building, Fingerprint } from "lucide-react";
+import { ScanLine, Search, CheckCircle2, Clock, XCircle, Camera, X, Building, Fingerprint, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { RoomType, ROOM_LABELS, DEFAULT_DURATION_HOURS } from "@/lib/supabase-store";
 import { format, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -20,6 +21,7 @@ export default function ProgramAttendance() {
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [scanCode, setScanCode] = useState("");
+  const [selectedRoom, setSelectedRoom] = useState<RoomType>("computer_lab");
   const [cameraActive, setCameraActive] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -65,17 +67,15 @@ export default function ProgramAttendance() {
       return;
     }
     const att = getAttendanceForParticipant(participant.id);
+    const roomLabel = ROOM_LABELS[selectedRoom];
     if (!att) {
-      // Auto-create attendance record if missing, then mark present
       if (!selectedSessionId) return;
       try {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from("program_attendance")
-          .insert({ participant_id: participant.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString() })
-          .select()
-          .single();
+          .insert({ participant_id: participant.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString(), room: selectedRoom });
         if (error) throw error;
-        toast.success(`${participant.full_name} — Présent(e) ✓`);
+        toast.success(`${participant.full_name} — Présent(e) ✓ (${roomLabel})`);
       } catch {
         toast.error("Erreur lors du pointage");
       }
@@ -90,12 +90,16 @@ export default function ProgramAttendance() {
       return;
     }
     try {
-      await markPresent.mutateAsync({ attendanceId: att.id });
-      toast.success(`${participant.full_name} — Présent(e) ✓`);
+      const { error } = await supabase
+        .from("program_attendance")
+        .update({ status: "present", marked_at: new Date().toISOString(), room: selectedRoom })
+        .eq("id", att.id);
+      if (error) throw error;
+      toast.success(`${participant.full_name} — Présent(e) ✓ (${roomLabel})`);
     } catch {
       toast.error("Erreur lors du pointage");
     }
-  }, [participants, attendance, markPresent, selectedSessionId]);
+  }, [participants, attendance, selectedSessionId, selectedRoom]);
 
   const handleManualScan = () => {
     if (scanCode.trim()) {
@@ -284,6 +288,23 @@ export default function ProgramAttendance() {
                 </Button>
               </div>
             </div>
+
+            {/* Room selector */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" /> Placer en salle
+              </label>
+              <Select value={selectedRoom} onValueChange={v => setSelectedRoom(v as RoomType)}>
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="computer_lab">🖥️ Salle Informatique</SelectItem>
+                  <SelectItem value="multipurpose_room">🏠 Salle Polyvalente</SelectItem>
+                  <SelectItem value="garden">🌿 Jardin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </Card>
 
           {/* Stats */}
@@ -343,15 +364,19 @@ export default function ProgramAttendance() {
                  filteredParticipants(waitingList).map(p => (
                   <ParticipantRow key={p.id} participant={p} status="en_attente" onMark={async () => {
                     const att = getAttendanceForParticipant(p.id);
+                    const roomLabel = ROOM_LABELS[selectedRoom];
                     if (att) {
-                      await markPresent.mutateAsync({ attendanceId: att.id });
-                      toast.success(`${p.full_name} — Présent(e) ✓`);
-                    } else if (selectedSessionId) {
-                      // Auto-create attendance record when missing
                       const { error } = await supabase
                         .from("program_attendance")
-                        .insert({ participant_id: p.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString() });
-                      if (!error) toast.success(`${p.full_name} — Présent(e) ✓`);
+                        .update({ status: "present", marked_at: new Date().toISOString(), room: selectedRoom })
+                        .eq("id", att.id);
+                      if (!error) toast.success(`${p.full_name} — Présent(e) ✓ (${roomLabel})`);
+                      else toast.error("Erreur lors du pointage");
+                    } else if (selectedSessionId) {
+                      const { error } = await supabase
+                        .from("program_attendance")
+                        .insert({ participant_id: p.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString(), room: selectedRoom });
+                      if (!error) toast.success(`${p.full_name} — Présent(e) ✓ (${roomLabel})`);
                       else toast.error("Erreur lors du pointage");
                     }
                   }} />
@@ -363,9 +388,10 @@ export default function ProgramAttendance() {
               {filteredParticipants(presentList).length === 0 ? (
                 <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant présent</p>
               ) : (
-                filteredParticipants(presentList).map(p => (
-                  <ParticipantRow key={p.id} participant={p} status="present" />
-                ))
+                filteredParticipants(presentList).map(p => {
+                  const att = getAttendanceForParticipant(p.id);
+                  return <ParticipantRow key={p.id} participant={p} status="present" room={att?.room as RoomType | undefined} />;
+                })
               )}
             </TabsContent>
 
@@ -385,11 +411,13 @@ export default function ProgramAttendance() {
   );
 }
 
-function ParticipantRow({ participant, status, onMark }: {
+function ParticipantRow({ participant, status, room, onMark }: {
   participant: { id: string; full_name: string; participant_code: string; role: string; photo: string | null; institution?: string | null };
   status: string;
+  room?: string;
   onMark?: () => void;
 }) {
+  const roomEmojis: Record<string, string> = { computer_lab: "🖥️", multipurpose_room: "🏠", garden: "🌿" };
   return (
     <Card className="flex items-center gap-3 p-3.5 transition-all hover:shadow-md group">
       {participant.photo ? (
@@ -424,7 +452,14 @@ function ParticipantRow({ participant, status, onMark }: {
         </Button>
       )}
       {status === "present" && (
-        <Badge className="bg-success/10 text-success border-success/20 shrink-0">✓ Présent</Badge>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {room && ROOM_LABELS[room as keyof typeof ROOM_LABELS] && (
+            <Badge variant="outline" className="text-xs">
+              {roomEmojis[room] || ""} {ROOM_LABELS[room as keyof typeof ROOM_LABELS]}
+            </Badge>
+          )}
+          <Badge className="bg-success/10 text-success border-success/20">✓ Présent</Badge>
+        </div>
       )}
       {status === "absent" && (
         <Badge variant="destructive" className="shrink-0">✗ Absent</Badge>
