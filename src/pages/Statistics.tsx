@@ -174,7 +174,31 @@ export default function Statistics() {
   }, [paidOrders, allOrderItems, productMap, products]);
   const totalOrdersCount = filteredOrders.length;
 
-  // Comparison percentages
+  // Program attendance filtered by period
+  const filteredSessionIds = useMemo(() => {
+    const start = period === "month" && selectedMonth ? null : getStartDate(period);
+    return allSessions
+      .filter(s => {
+        if (period === "month" && selectedMonth) return s.session_date.startsWith(selectedMonth);
+        if (!start) return true;
+        return new Date(s.session_date) >= start;
+      })
+      .map(s => s.id);
+  }, [allSessions, period, selectedMonth]);
+
+  const filteredProgAttendance = useMemo(() => {
+    const ids = new Set(filteredSessionIds);
+    return allProgAttendance.filter(a => ids.has(a.session_id));
+  }, [allProgAttendance, filteredSessionIds]);
+
+  const progPresent = filteredProgAttendance.filter(a => a.status === "present").length;
+  const progAbsent = filteredProgAttendance.filter(a => a.status === "absent").length;
+  const progTotal = filteredProgAttendance.length;
+  const progRate = progTotal > 0 ? Math.round((progPresent / progTotal) * 100) : 0;
+  const progLabCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "computer_lab").length;
+  const progMultiCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "multipurpose_room").length;
+  const progGardenCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "garden").length;
+
   const comparePercent = (current: number, prev: number) => {
     if (prev === 0) return current > 0 ? 100 : 0;
     return Math.round(((current - prev) / prev) * 100);
