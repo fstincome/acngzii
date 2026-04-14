@@ -362,27 +362,28 @@ function getTimeRemainingColor(ms: number): string {
 }
 
 function OccupancyPanel({
-  icon: Icon, title, room, occupancy, visits, getVisitor, onSelect, color, capacity, labPercent, labCount
+  icon: Icon, title, room, occupancy, visits, getVisitor, onSelect, color, capacity, labPercent, labCount, programAttendees = []
 }: {
   icon: React.ElementType; title: string; room: string; occupancy: Set<string>;
   visits: Visit[];
   getVisitor: (vid: string) => Visitor | undefined;
   onSelect: (v: Visitor) => void; color: string;
   capacity?: number; labPercent?: number; labCount?: number;
+  programAttendees?: { id: string; name: string }[];
 }) {
   const [now, setNow] = useState(Date.now());
+  const totalCount = occupancy.size + programAttendees.length;
 
   useEffect(() => {
-    if (occupancy.size === 0) return;
-    const interval = setInterval(() => setNow(Date.now()), 30000); // update every 30s
+    if (totalCount === 0) return;
+    const interval = setInterval(() => setNow(Date.now()), 30000);
     return () => clearInterval(interval);
-  }, [occupancy.size]);
+  }, [totalCount]);
 
   const colorClass = color === "accent" ? "text-accent" : color === "garden" ? "text-green-600" : "text-primary";
   const bgClass = color === "accent" ? "bg-accent/5" : color === "garden" ? "bg-green-500/5" : "bg-primary/5";
   const dotClass = color === "accent" ? "bg-accent" : color === "garden" ? "bg-green-500" : "bg-primary";
 
-  // Find the latest check_in for each visitor in this room to get expected_checkout
   const getExpectedCheckout = (vid: string): string | null => {
     const roomVisits = visits
       .filter((v) => v.visitor_id === vid && v.room === room && v.action === "check_in")
@@ -413,11 +414,11 @@ function OccupancyPanel({
       )}
       {!capacity && (
         <div className="flex items-baseline gap-2 mb-3">
-          <span className="text-4xl font-bold gradient-text">{occupancy.size}</span>
+          <span className="text-4xl font-bold gradient-text">{totalCount}</span>
           <span className="text-sm text-muted-foreground">visiteurs</span>
         </div>
       )}
-      {occupancy.size > 0 ? (
+      {totalCount > 0 ? (
         <div className="space-y-1.5 max-h-48 overflow-y-auto">
           {Array.from(occupancy).map((vid) => {
             const v = getVisitor(vid);
@@ -441,6 +442,18 @@ function OccupancyPanel({
               </button>
             );
           })}
+          {programAttendees.map((pa) => (
+            <div
+              key={`prog-${pa.id}`}
+              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm ${bgClass}`}
+            >
+              <div className={`h-2 w-2 rounded-full ${dotClass} animate-pulse shrink-0`} />
+              <span className="font-medium text-foreground truncate flex-1">{pa.name}</span>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary shrink-0">
+                <GraduationCap className="h-3 w-3 inline mr-0.5" />Programme
+              </span>
+            </div>
+          ))}
         </div>
       ) : (
         <p className="text-xs text-muted-foreground italic">Aucun visiteur actuellement</p>
