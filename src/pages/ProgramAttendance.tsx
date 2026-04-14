@@ -22,6 +22,7 @@ export default function ProgramAttendance() {
   const [searchQuery, setSearchQuery] = useState("");
   const [scanCode, setScanCode] = useState("");
   const [selectedRoom, setSelectedRoom] = useState<RoomType>("computer_lab");
+  const [cameraActive, setCameraActive] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
