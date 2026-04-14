@@ -40,6 +40,7 @@ export interface ProgramAttendance {
   participant_id: string;
   session_id: string;
   status: "en_attente" | "present" | "absent";
+  room: string | null;
   marked_at: string | null;
   created_at: string;
 }
