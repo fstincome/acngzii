@@ -204,6 +204,7 @@ export default function Statistics() {
   const multiCheckIns = rawMultiCheckIns + progMultiCount;
   const gardenCheckIns = rawGardenCheckIns + progGardenCount;
 
+  const comparePercent = (current: number, prev: number) => {
     if (prev === 0) return current > 0 ? 100 : 0;
     return Math.round(((current - prev) / prev) * 100);
   };
