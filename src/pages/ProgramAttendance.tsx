@@ -288,6 +288,23 @@ export default function ProgramAttendance() {
                 </Button>
               </div>
             </div>
+
+            {/* Room selector */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" /> Placer en salle
+              </label>
+              <Select value={selectedRoom} onValueChange={v => setSelectedRoom(v as RoomType)}>
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="computer_lab">🖥️ Salle Informatique</SelectItem>
+                  <SelectItem value="multipurpose_room">🏠 Salle Polyvalente</SelectItem>
+                  <SelectItem value="garden">🌿 Jardin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </Card>
 
           {/* Stats */}
