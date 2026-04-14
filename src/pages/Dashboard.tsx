@@ -151,6 +151,36 @@ export default function Dashboard() {
         <StatCard icon={Users} label="Membres inscrits" value={visitors.length} color="accent" />
       </div>
 
+      {/* Program attendance today */}
+      {programTotalToday > 0 && (
+        <div className="stat-card">
+          <div className="mb-3 flex items-center gap-2">
+            <GraduationCap className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Présence Programme — aujourd'hui</h3>
+            <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              {programPresentToday} / {programTotalToday} présents
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="flex items-center gap-2 rounded-xl bg-primary/5 px-3 py-2">
+              <Monitor className="h-4 w-4 text-primary" />
+              <span className="text-xs text-muted-foreground">Salle Info</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programLabToday}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl bg-accent/5 px-3 py-2">
+              <DoorOpen className="h-4 w-4 text-accent" />
+              <span className="text-xs text-muted-foreground">Salle Poly</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programMultiToday}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl bg-green-500/5 px-3 py-2">
+              <TreePine className="h-4 w-4 text-green-600" />
+              <span className="text-xs text-muted-foreground">Jardin</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programGardenToday}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {labFull && (
         <div className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 animate-fade-in">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
