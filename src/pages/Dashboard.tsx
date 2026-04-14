@@ -61,6 +61,11 @@ export default function Dashboard() {
   const programLabToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "computer_lab").length;
   const programMultiToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "multipurpose_room").length;
   const programGardenToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "garden").length;
+
+  const labOccupancy = computeOccupancy(visits, "computer_lab");
+  const multiOccupancy = computeOccupancy(visits, "multipurpose_room");
+  const gardenOccupancy = computeOccupancy(visits, "garden");
+
   const todayVisits = visits.filter((v) => v.timestamp.startsWith(today));
   const todayCheckIns = todayVisits.filter((v) => v.action === "check_in");
   const uniqueTodayIds = [...new Set(todayCheckIns.map((v) => v.visitor_id))];
