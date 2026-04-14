@@ -362,7 +362,7 @@ export default function ProgramAttendance() {
                 <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant en attente</p>
               ) : (
                  filteredParticipants(waitingList).map(p => (
-                  <ParticipantRow key={p.id} participant={p} status="en_attente" room={undefined} onMark={async () => {
+                  <ParticipantRow key={p.id} participant={p} status="en_attente" onMark={async () => {
                     const att = getAttendanceForParticipant(p.id);
                     const roomLabel = ROOM_LABELS[selectedRoom];
                     if (att) {
