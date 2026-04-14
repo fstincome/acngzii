@@ -271,7 +271,7 @@ export default function Dashboard() {
           <h3 className="text-sm font-semibold text-foreground">Visiteurs d'aujourd'hui</h3>
           <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">{uniqueToday}</span>
         </div>
-        {todayVisitorsList.length > 0 ? (
+        {(todayVisitorsList.length > 0 || programPresentToday > 0) ? (
           <div className="space-y-1 max-h-64 overflow-y-auto">
             {todayVisitorsList.map((entry) => {
               const isPresent = entry.isInLab || entry.isInMulti || entry.isInGarden;
@@ -290,6 +290,22 @@ export default function Dashboard() {
                     <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-medium text-green-600 shrink-0">Présent</span>
                   )}
                 </button>
+              );
+            })}
+            {todayProgramAttendance.filter(a => a.status === "present" && a.room).map((a) => {
+              const roomLabel = ROOM_LABELS[a.room as RoomType] || a.room;
+              return (
+                <div
+                  key={`prog-today-${a.id}`}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm bg-primary/5"
+                >
+                  <div className="h-2 w-2 rounded-full shrink-0 bg-green-500 animate-pulse" />
+                  <span className="font-medium text-foreground truncate flex-1">{participantNameMap[a.participant_id] || "Participant"}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">{roomLabel}</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary shrink-0">
+                    <GraduationCap className="h-3 w-3 inline mr-0.5" />Programme
+                  </span>
+                </div>
               );
             })}
           </div>
