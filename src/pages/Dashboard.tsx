@@ -197,17 +197,17 @@ export default function Dashboard() {
             <div className="flex items-center gap-2 rounded-xl bg-primary/5 px-3 py-2">
               <Monitor className="h-4 w-4 text-primary" />
               <span className="text-xs text-muted-foreground">Salle Info</span>
-              <span className="ml-auto text-sm font-bold text-foreground">{programLabToday}</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programPresentByRoom.computer_lab.length}</span>
             </div>
             <div className="flex items-center gap-2 rounded-xl bg-accent/5 px-3 py-2">
               <DoorOpen className="h-4 w-4 text-accent" />
               <span className="text-xs text-muted-foreground">Salle Poly</span>
-              <span className="ml-auto text-sm font-bold text-foreground">{programMultiToday}</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programPresentByRoom.multipurpose_room.length}</span>
             </div>
             <div className="flex items-center gap-2 rounded-xl bg-green-500/5 px-3 py-2">
               <TreePine className="h-4 w-4 text-green-600" />
               <span className="text-xs text-muted-foreground">Jardin</span>
-              <span className="ml-auto text-sm font-bold text-foreground">{programGardenToday}</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programPresentByRoom.garden.length}</span>
             </div>
           </div>
         </div>
