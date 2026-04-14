@@ -238,6 +238,7 @@ export default function Dashboard() {
           capacity={COMPUTER_LAB_CAPACITY}
           labPercent={labPercent}
           labCount={labCount}
+          programAttendees={programPresentByRoom.computer_lab.map(a => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant" }))}
         />
         <OccupancyPanel
           icon={DoorOpen}
@@ -248,6 +249,7 @@ export default function Dashboard() {
           getVisitor={getVisitor}
           onSelect={setSelectedVisitor}
           color="accent"
+          programAttendees={programPresentByRoom.multipurpose_room.map(a => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant" }))}
         />
         <OccupancyPanel
           icon={TreePine}
@@ -258,6 +260,7 @@ export default function Dashboard() {
           getVisitor={getVisitor}
           onSelect={setSelectedVisitor}
           color="garden"
+          programAttendees={programPresentByRoom.garden.map(a => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant" }))}
         />
       </div>
 
