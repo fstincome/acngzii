@@ -23,11 +23,44 @@ export default function Dashboard() {
   const { data: visits = [] } = useVisits();
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
 
-  const labOccupancy = computeOccupancy(visits, "computer_lab");
-  const multiOccupancy = computeOccupancy(visits, "multipurpose_room");
-  const gardenOccupancy = computeOccupancy(visits, "garden");
-
+  // Program attendance for today
   const today = new Date().toISOString().split("T")[0];
+
+  const { data: todaySessions = [] } = useQuery({
+    queryKey: ["dashboard_program_sessions_today", today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("program_sessions")
+        .select("id")
+        .eq("session_date", today);
+      if (error) throw error;
+      return (data ?? []) as { id: string }[];
+    },
+  });
+
+  const todaySessionIds = useMemo(() => todaySessions.map(s => s.id), [todaySessions]);
+
+  const { data: todayProgramAttendance = [] } = useQuery({
+    queryKey: ["dashboard_program_attendance_today", todaySessionIds],
+    queryFn: async () => {
+      if (todaySessionIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("program_attendance")
+        .select("*")
+        .in("session_id", todaySessionIds);
+      if (error) throw error;
+      return (data ?? []) as { id: string; status: string; room: string | null }[];
+    },
+    enabled: todaySessionIds.length > 0,
+  });
+
+  const programPresentToday = todayProgramAttendance.filter(a => a.status === "present").length;
+  const programTotalToday = todayProgramAttendance.length;
+
+  // Program room breakdown today
+  const programLabToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "computer_lab").length;
+  const programMultiToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "multipurpose_room").length;
+  const programGardenToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "garden").length;
   const todayVisits = visits.filter((v) => v.timestamp.startsWith(today));
   const todayCheckIns = todayVisits.filter((v) => v.action === "check_in");
   const uniqueTodayIds = [...new Set(todayCheckIns.map((v) => v.visitor_id))];
