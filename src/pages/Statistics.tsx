@@ -383,7 +383,28 @@ export default function Statistics() {
         <KpiCard icon={ShoppingCart} label="Commandes" value={totalOrdersCount} />
       </div>
 
-      {/* Charts row 1 */}
+      {/* Program Attendance */}
+      {progTotal > 0 && (
+        <>
+          <div className="page-header">
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-primary" />
+              Présence Programme
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <KpiCard icon={ClipboardCheck} label="Taux de présence" value={`${progRate}%`} />
+            <KpiCard icon={GraduationCap} label="Présents" value={progPresent} />
+            <KpiCard icon={Users} label="Absents" value={progAbsent} />
+            <KpiCard icon={Calendar} label="Total pointages" value={progTotal} />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <RoomStat icon={Monitor} label="Salle Info (Prog)" value={progLabCount} color="primary" />
+            <RoomStat icon={DoorOpen} label="Salle Poly (Prog)" value={progMultiCount} color="accent" />
+            <RoomStat icon={TreePine} label="Jardin (Prog)" value={progGardenCount} color="garden" />
+          </div>
+        </>
+      )}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
           <h3 className="mb-5 text-sm font-semibold text-foreground">Tendance de fréquentation</h3>
