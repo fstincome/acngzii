@@ -76,6 +76,34 @@ export default function Statistics() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   });
 
+  // Program attendance data
+  const { data: allSessions = [] } = useQuery({
+    queryKey: ["stats_program_sessions"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("program_sessions").select("id, session_date, program_id");
+      if (error) throw error;
+      return (data ?? []) as { id: string; session_date: string; program_id: string }[];
+    },
+  });
+
+  const { data: allProgAttendance = [] } = useQuery({
+    queryKey: ["stats_program_attendance"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("program_attendance").select("id, session_id, status, room");
+      if (error) throw error;
+      return (data ?? []) as { id: string; session_id: string; status: string; room: string | null }[];
+    },
+  });
+
+  const { data: allPrograms = [] } = useQuery({
+    queryKey: ["stats_programs"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("programs").select("id, name");
+      if (error) throw error;
+      return (data ?? []) as { id: string; name: string }[];
+    },
+  });
+
   const filteredVisits = useMemo(() => {
     if (period === "month" && selectedMonth) {
       return visits.filter((v) => v.timestamp.startsWith(selectedMonth));
