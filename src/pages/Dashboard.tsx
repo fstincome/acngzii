@@ -46,21 +46,52 @@ export default function Dashboard() {
       if (todaySessionIds.length === 0) return [];
       const { data, error } = await supabase
         .from("program_attendance")
-        .select("*")
+        .select("id, status, room, participant_id")
         .in("session_id", todaySessionIds);
       if (error) throw error;
-      return (data ?? []) as { id: string; status: string; room: string | null }[];
+      return (data ?? []) as { id: string; status: string; room: string | null; participant_id: string }[];
     },
     enabled: todaySessionIds.length > 0,
   });
+
+  // Fetch participant names for present program attendees
+  const presentAttendeeIds = useMemo(() => 
+    todayProgramAttendance.filter(a => a.status === "present").map(a => a.participant_id),
+    [todayProgramAttendance]
+  );
+
+  const { data: programParticipants = [] } = useQuery({
+    queryKey: ["dashboard_program_participants", presentAttendeeIds],
+    queryFn: async () => {
+      if (presentAttendeeIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("program_participants")
+        .select("id, full_name")
+        .in("id", presentAttendeeIds);
+      if (error) throw error;
+      return (data ?? []) as { id: string; full_name: string }[];
+    },
+    enabled: presentAttendeeIds.length > 0,
+  });
+
+  const participantNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    programParticipants.forEach(p => { map[p.id] = p.full_name; });
+    return map;
+  }, [programParticipants]);
 
   const programPresentToday = todayProgramAttendance.filter(a => a.status === "present").length;
   const programTotalToday = todayProgramAttendance.length;
 
   // Program room breakdown today
-  const programLabToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "computer_lab").length;
-  const programMultiToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "multipurpose_room").length;
-  const programGardenToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "garden").length;
+  const programPresentByRoom = useMemo(() => {
+    const present = todayProgramAttendance.filter(a => a.status === "present");
+    return {
+      computer_lab: present.filter(a => a.room === "computer_lab"),
+      multipurpose_room: present.filter(a => a.room === "multipurpose_room"),
+      garden: present.filter(a => a.room === "garden"),
+    };
+  }, [todayProgramAttendance]);
 
   const labOccupancy = computeOccupancy(visits, "computer_lab");
   const multiOccupancy = computeOccupancy(visits, "multipurpose_room");
@@ -69,11 +100,12 @@ export default function Dashboard() {
   const todayVisits = visits.filter((v) => v.timestamp.startsWith(today));
   const todayCheckIns = todayVisits.filter((v) => v.action === "check_in");
   const uniqueTodayIds = [...new Set(todayCheckIns.map((v) => v.visitor_id))];
-  const uniqueToday = uniqueTodayIds.length;
 
-  const labCount = labOccupancy.size;
-  const multiCount = multiOccupancy.size;
-  const gardenCount = gardenOccupancy.size;
+  // Merge program present into room counts
+  const labCount = labOccupancy.size + programPresentByRoom.computer_lab.length;
+  const multiCount = multiOccupancy.size + programPresentByRoom.multipurpose_room.length;
+  const gardenCount = gardenOccupancy.size + programPresentByRoom.garden.length;
+  const uniqueToday = uniqueTodayIds.length + programPresentToday;
   const labFull = labCount >= COMPUTER_LAB_CAPACITY;
   const labPercent = Math.min((labCount / COMPUTER_LAB_CAPACITY) * 100, 100);
 
