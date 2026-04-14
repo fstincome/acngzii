@@ -67,17 +67,15 @@ export default function ProgramAttendance() {
       return;
     }
     const att = getAttendanceForParticipant(participant.id);
+    const roomLabel = ROOM_LABELS[selectedRoom];
     if (!att) {
-      // Auto-create attendance record if missing, then mark present
       if (!selectedSessionId) return;
       try {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from("program_attendance")
-          .insert({ participant_id: participant.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString() })
-          .select()
-          .single();
+          .insert({ participant_id: participant.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString(), room: selectedRoom });
         if (error) throw error;
-        toast.success(`${participant.full_name} — Présent(e) ✓`);
+        toast.success(`${participant.full_name} — Présent(e) ✓ (${roomLabel})`);
       } catch {
         toast.error("Erreur lors du pointage");
       }
@@ -92,12 +90,16 @@ export default function ProgramAttendance() {
       return;
     }
     try {
-      await markPresent.mutateAsync({ attendanceId: att.id });
-      toast.success(`${participant.full_name} — Présent(e) ✓`);
+      const { error } = await supabase
+        .from("program_attendance")
+        .update({ status: "present", marked_at: new Date().toISOString(), room: selectedRoom })
+        .eq("id", att.id);
+      if (error) throw error;
+      toast.success(`${participant.full_name} — Présent(e) ✓ (${roomLabel})`);
     } catch {
       toast.error("Erreur lors du pointage");
     }
-  }, [participants, attendance, markPresent, selectedSessionId]);
+  }, [participants, attendance, selectedSessionId, selectedRoom]);
 
   const handleManualScan = () => {
     if (scanCode.trim()) {
