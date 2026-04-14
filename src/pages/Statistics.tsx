@@ -5,7 +5,7 @@ import { useOrders, useProducts } from "@/lib/restaurant-store";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import type { OrderItem } from "@/lib/restaurant-store";
-import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, DollarSign, ShoppingCart } from "lucide-react";
+import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, DollarSign, ShoppingCart, GraduationCap, ClipboardCheck } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -74,6 +74,34 @@ export default function Statistics() {
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  });
+
+  // Program attendance data
+  const { data: allSessions = [] } = useQuery({
+    queryKey: ["stats_program_sessions"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("program_sessions").select("id, session_date, program_id");
+      if (error) throw error;
+      return (data ?? []) as { id: string; session_date: string; program_id: string }[];
+    },
+  });
+
+  const { data: allProgAttendance = [] } = useQuery({
+    queryKey: ["stats_program_attendance"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("program_attendance").select("id, session_id, status, room");
+      if (error) throw error;
+      return (data ?? []) as { id: string; session_id: string; status: string; room: string | null }[];
+    },
+  });
+
+  const { data: allPrograms = [] } = useQuery({
+    queryKey: ["stats_programs"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("programs").select("id, name");
+      if (error) throw error;
+      return (data ?? []) as { id: string; name: string }[];
+    },
   });
 
   const filteredVisits = useMemo(() => {
@@ -146,7 +174,31 @@ export default function Statistics() {
   }, [paidOrders, allOrderItems, productMap, products]);
   const totalOrdersCount = filteredOrders.length;
 
-  // Comparison percentages
+  // Program attendance filtered by period
+  const filteredSessionIds = useMemo(() => {
+    const start = period === "month" && selectedMonth ? null : getStartDate(period);
+    return allSessions
+      .filter(s => {
+        if (period === "month" && selectedMonth) return s.session_date.startsWith(selectedMonth);
+        if (!start) return true;
+        return new Date(s.session_date) >= start;
+      })
+      .map(s => s.id);
+  }, [allSessions, period, selectedMonth]);
+
+  const filteredProgAttendance = useMemo(() => {
+    const ids = new Set(filteredSessionIds);
+    return allProgAttendance.filter(a => ids.has(a.session_id));
+  }, [allProgAttendance, filteredSessionIds]);
+
+  const progPresent = filteredProgAttendance.filter(a => a.status === "present").length;
+  const progAbsent = filteredProgAttendance.filter(a => a.status === "absent").length;
+  const progTotal = filteredProgAttendance.length;
+  const progRate = progTotal > 0 ? Math.round((progPresent / progTotal) * 100) : 0;
+  const progLabCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "computer_lab").length;
+  const progMultiCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "multipurpose_room").length;
+  const progGardenCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "garden").length;
+
   const comparePercent = (current: number, prev: number) => {
     if (prev === 0) return current > 0 ? 100 : 0;
     return Math.round(((current - prev) / prev) * 100);
@@ -331,7 +383,28 @@ export default function Statistics() {
         <KpiCard icon={ShoppingCart} label="Commandes" value={totalOrdersCount} />
       </div>
 
-      {/* Charts row 1 */}
+      {/* Program Attendance */}
+      {progTotal > 0 && (
+        <>
+          <div className="page-header">
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-primary" />
+              Présence Programme
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <KpiCard icon={ClipboardCheck} label="Taux de présence" value={`${progRate}%`} />
+            <KpiCard icon={GraduationCap} label="Présents" value={progPresent} />
+            <KpiCard icon={Users} label="Absents" value={progAbsent} />
+            <KpiCard icon={Calendar} label="Total pointages" value={progTotal} />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <RoomStat icon={Monitor} label="Salle Info (Prog)" value={progLabCount} color="primary" />
+            <RoomStat icon={DoorOpen} label="Salle Poly (Prog)" value={progMultiCount} color="accent" />
+            <RoomStat icon={TreePine} label="Jardin (Prog)" value={progGardenCount} color="garden" />
+          </div>
+        </>
+      )}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
           <h3 className="mb-5 text-sm font-semibold text-foreground">Tendance de fréquentation</h3>

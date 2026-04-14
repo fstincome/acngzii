@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2 } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck } from "lucide-react";
 import { useVisitors, useVisits, computeOccupancy, COMPUTER_LAB_CAPACITY, useVisitsRealtime, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visitor, Visit, RoomType } from "@/lib/supabase-store";
 import {
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
   const { role } = useAuth();
@@ -22,11 +23,49 @@ export default function Dashboard() {
   const { data: visits = [] } = useVisits();
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
 
+  // Program attendance for today
+  const today = new Date().toISOString().split("T")[0];
+
+  const { data: todaySessions = [] } = useQuery({
+    queryKey: ["dashboard_program_sessions_today", today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("program_sessions")
+        .select("id")
+        .eq("session_date", today);
+      if (error) throw error;
+      return (data ?? []) as { id: string }[];
+    },
+  });
+
+  const todaySessionIds = useMemo(() => todaySessions.map(s => s.id), [todaySessions]);
+
+  const { data: todayProgramAttendance = [] } = useQuery({
+    queryKey: ["dashboard_program_attendance_today", todaySessionIds],
+    queryFn: async () => {
+      if (todaySessionIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("program_attendance")
+        .select("*")
+        .in("session_id", todaySessionIds);
+      if (error) throw error;
+      return (data ?? []) as { id: string; status: string; room: string | null }[];
+    },
+    enabled: todaySessionIds.length > 0,
+  });
+
+  const programPresentToday = todayProgramAttendance.filter(a => a.status === "present").length;
+  const programTotalToday = todayProgramAttendance.length;
+
+  // Program room breakdown today
+  const programLabToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "computer_lab").length;
+  const programMultiToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "multipurpose_room").length;
+  const programGardenToday = todayProgramAttendance.filter(a => a.status === "present" && a.room === "garden").length;
+
   const labOccupancy = computeOccupancy(visits, "computer_lab");
   const multiOccupancy = computeOccupancy(visits, "multipurpose_room");
   const gardenOccupancy = computeOccupancy(visits, "garden");
 
-  const today = new Date().toISOString().split("T")[0];
   const todayVisits = visits.filter((v) => v.timestamp.startsWith(today));
   const todayCheckIns = todayVisits.filter((v) => v.action === "check_in");
   const uniqueTodayIds = [...new Set(todayCheckIns.map((v) => v.visitor_id))];
@@ -111,6 +150,36 @@ export default function Dashboard() {
         <StatCard icon={UserPlus} label="Visiteurs aujourd'hui" value={uniqueToday} color="primary" />
         <StatCard icon={Users} label="Membres inscrits" value={visitors.length} color="accent" />
       </div>
+
+      {/* Program attendance today */}
+      {programTotalToday > 0 && (
+        <div className="stat-card">
+          <div className="mb-3 flex items-center gap-2">
+            <GraduationCap className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Présence Programme — aujourd'hui</h3>
+            <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              {programPresentToday} / {programTotalToday} présents
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="flex items-center gap-2 rounded-xl bg-primary/5 px-3 py-2">
+              <Monitor className="h-4 w-4 text-primary" />
+              <span className="text-xs text-muted-foreground">Salle Info</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programLabToday}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl bg-accent/5 px-3 py-2">
+              <DoorOpen className="h-4 w-4 text-accent" />
+              <span className="text-xs text-muted-foreground">Salle Poly</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programMultiToday}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl bg-green-500/5 px-3 py-2">
+              <TreePine className="h-4 w-4 text-green-600" />
+              <span className="text-xs text-muted-foreground">Jardin</span>
+              <span className="ml-auto text-sm font-bold text-foreground">{programGardenToday}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {labFull && (
         <div className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 animate-fade-in">
