@@ -199,7 +199,11 @@ export default function Statistics() {
   const progMultiCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "multipurpose_room").length;
   const progGardenCount = filteredProgAttendance.filter(a => a.status === "present" && a.room === "garden").length;
 
-  const comparePercent = (current: number, prev: number) => {
+  // Merged room counts (visits + program)
+  const labCheckIns = rawLabCheckIns + progLabCount;
+  const multiCheckIns = rawMultiCheckIns + progMultiCount;
+  const gardenCheckIns = rawGardenCheckIns + progGardenCount;
+
     if (prev === 0) return current > 0 ? 100 : 0;
     return Math.round(((current - prev) / prev) * 100);
   };
