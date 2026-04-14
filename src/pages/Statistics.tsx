@@ -128,9 +128,9 @@ export default function Statistics() {
   const uniqueVisitors = new Set(checkIns.map((v) => v.visitor_id)).size;
   const prevUniqueVisitors = new Set(prevCheckIns.map((v) => v.visitor_id)).size;
 
-  const labCheckIns = checkIns.filter((v) => v.room === "computer_lab").length;
-  const multiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length;
-  const gardenCheckIns = checkIns.filter((v) => v.room === "garden").length;
+  const labCheckIns = checkIns.filter((v) => v.room === "computer_lab").length + progLabCount;
+  const multiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length + progMultiCount;
+  const gardenCheckIns = checkIns.filter((v) => v.room === "garden").length + progGardenCount;
 
   // Restaurant revenue & profit
   const filteredOrders = useMemo(() => {
