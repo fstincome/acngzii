@@ -101,7 +101,7 @@ export default function Dashboard() {
         .select("id, status")
         .in("program_id", scholarshipIds);
       if (error) throw error;
-      return (data ?? []) as { id: string; status: string }[];
+      return (data ?? []) as unknown as { id: string; status: string }[];
     },
   });
 
