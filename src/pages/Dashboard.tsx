@@ -242,6 +242,33 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Scholarship tasks */}
+      {taskStats.total > 0 && (
+        <div className="stat-card">
+          <div className="mb-3 flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Tâches Scholarship</h3>
+            <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              {taskStats.total} tâche{taskStats.total > 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="flex items-center gap-2 rounded-xl bg-yellow-500/5 px-3 py-2">
+              <span className="text-xs text-muted-foreground">⏳ En cours</span>
+              <span className="ml-auto text-sm font-bold text-yellow-600">{taskStats.en_cours}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl bg-blue-500/5 px-3 py-2">
+              <span className="text-xs text-muted-foreground">📤 Soumis</span>
+              <span className="ml-auto text-sm font-bold text-blue-600">{taskStats.soumis}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl bg-green-500/5 px-3 py-2">
+              <span className="text-xs text-muted-foreground">✅ Validé</span>
+              <span className="ml-auto text-sm font-bold text-green-600">{taskStats.valide}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {labFull && (
         <div className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 animate-fade-in">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
