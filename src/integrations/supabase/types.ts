@@ -292,6 +292,51 @@ export type Database = {
           },
         ]
       }
+      program_tasks: {
+        Row: {
+          created_at: string
+          expected_result: string
+          id: string
+          participant_id: string
+          program_id: string
+          reporting_instructions: string | null
+          status: string
+          submission_link: string | null
+          submitted_at: string | null
+          title: string
+          updated_at: string
+          validated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expected_result: string
+          id?: string
+          participant_id: string
+          program_id: string
+          reporting_instructions?: string | null
+          status?: string
+          submission_link?: string | null
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+          validated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expected_result?: string
+          id?: string
+          participant_id?: string
+          program_id?: string
+          reporting_instructions?: string | null
+          status?: string
+          submission_link?: string | null
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+          validated_at?: string | null
+        }
+        Relationships: []
+      }
       programs: {
         Row: {
           created_at: string
