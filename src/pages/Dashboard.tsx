@@ -83,6 +83,35 @@ export default function Dashboard() {
   const programPresentToday = todayProgramAttendance.filter(a => a.status === "present").length;
   const programTotalToday = todayProgramAttendance.length;
 
+  // Scholarship tasks stats
+  const { data: scholarshipTasks = [] } = useQuery({
+    queryKey: ["dashboard_scholarship_tasks"],
+    queryFn: async () => {
+      // find scholarship program ids
+      const { data: progs, error: pErr } = await supabase
+        .from("programs")
+        .select("id, name");
+      if (pErr) throw pErr;
+      const scholarshipIds = (progs ?? [])
+        .filter((p: any) => (p.name || "").trim().toLowerCase().startsWith("scholarship"))
+        .map((p: any) => p.id);
+      if (scholarshipIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("program_tasks" as any)
+        .select("id, status")
+        .in("program_id", scholarshipIds);
+      if (error) throw error;
+      return (data ?? []) as { id: string; status: string }[];
+    },
+  });
+
+  const taskStats = useMemo(() => {
+    const en_cours = scholarshipTasks.filter(t => t.status === "en_cours").length;
+    const soumis = scholarshipTasks.filter(t => t.status === "soumis").length;
+    const valide = scholarshipTasks.filter(t => t.status === "valide").length;
+    return { en_cours, soumis, valide, total: scholarshipTasks.length };
+  }, [scholarshipTasks]);
+
   // Program room breakdown today
   const programPresentByRoom = useMemo(() => {
     const present = todayProgramAttendance.filter(a => a.status === "present");
