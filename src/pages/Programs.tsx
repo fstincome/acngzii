@@ -22,7 +22,9 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import MembershipCard from "@/components/MembershipCard";
+import ScholarshipTasksDialog from "@/components/ScholarshipTasksDialog";
 import { useNavigate } from "react-router-dom";
+import { Target } from "lucide-react";
 
 export default function Programs() {
   const { role } = useAuth();
@@ -276,7 +278,9 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const [sessionDate, setSessionDate] = useState("");
 
   const [cardParticipant, setCardParticipant] = useState<typeof participants[0] | null>(null);
+  const [tasksParticipant, setTasksParticipant] = useState<typeof participants[0] | null>(null);
 
+  const isScholarship = program.name.trim().toLowerCase() === "scholarship";
   const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
 
   const resetAddForm = () => {
@@ -756,6 +760,11 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
                     {canDelete && (
                       <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={() => handleDeleteParticipant(p)}>
                         <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    {isScholarship && (
+                      <Button size="sm" variant="outline" className="gap-1.5 rounded-lg" onClick={() => setTasksParticipant(p)}>
+                        <Target className="h-3.5 w-3.5" /> Tâches
                       </Button>
                     )}
                     <Button size="sm" variant="outline" className="gap-1.5 rounded-lg" onClick={() => setCardParticipant(p)}>
