@@ -390,6 +390,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {labFull && (
         <div className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 animate-fade-in">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
             <TrendingUp className="h-5 w-5 text-destructive" />
