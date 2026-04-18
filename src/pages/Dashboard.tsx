@@ -346,7 +346,50 @@ export default function Dashboard() {
         </div>
       )}
 
-      {labFull && (
+      {/* Accounting — Restaurant (today) */}
+      {accounting.totalCount > 0 && (
+        <div className="stat-card">
+          <div className="mb-3 flex items-center gap-2">
+            <Wallet className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Comptabilité Restaurant — aujourd'hui</h3>
+            <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              {accounting.totalCount} commande{accounting.totalCount > 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="rounded-xl bg-primary/5 px-3 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <span className="text-xs text-muted-foreground">Revenus encaissés</span>
+              </div>
+              <p className="text-lg font-bold text-foreground">{accounting.revenue.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
+            </div>
+            <div className="rounded-xl bg-green-500/5 px-3 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                <span className="text-xs text-muted-foreground">Bénéfice estimé</span>
+              </div>
+              <p className="text-lg font-bold text-green-600">{accounting.profit.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
+            </div>
+            <div className="rounded-xl bg-yellow-500/5 px-3 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="h-4 w-4 text-yellow-600" />
+                <span className="text-xs text-muted-foreground">Impayés</span>
+              </div>
+              <p className="text-lg font-bold text-yellow-600">{accounting.pendingAmount.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{accounting.unpaidCount} commande{accounting.unpaidCount > 1 ? "s" : ""}</p>
+            </div>
+            <div className="rounded-xl bg-accent/5 px-3 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <ShoppingCart className="h-4 w-4 text-accent" />
+                <span className="text-xs text-muted-foreground">Payées</span>
+              </div>
+              <p className="text-lg font-bold text-foreground">{accounting.paidCount}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">/ {accounting.totalCount} commandes</p>
+            </div>
+          </div>
+        </div>
+      )}
         <div className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 animate-fade-in">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
             <TrendingUp className="h-5 w-5 text-destructive" />
