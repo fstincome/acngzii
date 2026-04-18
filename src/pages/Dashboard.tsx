@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck } from "lucide-react";
+import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck, DollarSign, ShoppingCart, Wallet } from "lucide-react";
 import { useVisitors, useVisits, computeOccupancy, COMPUTER_LAB_CAPACITY, useVisitsRealtime, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visitor, Visit, RoomType } from "@/lib/supabase-store";
 import {
@@ -111,6 +111,83 @@ export default function Dashboard() {
     const valide = scholarshipTasks.filter(t => t.status === "valide").length;
     return { en_cours, soumis, valide, total: scholarshipTasks.length };
   }, [scholarshipTasks]);
+
+  // Restaurant accounting (today)
+  const { data: todayOrders = [] } = useQuery({
+    queryKey: ["dashboard_today_orders", today],
+    queryFn: async () => {
+      const start = `${today}T00:00:00`;
+      const end = `${today}T23:59:59.999`;
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id, total_amount, status, payment_status, created_at")
+        .gte("created_at", start)
+        .lte("created_at", end);
+      if (error) throw error;
+      return (data ?? []) as { id: string; total_amount: number; status: string; payment_status: string }[];
+    },
+  });
+
+  const todayOrderIds = useMemo(() => todayOrders.map(o => o.id), [todayOrders]);
+
+  const { data: todayOrderItems = [] } = useQuery({
+    queryKey: ["dashboard_today_order_items", todayOrderIds],
+    queryFn: async () => {
+      if (todayOrderIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("order_items")
+        .select("order_id, product_id, quantity, unit_price")
+        .in("order_id", todayOrderIds);
+      if (error) throw error;
+      return (data ?? []) as { order_id: string; product_id: string; quantity: number; unit_price: number }[];
+    },
+    enabled: todayOrderIds.length > 0,
+  });
+
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ["dashboard_products_for_accounting"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("products").select("id, price, cost_price");
+      if (error) throw error;
+      return (data ?? []) as { id: string; price: number; cost_price: number }[];
+    },
+  });
+
+  const accounting = useMemo(() => {
+    const paid = todayOrders.filter(o => o.payment_status !== "unpaid" && o.status !== "cancelled");
+    const unpaid = todayOrders.filter(o => o.payment_status === "unpaid" && o.status !== "cancelled");
+    const revenue = paid.reduce((s, o) => s + o.total_amount, 0);
+    const pendingAmount = unpaid.reduce((s, o) => s + o.total_amount, 0);
+
+    const productMap: Record<string, { price: number; cost_price: number }> = {};
+    allProducts.forEach(p => { productMap[p.id] = p; });
+
+    const paidIds = new Set(paid.map(o => o.id));
+    const itemsForPaid = todayOrderItems.filter(i => paidIds.has(i.order_id));
+
+    let profit = 0;
+    itemsForPaid.forEach(i => {
+      const p = productMap[i.product_id];
+      if (p) profit += (p.price - p.cost_price) * i.quantity;
+    });
+    const ordersWithItems = new Set(itemsForPaid.map(i => i.order_id));
+    const revenueWithoutItems = paid
+      .filter(o => !ordersWithItems.has(o.id))
+      .reduce((s, o) => s + o.total_amount, 0);
+    if (revenueWithoutItems > 0 && allProducts.length > 0) {
+      const avgMargin = allProducts.reduce((s, p) => s + (p.price > 0 ? (p.price - p.cost_price) / p.price : 0), 0) / allProducts.length;
+      profit += Math.round(revenueWithoutItems * avgMargin);
+    }
+
+    return {
+      revenue,
+      profit,
+      pendingAmount,
+      paidCount: paid.length,
+      unpaidCount: unpaid.length,
+      totalCount: todayOrders.length,
+    };
+  }, [todayOrders, todayOrderItems, allProducts]);
 
   // Program room breakdown today
   const programPresentByRoom = useMemo(() => {
@@ -264,6 +341,51 @@ export default function Dashboard() {
             <div className="flex items-center gap-2 rounded-xl bg-green-500/5 px-3 py-2">
               <span className="text-xs text-muted-foreground">✅ Validé</span>
               <span className="ml-auto text-sm font-bold text-green-600">{taskStats.valide}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Accounting — Restaurant (today) */}
+      {accounting.totalCount > 0 && (
+        <div className="stat-card">
+          <div className="mb-3 flex items-center gap-2">
+            <Wallet className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Comptabilité Restaurant — aujourd'hui</h3>
+            <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              {accounting.totalCount} commande{accounting.totalCount > 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="rounded-xl bg-primary/5 px-3 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <span className="text-xs text-muted-foreground">Revenus encaissés</span>
+              </div>
+              <p className="text-lg font-bold text-foreground">{accounting.revenue.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
+            </div>
+            <div className="rounded-xl bg-green-500/5 px-3 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                <span className="text-xs text-muted-foreground">Bénéfice estimé</span>
+              </div>
+              <p className="text-lg font-bold text-green-600">{accounting.profit.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
+            </div>
+            <div className="rounded-xl bg-yellow-500/5 px-3 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="h-4 w-4 text-yellow-600" />
+                <span className="text-xs text-muted-foreground">Impayés</span>
+              </div>
+              <p className="text-lg font-bold text-yellow-600">{accounting.pendingAmount.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{accounting.unpaidCount} commande{accounting.unpaidCount > 1 ? "s" : ""}</p>
+            </div>
+            <div className="rounded-xl bg-accent/5 px-3 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <ShoppingCart className="h-4 w-4 text-accent" />
+                <span className="text-xs text-muted-foreground">Payées</span>
+              </div>
+              <p className="text-lg font-bold text-foreground">{accounting.paidCount}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">/ {accounting.totalCount} commandes</p>
             </div>
           </div>
         </div>
