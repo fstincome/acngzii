@@ -42,6 +42,9 @@ export const CATEGORIES = [
   { value: "boissons", label: "Boissons" },
   { value: "snacks", label: "Snacks" },
   { value: "repas", label: "Repas" },
+  { value: "desserts", label: "Desserts" },
+  { value: "glaces", label: "Glaces" },
+  { value: "cafe_the", label: "Café / Thé" },
 ];
 
 export const ORDER_STATUSES = [
