@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import MembershipCard from "@/components/MembershipCard";
 import ScholarshipTasksDialog from "@/components/ScholarshipTasksDialog";
+import ScholarshipTasksOverview from "@/components/ScholarshipTasksOverview";
 import { useNavigate } from "react-router-dom";
 import { Target } from "lucide-react";
 
@@ -693,6 +694,11 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
           <TabsTrigger value="sessions" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
             <Calendar className="h-3.5 w-3.5" /> Sessions ({sessions.length})
           </TabsTrigger>
+          {isScholarship && (
+            <TabsTrigger value="tasks" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
+              <Target className="h-3.5 w-3.5" /> Vue tâches
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* Participants tab */}
@@ -843,6 +849,16 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
             </div>
           )}
         </TabsContent>
+
+        {isScholarship && (
+          <TabsContent value="tasks" className="space-y-4">
+            <ScholarshipTasksOverview
+              programId={program.id}
+              participants={participants}
+              onOpenParticipantTasks={(p) => setTasksParticipant(p)}
+            />
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Edit participant dialog */}

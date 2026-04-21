@@ -42,6 +42,23 @@ export function useParticipantTasks(participantId: string | undefined) {
   });
 }
 
+export function useProgramTasks(programId: string | undefined) {
+  return useQuery({
+    queryKey: ["program_tasks_by_program", programId],
+    queryFn: async () => {
+      if (!programId) return [];
+      const { data, error } = await supabase
+        .from("program_tasks" as any)
+        .select("*")
+        .eq("program_id", programId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as ProgramTask[];
+    },
+    enabled: !!programId,
+  });
+}
+
 export function useAddProgramTask() {
   const qc = useQueryClient();
   return useMutation({
