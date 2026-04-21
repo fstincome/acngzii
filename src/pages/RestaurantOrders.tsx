@@ -168,7 +168,18 @@ export default function RestaurantOrders() {
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-success">{todayOrders.filter(o => o.status === "delivered").length}</p><p className="text-xs text-muted-foreground">Livrées</p></CardContent></Card>
       </div>
 
-      {/* Filter tabs */}
+      {/* Period filter */}
+      <Tabs value={periodFilter} onValueChange={(v) => setPeriodFilter(v as typeof periodFilter)}>
+        <TabsList className="w-full">
+          <TabsTrigger value="today" className="flex-1">Jour</TabsTrigger>
+          <TabsTrigger value="week" className="flex-1">Semaine</TabsTrigger>
+          <TabsTrigger value="month" className="flex-1">Mois</TabsTrigger>
+          <TabsTrigger value="year" className="flex-1">Année</TabsTrigger>
+          <TabsTrigger value="all" className="flex-1">Tout</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {/* Status filter tabs */}
       <Tabs value={statusFilter} onValueChange={setStatusFilter}>
         <TabsList className="w-full">
           <TabsTrigger value="active" className="flex-1">Actives ({counts.active})</TabsTrigger>
