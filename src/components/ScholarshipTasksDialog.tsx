@@ -8,10 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Plus, Pencil, Trash2, CheckCircle2, Send, RotateCcw, ExternalLink, Target } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle2, Send, RotateCcw, ExternalLink, Target, CalendarIcon, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, isPast, isToday, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import {
   useParticipantTasks, useAddProgramTask, useUpdateProgramTask,
   useSubmitTaskLink, useValidateTask, useReopenTask, useDeleteProgramTask,
