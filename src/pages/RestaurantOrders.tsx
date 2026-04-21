@@ -207,17 +207,64 @@ export default function RestaurantOrders() {
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-success">{todayOrders.filter(o => o.status === "delivered").length}</p><p className="text-xs text-muted-foreground">Livrées</p></CardContent></Card>
       </div>
 
-      {/* Period filter */}
-      <div className="max-w-xs">
-        <Select value={periodFilter} onValueChange={setPeriodFilter}>
-          <SelectTrigger><SelectValue placeholder="Période" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tout</SelectItem>
-            {monthOptions.map(o => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Period filters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Année</label>
+          <Select value={yearFilter} onValueChange={setYearFilter}>
+            <SelectTrigger><SelectValue placeholder="Année" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes</SelectItem>
+              {yearOptions.map(y => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Mois</label>
+          <Select value={monthFilter} onValueChange={setMonthFilter}>
+            <SelectTrigger><SelectValue placeholder="Mois" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous</SelectItem>
+              {monthOptions.map(o => (
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Période personnalisée</label>
+          <div className="flex gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("flex-1 justify-start text-left font-normal", !customFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {customFrom ? format(customFrom, "dd/MM/yy", { locale: fr }) : "Du"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={customFrom} onSelect={setCustomFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("flex-1 justify-start text-left font-normal", !customTo && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {customTo ? format(customTo, "dd/MM/yy", { locale: fr }) : "Au"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={customTo} onSelect={setCustomTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+            {(customFrom || customTo) && (
+              <Button variant="ghost" size="icon" onClick={() => { setCustomFrom(undefined); setCustomTo(undefined); }}>
+                <XCircle className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Status filter tabs */}
