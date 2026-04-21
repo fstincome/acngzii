@@ -52,12 +52,13 @@ export default function ScholarshipTasksDialog({
   const [title, setTitle] = useState("");
   const [expected, setExpected] = useState("");
   const [reporting, setReporting] = useState("");
+  const [deadline, setDeadline] = useState<Date | undefined>(undefined);
 
   const [linkDialog, setLinkDialog] = useState<ProgramTask | null>(null);
   const [linkValue, setLinkValue] = useState("");
 
   const resetForm = () => {
-    setTitle(""); setExpected(""); setReporting(""); setEditing(null); setShowForm(false);
+    setTitle(""); setExpected(""); setReporting(""); setDeadline(undefined); setEditing(null); setShowForm(false);
   };
 
   const openEdit = (t: ProgramTask) => {
@@ -65,6 +66,7 @@ export default function ScholarshipTasksDialog({
     setTitle(t.title);
     setExpected(t.expected_result);
     setReporting(t.reporting_instructions || "");
+    setDeadline(t.deadline ? parseISO(t.deadline) : undefined);
     setShowForm(true);
   };
 
@@ -81,6 +83,7 @@ export default function ScholarshipTasksDialog({
           title: title.trim(),
           expected_result: expected.trim(),
           reporting_instructions: reporting.trim() || null,
+          deadline: deadline ? format(deadline, "yyyy-MM-dd") : null,
         });
         toast.success("Tâche modifiée");
       } else {
@@ -90,6 +93,7 @@ export default function ScholarshipTasksDialog({
           title: title.trim(),
           expected_result: expected.trim(),
           reporting_instructions: reporting.trim() || undefined,
+          deadline: deadline ? format(deadline, "yyyy-MM-dd") : null,
         });
         toast.success("Tâche ajoutée");
       }
