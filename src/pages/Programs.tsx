@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import MembershipCard from "@/components/MembershipCard";
 import ScholarshipTasksDialog from "@/components/ScholarshipTasksDialog";
+import ScholarshipTasksOverview from "@/components/ScholarshipTasksOverview";
 import { useNavigate } from "react-router-dom";
 import { Target } from "lucide-react";
 
