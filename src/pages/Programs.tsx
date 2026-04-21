@@ -694,6 +694,11 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
           <TabsTrigger value="sessions" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
             <Calendar className="h-3.5 w-3.5" /> Sessions ({sessions.length})
           </TabsTrigger>
+          {isScholarship && (
+            <TabsTrigger value="tasks" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
+              <Target className="h-3.5 w-3.5" /> Vue tâches
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* Participants tab */}
