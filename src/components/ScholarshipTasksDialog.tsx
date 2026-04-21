@@ -204,6 +204,39 @@ export default function ScholarshipTasksDialog({
                   maxLength={500}
                 />
               </div>
+              <div className="space-y-1.5">
+                <Label>Deadline (optionnel)</Label>
+                <div className="flex gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "flex-1 justify-start text-left font-normal",
+                          !deadline && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {deadline ? format(deadline, "PPP", { locale: fr }) : "Choisir une date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={deadline}
+                        onSelect={setDeadline}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {deadline && (
+                    <Button variant="ghost" size="sm" onClick={() => setDeadline(undefined)}>
+                      Effacer
+                    </Button>
+                  )}
+                </div>
+              </div>
               <div className="flex gap-2 justify-end">
                 <Button variant="ghost" onClick={resetForm}>Annuler</Button>
                 <Button
