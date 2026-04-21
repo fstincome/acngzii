@@ -10,7 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle, Copy, Check, Trash2, Pencil } from "lucide-react";
+import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle, Copy, Check, Trash2, Pencil, CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { OrderItem } from "@/lib/restaurant-store";
 import InvoiceActions from "@/components/InvoiceActions";
@@ -40,7 +45,10 @@ export default function RestaurantOrders() {
   const qc = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("active");
-  const [periodFilter, setPeriodFilter] = useState<string>("all");
+  const [yearFilter, setYearFilter] = useState<string>("all");
+  const [monthFilter, setMonthFilter] = useState<string>("all");
+  const [customFrom, setCustomFrom] = useState<Date | undefined>(undefined);
+  const [customTo, setCustomTo] = useState<Date | undefined>(undefined);
   const [confirmationMsg, setConfirmationMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -58,30 +66,47 @@ export default function RestaurantOrders() {
     enabled: !!selectedOrder,
   });
 
+  const MONTH_NAMES = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+  const START_YEAR = 2026;
+  const START_MONTH = 2; // March (0-indexed)
+
+  const yearOptions = useMemo(() => {
+    const now = new Date();
+    const opts: number[] = [];
+    for (let y = now.getFullYear(); y >= START_YEAR; y--) opts.push(y);
+    return opts;
+  }, []);
+
   const monthOptions = useMemo(() => {
     const opts: { value: string; label: string }[] = [];
     const now = new Date();
-    const start = new Date(2025, 2, 1); // March 2025
+    const start = new Date(START_YEAR, START_MONTH, 1);
     const cursor = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
     while (cursor >= start) {
       const value = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-      opts.push({ value, label: `${monthNames[cursor.getMonth()]} ${cursor.getFullYear()}` });
+      opts.push({ value, label: `${MONTH_NAMES[cursor.getMonth()]} ${cursor.getFullYear()}` });
       cursor.setMonth(cursor.getMonth() - 1);
     }
     return opts;
   }, []);
 
   const periodOrders = useMemo(() => {
-    if (periodFilter === "all") return orders;
-    const [y, m] = periodFilter.split("-").map(Number);
-    const start = new Date(y, m - 1, 1);
-    const end = new Date(y, m, 1);
     return orders.filter(o => {
       const d = new Date(o.created_at);
-      return d >= start && d < end;
+      if (yearFilter !== "all" && d.getFullYear() !== Number(yearFilter)) return false;
+      if (monthFilter !== "all") {
+        const [y, m] = monthFilter.split("-").map(Number);
+        if (d.getFullYear() !== y || d.getMonth() !== m - 1) return false;
+      }
+      if (customFrom && d < customFrom) return false;
+      if (customTo) {
+        const end = new Date(customTo);
+        end.setHours(23, 59, 59, 999);
+        if (d > end) return false;
+      }
+      return true;
     });
-  }, [orders, periodFilter]);
+  }, [orders, yearFilter, monthFilter, customFrom, customTo]);
 
   const filtered = useMemo(() => {
     if (statusFilter === "active") return periodOrders.filter(o => !["delivered", "cancelled"].includes(o.status));
@@ -182,17 +207,64 @@ export default function RestaurantOrders() {
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-success">{todayOrders.filter(o => o.status === "delivered").length}</p><p className="text-xs text-muted-foreground">Livrées</p></CardContent></Card>
       </div>
 
-      {/* Period filter */}
-      <div className="max-w-xs">
-        <Select value={periodFilter} onValueChange={setPeriodFilter}>
-          <SelectTrigger><SelectValue placeholder="Période" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tout</SelectItem>
-            {monthOptions.map(o => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Period filters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Année</label>
+          <Select value={yearFilter} onValueChange={setYearFilter}>
+            <SelectTrigger><SelectValue placeholder="Année" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes</SelectItem>
+              {yearOptions.map(y => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Mois</label>
+          <Select value={monthFilter} onValueChange={setMonthFilter}>
+            <SelectTrigger><SelectValue placeholder="Mois" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous</SelectItem>
+              {monthOptions.map(o => (
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Période personnalisée</label>
+          <div className="flex gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("flex-1 justify-start text-left font-normal", !customFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {customFrom ? format(customFrom, "dd/MM/yy", { locale: fr }) : "Du"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={customFrom} onSelect={setCustomFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("flex-1 justify-start text-left font-normal", !customTo && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {customTo ? format(customTo, "dd/MM/yy", { locale: fr }) : "Au"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={customTo} onSelect={setCustomTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+            {(customFrom || customTo) && (
+              <Button variant="ghost" size="icon" onClick={() => { setCustomFrom(undefined); setCustomTo(undefined); }}>
+                <XCircle className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Status filter tabs */}
