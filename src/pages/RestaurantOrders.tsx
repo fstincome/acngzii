@@ -40,6 +40,7 @@ export default function RestaurantOrders() {
   const qc = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("active");
+  const [periodFilter, setPeriodFilter] = useState<"today" | "week" | "month" | "year" | "all">("all");
   const [confirmationMsg, setConfirmationMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -57,11 +58,22 @@ export default function RestaurantOrders() {
     enabled: !!selectedOrder,
   });
 
+  const periodOrders = useMemo(() => {
+    if (periodFilter === "all") return orders;
+    const now = new Date();
+    const start = new Date(now);
+    if (periodFilter === "today") start.setHours(0, 0, 0, 0);
+    else if (periodFilter === "week") start.setDate(start.getDate() - 7);
+    else if (periodFilter === "month") start.setMonth(start.getMonth() - 1);
+    else if (periodFilter === "year") start.setFullYear(start.getFullYear() - 1);
+    return orders.filter(o => new Date(o.created_at) >= start);
+  }, [orders, periodFilter]);
+
   const filtered = useMemo(() => {
-    if (statusFilter === "active") return orders.filter(o => !["delivered", "cancelled"].includes(o.status));
-    if (statusFilter === "all") return orders;
-    return orders.filter(o => o.status === statusFilter);
-  }, [orders, statusFilter]);
+    if (statusFilter === "active") return periodOrders.filter(o => !["delivered", "cancelled"].includes(o.status));
+    if (statusFilter === "all") return periodOrders;
+    return periodOrders.filter(o => o.status === statusFilter);
+  }, [periodOrders, statusFilter]);
 
   const productMap = useMemo(() => {
     const m = new Map<string, string>();
@@ -134,12 +146,12 @@ export default function RestaurantOrders() {
   const pendingCount = orders.filter(o => o.status === "pending").length;
 
   const counts = useMemo(() => ({
-    active: orders.filter(o => !["delivered", "cancelled"].includes(o.status)).length,
-    pending: orders.filter(o => o.status === "pending").length,
-    preparing: orders.filter(o => o.status === "preparing").length,
-    ready: orders.filter(o => o.status === "ready").length,
-    all: orders.length,
-  }), [orders]);
+    active: periodOrders.filter(o => !["delivered", "cancelled"].includes(o.status)).length,
+    pending: periodOrders.filter(o => o.status === "pending").length,
+    preparing: periodOrders.filter(o => o.status === "preparing").length,
+    ready: periodOrders.filter(o => o.status === "ready").length,
+    all: periodOrders.length,
+  }), [periodOrders]);
 
   return (
     <div className="space-y-6">
@@ -156,7 +168,18 @@ export default function RestaurantOrders() {
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-success">{todayOrders.filter(o => o.status === "delivered").length}</p><p className="text-xs text-muted-foreground">Livrées</p></CardContent></Card>
       </div>
 
-      {/* Filter tabs */}
+      {/* Period filter */}
+      <Tabs value={periodFilter} onValueChange={(v) => setPeriodFilter(v as typeof periodFilter)}>
+        <TabsList className="w-full">
+          <TabsTrigger value="today" className="flex-1">Jour</TabsTrigger>
+          <TabsTrigger value="week" className="flex-1">Semaine</TabsTrigger>
+          <TabsTrigger value="month" className="flex-1">Mois</TabsTrigger>
+          <TabsTrigger value="year" className="flex-1">Année</TabsTrigger>
+          <TabsTrigger value="all" className="flex-1">Tout</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {/* Status filter tabs */}
       <Tabs value={statusFilter} onValueChange={setStatusFilter}>
         <TabsList className="w-full">
           <TabsTrigger value="active" className="flex-1">Actives ({counts.active})</TabsTrigger>
