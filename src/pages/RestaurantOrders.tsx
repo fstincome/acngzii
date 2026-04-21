@@ -10,7 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle, Copy, Check, Trash2, Pencil } from "lucide-react";
+import { ClipboardList, Clock, ChefHat, CheckCircle, Truck, XCircle, Copy, Check, Trash2, Pencil, CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { OrderItem } from "@/lib/restaurant-store";
 import InvoiceActions from "@/components/InvoiceActions";
