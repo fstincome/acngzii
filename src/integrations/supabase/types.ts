@@ -295,6 +295,7 @@ export type Database = {
       program_tasks: {
         Row: {
           created_at: string
+          deadline: string | null
           expected_result: string
           id: string
           participant_id: string
@@ -309,6 +310,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deadline?: string | null
           expected_result: string
           id?: string
           participant_id: string
@@ -323,6 +325,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deadline?: string | null
           expected_result?: string
           id?: string
           participant_id?: string
