@@ -8,10 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Plus, Pencil, Trash2, CheckCircle2, Send, RotateCcw, ExternalLink, Target } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle2, Send, RotateCcw, ExternalLink, Target, CalendarIcon, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, isPast, isToday, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import {
   useParticipantTasks, useAddProgramTask, useUpdateProgramTask,
   useSubmitTaskLink, useValidateTask, useReopenTask, useDeleteProgramTask,
@@ -49,12 +52,13 @@ export default function ScholarshipTasksDialog({
   const [title, setTitle] = useState("");
   const [expected, setExpected] = useState("");
   const [reporting, setReporting] = useState("");
+  const [deadline, setDeadline] = useState<Date | undefined>(undefined);
 
   const [linkDialog, setLinkDialog] = useState<ProgramTask | null>(null);
   const [linkValue, setLinkValue] = useState("");
 
   const resetForm = () => {
-    setTitle(""); setExpected(""); setReporting(""); setEditing(null); setShowForm(false);
+    setTitle(""); setExpected(""); setReporting(""); setDeadline(undefined); setEditing(null); setShowForm(false);
   };
 
   const openEdit = (t: ProgramTask) => {
@@ -62,6 +66,7 @@ export default function ScholarshipTasksDialog({
     setTitle(t.title);
     setExpected(t.expected_result);
     setReporting(t.reporting_instructions || "");
+    setDeadline(t.deadline ? parseISO(t.deadline) : undefined);
     setShowForm(true);
   };
 
@@ -78,6 +83,7 @@ export default function ScholarshipTasksDialog({
           title: title.trim(),
           expected_result: expected.trim(),
           reporting_instructions: reporting.trim() || null,
+          deadline: deadline ? format(deadline, "yyyy-MM-dd") : null,
         });
         toast.success("Tâche modifiée");
       } else {
@@ -87,6 +93,7 @@ export default function ScholarshipTasksDialog({
           title: title.trim(),
           expected_result: expected.trim(),
           reporting_instructions: reporting.trim() || undefined,
+          deadline: deadline ? format(deadline, "yyyy-MM-dd") : null,
         });
         toast.success("Tâche ajoutée");
       }
@@ -197,6 +204,39 @@ export default function ScholarshipTasksDialog({
                   maxLength={500}
                 />
               </div>
+              <div className="space-y-1.5">
+                <Label>Deadline (optionnel)</Label>
+                <div className="flex gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "flex-1 justify-start text-left font-normal",
+                          !deadline && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {deadline ? format(deadline, "PPP", { locale: fr }) : "Choisir une date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={deadline}
+                        onSelect={setDeadline}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {deadline && (
+                    <Button variant="ghost" size="sm" onClick={() => setDeadline(undefined)}>
+                      Effacer
+                    </Button>
+                  )}
+                </div>
+              </div>
               <div className="flex gap-2 justify-end">
                 <Button variant="ghost" onClick={resetForm}>Annuler</Button>
                 <Button
@@ -219,14 +259,41 @@ export default function ScholarshipTasksDialog({
             ) : (
               tasks.map(t => {
                 const style = STATUS_STYLE[t.status];
+                const deadlineDate = t.deadline ? parseISO(t.deadline) : null;
+                const isValidated = t.status === "valide";
+                let deadlineBadge: { label: string; className: string; icon: boolean } | null = null;
+                if (deadlineDate) {
+                  if (isValidated) {
+                    const validatedDate = t.validated_at ? new Date(t.validated_at) : null;
+                    const onTime = validatedDate ? validatedDate <= new Date(deadlineDate.getTime() + 86400000) : true;
+                    deadlineBadge = onTime
+                      ? { label: "✓ Atteinte dans les délais", className: "bg-emerald-600 hover:bg-emerald-600 text-white border-transparent", icon: false }
+                      : { label: "⚠ Atteinte en retard", className: "bg-amber-600 hover:bg-amber-600 text-white border-transparent", icon: false };
+                  } else if (isPast(deadlineDate) && !isToday(deadlineDate)) {
+                    deadlineBadge = { label: `En retard (${Math.abs(differenceInDays(deadlineDate, new Date()))}j)`, className: "bg-destructive hover:bg-destructive text-destructive-foreground border-transparent", icon: true };
+                  } else if (isToday(deadlineDate)) {
+                    deadlineBadge = { label: "Échéance aujourd'hui", className: "bg-amber-500 hover:bg-amber-500 text-white border-transparent", icon: true };
+                  } else {
+                    const days = differenceInDays(deadlineDate, new Date());
+                    deadlineBadge = { label: `Dans ${days + 1}j`, className: "border-primary/40 text-primary", icon: false };
+                  }
+                }
                 return (
                   <Card key={t.id} className="p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-sm">{t.title}</h4>
-                        <Badge variant={style.variant} className={`mt-1 ${style.className}`}>
-                          {style.emoji} {TASK_STATUS_LABELS[t.status]}
-                        </Badge>
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          <Badge variant={style.variant} className={style.className}>
+                            {style.emoji} {TASK_STATUS_LABELS[t.status]}
+                          </Badge>
+                          {deadlineBadge && (
+                            <Badge variant="outline" className={cn("gap-1", deadlineBadge.className)}>
+                              {deadlineBadge.icon ? <AlertCircle className="h-3 w-3" /> : <CalendarIcon className="h-3 w-3" />}
+                              {deadlineBadge.label}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                       <div className="flex gap-1">
                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(t)}>
@@ -249,6 +316,12 @@ export default function ScholarshipTasksDialog({
                         <div>
                           <span className="font-medium text-muted-foreground">Compte rendu : </span>
                           <span className="whitespace-pre-wrap">{t.reporting_instructions}</span>
+                        </div>
+                      )}
+                      {deadlineDate && (
+                        <div>
+                          <span className="font-medium text-muted-foreground">Deadline : </span>
+                          <span>{format(deadlineDate, "PPP", { locale: fr })}</span>
                         </div>
                       )}
                       {t.submission_link && (
