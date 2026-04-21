@@ -45,7 +45,10 @@ export default function RestaurantOrders() {
   const qc = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("active");
-  const [periodFilter, setPeriodFilter] = useState<string>("all");
+  const [yearFilter, setYearFilter] = useState<string>("all");
+  const [monthFilter, setMonthFilter] = useState<string>("all");
+  const [customFrom, setCustomFrom] = useState<Date | undefined>(undefined);
+  const [customTo, setCustomTo] = useState<Date | undefined>(undefined);
   const [confirmationMsg, setConfirmationMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -63,30 +66,47 @@ export default function RestaurantOrders() {
     enabled: !!selectedOrder,
   });
 
+  const MONTH_NAMES = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+  const START_YEAR = 2026;
+  const START_MONTH = 2; // March (0-indexed)
+
+  const yearOptions = useMemo(() => {
+    const now = new Date();
+    const opts: number[] = [];
+    for (let y = now.getFullYear(); y >= START_YEAR; y--) opts.push(y);
+    return opts;
+  }, []);
+
   const monthOptions = useMemo(() => {
     const opts: { value: string; label: string }[] = [];
     const now = new Date();
-    const start = new Date(2025, 2, 1); // March 2025
+    const start = new Date(START_YEAR, START_MONTH, 1);
     const cursor = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
     while (cursor >= start) {
       const value = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-      opts.push({ value, label: `${monthNames[cursor.getMonth()]} ${cursor.getFullYear()}` });
+      opts.push({ value, label: `${MONTH_NAMES[cursor.getMonth()]} ${cursor.getFullYear()}` });
       cursor.setMonth(cursor.getMonth() - 1);
     }
     return opts;
   }, []);
 
   const periodOrders = useMemo(() => {
-    if (periodFilter === "all") return orders;
-    const [y, m] = periodFilter.split("-").map(Number);
-    const start = new Date(y, m - 1, 1);
-    const end = new Date(y, m, 1);
     return orders.filter(o => {
       const d = new Date(o.created_at);
-      return d >= start && d < end;
+      if (yearFilter !== "all" && d.getFullYear() !== Number(yearFilter)) return false;
+      if (monthFilter !== "all") {
+        const [y, m] = monthFilter.split("-").map(Number);
+        if (d.getFullYear() !== y || d.getMonth() !== m - 1) return false;
+      }
+      if (customFrom && d < customFrom) return false;
+      if (customTo) {
+        const end = new Date(customTo);
+        end.setHours(23, 59, 59, 999);
+        if (d > end) return false;
+      }
+      return true;
     });
-  }, [orders, periodFilter]);
+  }, [orders, yearFilter, monthFilter, customFrom, customTo]);
 
   const filtered = useMemo(() => {
     if (statusFilter === "active") return periodOrders.filter(o => !["delivered", "cancelled"].includes(o.status));
