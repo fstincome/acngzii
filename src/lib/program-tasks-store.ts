@@ -12,6 +12,7 @@ export interface ProgramTask {
   reporting_instructions: string | null;
   submission_link: string | null;
   status: TaskStatus;
+  deadline: string | null;
   submitted_at: string | null;
   validated_at: string | null;
   created_at: string;
@@ -50,6 +51,7 @@ export function useAddProgramTask() {
       title: string;
       expected_result: string;
       reporting_instructions?: string;
+      deadline?: string | null;
     }) => {
       const { data, error } = await supabase
         .from("program_tasks" as any)
@@ -73,6 +75,7 @@ export function useUpdateProgramTask() {
       title?: string;
       expected_result?: string;
       reporting_instructions?: string | null;
+      deadline?: string | null;
     }) => {
       const { id, participant_id, ...rest } = p;
       const { error } = await supabase
