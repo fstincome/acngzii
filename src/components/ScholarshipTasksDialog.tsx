@@ -259,14 +259,41 @@ export default function ScholarshipTasksDialog({
             ) : (
               tasks.map(t => {
                 const style = STATUS_STYLE[t.status];
+                const deadlineDate = t.deadline ? parseISO(t.deadline) : null;
+                const isValidated = t.status === "valide";
+                let deadlineBadge: { label: string; className: string; icon: boolean } | null = null;
+                if (deadlineDate) {
+                  if (isValidated) {
+                    const validatedDate = t.validated_at ? new Date(t.validated_at) : null;
+                    const onTime = validatedDate ? validatedDate <= new Date(deadlineDate.getTime() + 86400000) : true;
+                    deadlineBadge = onTime
+                      ? { label: "✓ Atteinte dans les délais", className: "bg-emerald-600 hover:bg-emerald-600 text-white border-transparent", icon: false }
+                      : { label: "⚠ Atteinte en retard", className: "bg-amber-600 hover:bg-amber-600 text-white border-transparent", icon: false };
+                  } else if (isPast(deadlineDate) && !isToday(deadlineDate)) {
+                    deadlineBadge = { label: `En retard (${Math.abs(differenceInDays(deadlineDate, new Date()))}j)`, className: "bg-destructive hover:bg-destructive text-destructive-foreground border-transparent", icon: true };
+                  } else if (isToday(deadlineDate)) {
+                    deadlineBadge = { label: "Échéance aujourd'hui", className: "bg-amber-500 hover:bg-amber-500 text-white border-transparent", icon: true };
+                  } else {
+                    const days = differenceInDays(deadlineDate, new Date());
+                    deadlineBadge = { label: `Dans ${days + 1}j`, className: "border-primary/40 text-primary", icon: false };
+                  }
+                }
                 return (
                   <Card key={t.id} className="p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-sm">{t.title}</h4>
-                        <Badge variant={style.variant} className={`mt-1 ${style.className}`}>
-                          {style.emoji} {TASK_STATUS_LABELS[t.status]}
-                        </Badge>
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          <Badge variant={style.variant} className={style.className}>
+                            {style.emoji} {TASK_STATUS_LABELS[t.status]}
+                          </Badge>
+                          {deadlineBadge && (
+                            <Badge variant="outline" className={cn("gap-1", deadlineBadge.className)}>
+                              {deadlineBadge.icon ? <AlertCircle className="h-3 w-3" /> : <CalendarIcon className="h-3 w-3" />}
+                              {deadlineBadge.label}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                       <div className="flex gap-1">
                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(t)}>
@@ -289,6 +316,12 @@ export default function ScholarshipTasksDialog({
                         <div>
                           <span className="font-medium text-muted-foreground">Compte rendu : </span>
                           <span className="whitespace-pre-wrap">{t.reporting_instructions}</span>
+                        </div>
+                      )}
+                      {deadlineDate && (
+                        <div>
+                          <span className="font-medium text-muted-foreground">Deadline : </span>
+                          <span>{format(deadlineDate, "PPP", { locale: fr })}</span>
                         </div>
                       )}
                       {t.submission_link && (
