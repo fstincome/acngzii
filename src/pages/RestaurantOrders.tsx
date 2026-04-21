@@ -133,6 +133,14 @@ export default function RestaurantOrders() {
   const todayRevenue = todayOrders.filter(o => o.payment_status !== "unpaid").reduce((s, o) => s + o.total_amount, 0);
   const pendingCount = orders.filter(o => o.status === "pending").length;
 
+  const counts = useMemo(() => ({
+    active: orders.filter(o => !["delivered", "cancelled"].includes(o.status)).length,
+    pending: orders.filter(o => o.status === "pending").length,
+    preparing: orders.filter(o => o.status === "preparing").length,
+    ready: orders.filter(o => o.status === "ready").length,
+    all: orders.length,
+  }), [orders]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -151,11 +159,11 @@ export default function RestaurantOrders() {
       {/* Filter tabs */}
       <Tabs value={statusFilter} onValueChange={setStatusFilter}>
         <TabsList className="w-full">
-          <TabsTrigger value="active" className="flex-1">Actives</TabsTrigger>
-          <TabsTrigger value="pending" className="flex-1">En attente</TabsTrigger>
-          <TabsTrigger value="preparing" className="flex-1">Préparation</TabsTrigger>
-          <TabsTrigger value="ready" className="flex-1">Prêtes</TabsTrigger>
-          <TabsTrigger value="all" className="flex-1">Toutes</TabsTrigger>
+          <TabsTrigger value="active" className="flex-1">Actives ({counts.active})</TabsTrigger>
+          <TabsTrigger value="pending" className="flex-1">En attente ({counts.pending})</TabsTrigger>
+          <TabsTrigger value="preparing" className="flex-1">Préparation ({counts.preparing})</TabsTrigger>
+          <TabsTrigger value="ready" className="flex-1">Prêtes ({counts.ready})</TabsTrigger>
+          <TabsTrigger value="all" className="flex-1">Toutes ({counts.all})</TabsTrigger>
         </TabsList>
       </Tabs>
 
