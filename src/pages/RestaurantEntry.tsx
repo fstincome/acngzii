@@ -28,22 +28,7 @@ export default function RestaurantEntry() {
       toast.error("Visiteur introuvable. Vérifiez votre identifiant.");
       return;
     }
-    // Check visitor is currently checked in (has a check-in without a matching check-out today)
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const { data: visits } = await supabase
-      .from("visits")
-      .select("action")
-      .eq("visitor_id", trimmed)
-      .gte("timestamp", todayStart.toISOString())
-      .order("timestamp", { ascending: false })
-      .limit(1);
     setLoading(false);
-    const lastAction = visits?.[0]?.action;
-    if (lastAction !== "check_in") {
-      toast.error("Vous devez d'abord pointer votre arrivée au centre avant de commander.", { duration: 5000 });
-      return;
-    }
     navigate(`/restaurant/menu/${trimmed}`);
   };
 
