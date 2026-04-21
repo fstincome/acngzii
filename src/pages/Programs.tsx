@@ -849,6 +849,16 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
             </div>
           )}
         </TabsContent>
+
+        {isScholarship && (
+          <TabsContent value="tasks" className="space-y-4">
+            <ScholarshipTasksOverview
+              programId={program.id}
+              participants={participants}
+              onOpenParticipantTasks={(p) => setTasksParticipant(p)}
+            />
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Edit participant dialog */}
