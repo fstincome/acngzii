@@ -93,5 +93,35 @@
     "other": "Other",
     "dob": "Date of birth",
     "registeredOn": "Registered on {{date}}"
+  },
+  "registrationForm": {
+    "appName": "Gitega Study Space",
+    "subtitle": "Registration Form — Visitor",
+    "headerTitle": "REGISTRATION FORM",
+    "instructions": "Please fill in all fields below",
+    "photoLabel": "Passport photo (paste here)",
+    "photoSize": "3.5 × 4.5 cm",
+    "signature": "Signature:",
+    "date": "Date:",
+    "downloadPdf": "Download PDF",
+    "print": "Print",
+    "downloaded": "PDF form downloaded!",
+    "printError": "Print error",
+    "fields": {
+      "fullName": "Full name *",
+      "gender": "Gender (Male / Female / Other)",
+      "dob": "Date of birth (DD/MM/YYYY)",
+      "phone": "Phone",
+      "email": "Email",
+      "neighborhood": "Neighborhood / Commune",
+      "occupation": "Occupation",
+      "institution": "Institution (school, university...)"
+    },
+    "pdf": {
+      "orgName": "GITEGA STUDY SPACE",
+      "subtitle": "Registration Form — Visitor",
+      "signatureLabel": "Visitor signature:",
+      "dateLabel": "Date:"
+    }
   }
 }

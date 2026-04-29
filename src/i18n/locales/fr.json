@@ -93,5 +93,35 @@
     "other": "Autre",
     "dob": "Date de naissance",
     "registeredOn": "Inscrit le {{date}}"
+  },
+  "registrationForm": {
+    "appName": "Gitega Study Space",
+    "subtitle": "Formulaire d'inscription — Visiteur",
+    "headerTitle": "FORMULAIRE D'INSCRIPTION",
+    "instructions": "Veuillez remplir tous les champs ci-dessous",
+    "photoLabel": "Photo passeport (coller ici)",
+    "photoSize": "3.5 × 4.5 cm",
+    "signature": "Signature :",
+    "date": "Date :",
+    "downloadPdf": "Télécharger PDF",
+    "print": "Imprimer",
+    "downloaded": "Formulaire PDF téléchargé !",
+    "printError": "Erreur lors de l'impression",
+    "fields": {
+      "fullName": "Nom complet *",
+      "gender": "Genre (Homme / Femme / Autre)",
+      "dob": "Date de naissance (JJ/MM/AAAA)",
+      "phone": "Téléphone",
+      "email": "Email",
+      "neighborhood": "Quartier / Commune",
+      "occupation": "Profession",
+      "institution": "Institution (école, université...)"
+    },
+    "pdf": {
+      "orgName": "GITEGA STUDY SPACE",
+      "subtitle": "Formulaire d'inscription — Visiteur",
+      "signatureLabel": "Signature du visiteur :",
+      "dateLabel": "Date :"
+    }
   }
 }
