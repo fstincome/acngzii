@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck, DollarSign, ShoppingCart, Wallet } from "lucide-react";
 import { useVisitors, useVisits, computeOccupancy, COMPUTER_LAB_CAPACITY, useVisitsRealtime, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visitor, Visit, RoomType } from "@/lib/supabase-store";
@@ -17,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 export default function Dashboard() {
   const { role } = useAuth();
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
   const [backingUp, setBackingUp] = useState(false);
   useVisitsRealtime();
   const { data: visitors = [] } = useVisitors();
@@ -259,9 +261,9 @@ export default function Dashboard() {
       a.download = `backup-${new Date().toISOString().split("T")[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast({ title: "Backup téléchargé", description: "Le fichier de sauvegarde a été téléchargé avec succès." });
+      toast({ title: t("dashboard.backupSuccess"), description: t("dashboard.backupSuccessDesc") });
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: t("dashboard.error"), description: err.message, variant: "destructive" });
     }
     setBackingUp(false);
   };
@@ -270,23 +272,23 @@ export default function Dashboard() {
     <div className="space-y-6 animate-fade-in">
       <div className="page-header flex items-center justify-between">
         <div>
-          <h1 className="page-title">Tableau de bord</h1>
-          <p className="page-subtitle">Données du jour — {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
+          <h1 className="page-title">{t("dashboard.title")}</h1>
+          <p className="page-subtitle">{t("dashboard.subtitle", { date: new Date().toLocaleDateString(i18n.language === "fr" ? "fr-FR" : "en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) })}</p>
         </div>
         {role === "admin" && (
           <Button variant="outline" onClick={handleBackup} disabled={backingUp}>
             {backingUp ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-            Backup
+            {t("dashboard.backup")}
           </Button>
         )}
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard icon={Monitor} label="Salle Informatique" value={`${labCount} / ${COMPUTER_LAB_CAPACITY}`} alert={labFull} color="primary" />
-        <StatCard icon={DoorOpen} label="Salle Polyvalente" value={multiCount} color="accent" />
-        <StatCard icon={TreePine} label="Jardin" value={gardenCount} color="garden" />
-        <StatCard icon={UserPlus} label="Visiteurs aujourd'hui" value={uniqueToday} color="primary" />
-        <StatCard icon={Users} label="Membres inscrits" value={visitors.length} color="accent" />
+        <StatCard icon={Monitor} label={t("dashboard.computerLab")} value={`${labCount} / ${COMPUTER_LAB_CAPACITY}`} alert={labFull} color="primary" />
+        <StatCard icon={DoorOpen} label={t("dashboard.multipurposeRoom")} value={multiCount} color="accent" />
+        <StatCard icon={TreePine} label={t("dashboard.garden")} value={gardenCount} color="garden" />
+        <StatCard icon={UserPlus} label={t("dashboard.todayVisitors")} value={uniqueToday} color="primary" />
+        <StatCard icon={Users} label={t("dashboard.registeredMembers")} value={visitors.length} color="accent" />
       </div>
 
       {/* Program attendance today */}
@@ -294,25 +296,25 @@ export default function Dashboard() {
         <div className="stat-card">
           <div className="mb-3 flex items-center gap-2">
             <GraduationCap className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Présence Programme — aujourd'hui</h3>
+            <h3 className="text-sm font-semibold text-foreground">{t("dashboard.programAttendanceToday")}</h3>
             <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-              {programPresentToday} / {programTotalToday} présents
+              {t("dashboard.presentCount", { present: programPresentToday, total: programTotalToday })}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="flex items-center gap-2 rounded-xl bg-primary/5 px-3 py-2">
               <Monitor className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground">Salle Info</span>
+              <span className="text-xs text-muted-foreground">{t("dashboard.labShort")}</span>
               <span className="ml-auto text-sm font-bold text-foreground">{programPresentByRoom.computer_lab.length}</span>
             </div>
             <div className="flex items-center gap-2 rounded-xl bg-accent/5 px-3 py-2">
               <DoorOpen className="h-4 w-4 text-accent" />
-              <span className="text-xs text-muted-foreground">Salle Poly</span>
+              <span className="text-xs text-muted-foreground">{t("dashboard.multiShort")}</span>
               <span className="ml-auto text-sm font-bold text-foreground">{programPresentByRoom.multipurpose_room.length}</span>
             </div>
             <div className="flex items-center gap-2 rounded-xl bg-green-500/5 px-3 py-2">
               <TreePine className="h-4 w-4 text-green-600" />
-              <span className="text-xs text-muted-foreground">Jardin</span>
+              <span className="text-xs text-muted-foreground">{t("dashboard.garden")}</span>
               <span className="ml-auto text-sm font-bold text-foreground">{programPresentByRoom.garden.length}</span>
             </div>
           </div>
@@ -324,22 +326,22 @@ export default function Dashboard() {
         <div className="stat-card">
           <div className="mb-3 flex items-center gap-2">
             <ClipboardCheck className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Tâches Scholarship</h3>
+            <h3 className="text-sm font-semibold text-foreground">{t("dashboard.scholarshipTasks")}</h3>
             <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-              {taskStats.total} tâche{taskStats.total > 1 ? "s" : ""}
+              {t("dashboard.tasksCount", { count: taskStats.total })}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="flex items-center gap-2 rounded-xl bg-yellow-500/5 px-3 py-2">
-              <span className="text-xs text-muted-foreground">⏳ En cours</span>
+              <span className="text-xs text-muted-foreground">⏳ {t("dashboard.inProgress")}</span>
               <span className="ml-auto text-sm font-bold text-yellow-600">{taskStats.en_cours}</span>
             </div>
             <div className="flex items-center gap-2 rounded-xl bg-blue-500/5 px-3 py-2">
-              <span className="text-xs text-muted-foreground">📤 Soumis</span>
+              <span className="text-xs text-muted-foreground">📤 {t("dashboard.submitted")}</span>
               <span className="ml-auto text-sm font-bold text-blue-600">{taskStats.soumis}</span>
             </div>
             <div className="flex items-center gap-2 rounded-xl bg-green-500/5 px-3 py-2">
-              <span className="text-xs text-muted-foreground">✅ Validé</span>
+              <span className="text-xs text-muted-foreground">✅ {t("dashboard.validated")}</span>
               <span className="ml-auto text-sm font-bold text-green-600">{taskStats.valide}</span>
             </div>
           </div>
@@ -351,41 +353,41 @@ export default function Dashboard() {
         <div className="stat-card">
           <div className="mb-3 flex items-center gap-2">
             <Wallet className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Comptabilité Restaurant — aujourd'hui</h3>
+            <h3 className="text-sm font-semibold text-foreground">{t("dashboard.restaurantAccounting")}</h3>
             <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-              {accounting.totalCount} commande{accounting.totalCount > 1 ? "s" : ""}
+              {t("dashboard.ordersCount", { count: accounting.totalCount })}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <div className="rounded-xl bg-primary/5 px-3 py-3">
               <div className="flex items-center gap-2 mb-1">
                 <DollarSign className="h-4 w-4 text-primary" />
-                <span className="text-xs text-muted-foreground">Revenus encaissés</span>
+                <span className="text-xs text-muted-foreground">{t("dashboard.revenue")}</span>
               </div>
               <p className="text-lg font-bold text-foreground">{accounting.revenue.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
             </div>
             <div className="rounded-xl bg-green-500/5 px-3 py-3">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="h-4 w-4 text-green-600" />
-                <span className="text-xs text-muted-foreground">Bénéfice estimé</span>
+                <span className="text-xs text-muted-foreground">{t("dashboard.estimatedProfit")}</span>
               </div>
               <p className="text-lg font-bold text-green-600">{accounting.profit.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
             </div>
             <div className="rounded-xl bg-yellow-500/5 px-3 py-3">
               <div className="flex items-center gap-2 mb-1">
                 <Clock className="h-4 w-4 text-yellow-600" />
-                <span className="text-xs text-muted-foreground">Impayés</span>
+                <span className="text-xs text-muted-foreground">{t("dashboard.unpaid")}</span>
               </div>
               <p className="text-lg font-bold text-yellow-600">{accounting.pendingAmount.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{accounting.unpaidCount} commande{accounting.unpaidCount > 1 ? "s" : ""}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{t("dashboard.unpaidOrders", { count: accounting.unpaidCount })}</p>
             </div>
             <div className="rounded-xl bg-accent/5 px-3 py-3">
               <div className="flex items-center gap-2 mb-1">
                 <ShoppingCart className="h-4 w-4 text-accent" />
-                <span className="text-xs text-muted-foreground">Payées</span>
+                <span className="text-xs text-muted-foreground">{t("dashboard.paid")}</span>
               </div>
               <p className="text-lg font-bold text-foreground">{accounting.paidCount}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">/ {accounting.totalCount} commandes</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{t("dashboard.ofOrders", { count: accounting.totalCount })}</p>
             </div>
           </div>
         </div>
@@ -397,8 +399,8 @@ export default function Dashboard() {
             <TrendingUp className="h-5 w-5 text-destructive" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-destructive">Salle Informatique pleine</p>
-            <p className="text-xs text-destructive/70">Capacité de {COMPUTER_LAB_CAPACITY} atteinte.</p>
+            <p className="text-sm font-semibold text-destructive">{t("dashboard.labFull")}</p>
+            <p className="text-xs text-destructive/70">{t("dashboard.labFullDesc", { capacity: COMPUTER_LAB_CAPACITY })}</p>
           </div>
         </div>
       )}
@@ -406,7 +408,7 @@ export default function Dashboard() {
       <div className="grid gap-5 lg:grid-cols-3">
         <OccupancyPanel
           icon={Monitor}
-          title="Salle Informatique"
+          title={t("dashboard.computerLab")}
           room="computer_lab"
           occupancy={labOccupancy}
           visits={visits}
@@ -420,7 +422,7 @@ export default function Dashboard() {
         />
         <OccupancyPanel
           icon={DoorOpen}
-          title="Salle Polyvalente"
+          title={t("dashboard.multipurposeRoom")}
           room="multipurpose_room"
           occupancy={multiOccupancy}
           visits={visits}
@@ -431,7 +433,7 @@ export default function Dashboard() {
         />
         <OccupancyPanel
           icon={TreePine}
-          title="Jardin"
+          title={t("dashboard.garden")}
           room="garden"
           occupancy={gardenOccupancy}
           visits={visits}
@@ -446,7 +448,7 @@ export default function Dashboard() {
       <div className="stat-card">
         <div className="mb-4 flex items-center gap-2">
           <Clock className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Visiteurs d'aujourd'hui</h3>
+          <h3 className="text-sm font-semibold text-foreground">{t("dashboard.todayVisitorsTitle")}</h3>
           <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">{uniqueToday}</span>
         </div>
         {(todayVisitorsList.length > 0 || programPresentToday > 0) ? (
@@ -465,7 +467,7 @@ export default function Dashboard() {
                     {ROOM_LABELS[entry.room] || entry.room} · {entry.time}
                   </span>
                   {isPresent && (
-                    <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-medium text-green-600 shrink-0">Présent</span>
+                    <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-medium text-green-600 shrink-0">{t("dashboard.present")}</span>
                   )}
                 </button>
               );
@@ -481,14 +483,14 @@ export default function Dashboard() {
                   <span className="font-medium text-foreground truncate flex-1">{participantNameMap[a.participant_id] || "Participant"}</span>
                   <span className="text-xs text-muted-foreground shrink-0">{roomLabel}</span>
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary shrink-0">
-                    <GraduationCap className="h-3 w-3 inline mr-0.5" />Programme
+                    <GraduationCap className="h-3 w-3 inline mr-0.5" />{t("dashboard.program")}
                   </span>
                 </div>
               );
             })}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground italic">Aucun visiteur aujourd'hui</p>
+          <p className="text-sm text-muted-foreground italic">{t("dashboard.noVisitorsToday")}</p>
         )}
       </div>
 
@@ -496,7 +498,7 @@ export default function Dashboard() {
       <div className="stat-card">
         <div className="mb-5 flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Fréquentation horaire — aujourd'hui</h3>
+          <h3 className="text-sm font-semibold text-foreground">{t("dashboard.hourlyTitle")}</h3>
         </div>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={hourlyData}>
@@ -521,16 +523,16 @@ export default function Dashboard() {
                 <span className="text-sm font-mono text-foreground">{selectedVisitor.visitor_id}</span>
               </div>
               <div className="grid gap-3">
-                <DetailRow icon={Phone} label="Téléphone" value={selectedVisitor.phone} />
-                {selectedVisitor.email && <DetailRow icon={Mail} label="Email" value={selectedVisitor.email} />}
-                <DetailRow icon={MapPin} label="Quartier" value={selectedVisitor.neighborhood} />
-                <DetailRow icon={Briefcase} label="Occupation" value={selectedVisitor.occupation} />
-                <DetailRow icon={Users} label="Genre" value={selectedVisitor.gender === "male" ? "Homme" : selectedVisitor.gender === "female" ? "Femme" : "Autre"} />
+                <DetailRow icon={Phone} label={t("dashboard.phone")} value={selectedVisitor.phone} />
+                {selectedVisitor.email && <DetailRow icon={Mail} label={t("dashboard.email")} value={selectedVisitor.email} />}
+                <DetailRow icon={MapPin} label={t("dashboard.neighborhood")} value={selectedVisitor.neighborhood} />
+                <DetailRow icon={Briefcase} label={t("dashboard.occupation")} value={selectedVisitor.occupation} />
+                <DetailRow icon={Users} label={t("dashboard.gender")} value={selectedVisitor.gender === "male" ? t("dashboard.male") : selectedVisitor.gender === "female" ? t("dashboard.female") : t("dashboard.other")} />
                 {selectedVisitor.date_of_birth && (
-                  <DetailRow icon={Clock} label="Date de naissance" value={selectedVisitor.date_of_birth} />
+                  <DetailRow icon={Clock} label={t("dashboard.dob")} value={selectedVisitor.date_of_birth} />
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">Inscrit le {selectedVisitor.registration_date}</p>
+              <p className="text-xs text-muted-foreground">{t("dashboard.registeredOn", { date: selectedVisitor.registration_date })}</p>
             </div>
           )}
         </DialogContent>
@@ -565,6 +567,7 @@ function OccupancyPanel({
   capacity?: number; labPercent?: number; labCount?: number;
   programAttendees?: { id: string; name: string }[];
 }) {
+  const { t } = useTranslation();
   const [now, setNow] = useState(Date.now());
   const totalCount = occupancy.size + programAttendees.length;
 
@@ -603,13 +606,13 @@ function OccupancyPanel({
           <div className="mb-3 h-2.5 w-full overflow-hidden rounded-full bg-muted">
             <div className="h-full rounded-full transition-all duration-500" style={{ width: `${labPercent}%`, background: "var(--gradient-primary)" }} />
           </div>
-          <p className="text-xs text-muted-foreground mb-3">{labCount} sur {capacity} places occupées</p>
+          <p className="text-xs text-muted-foreground mb-3">{t("dashboard.occupiedSeats", { count: labCount, capacity })}</p>
         </>
       )}
       {!capacity && (
         <div className="flex items-baseline gap-2 mb-3">
           <span className="text-4xl font-bold gradient-text">{totalCount}</span>
-          <span className="text-sm text-muted-foreground">visiteurs</span>
+          <span className="text-sm text-muted-foreground">{t("dashboard.visitors")}</span>
         </div>
       )}
       {totalCount > 0 ? (
@@ -644,13 +647,13 @@ function OccupancyPanel({
               <div className={`h-2 w-2 rounded-full ${dotClass} animate-pulse shrink-0`} />
               <span className="font-medium text-foreground truncate flex-1">{pa.name}</span>
               <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary shrink-0">
-                <GraduationCap className="h-3 w-3 inline mr-0.5" />Programme
+                <GraduationCap className="h-3 w-3 inline mr-0.5" />{t("dashboard.program")}
               </span>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground italic">Aucun visiteur actuellement</p>
+        <p className="text-xs text-muted-foreground italic">{t("dashboard.noVisitors")}</p>
       )}
     </div>
   );
