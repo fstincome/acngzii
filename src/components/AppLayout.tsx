@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import {
   LayoutDashboard,
   UserPlus,
@@ -25,6 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [restaurantOpen, setRestaurantOpen] = useState(true);
   const location = useLocation();
   const { role, user, signOut } = useAuth();
+  const { t } = useTranslation();
 
   // Role-based nav filtering
   const isAdmin = role === "admin";
@@ -32,32 +35,32 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isReception = role === "reception";
 
   const normalNavItems = [
-    { to: "/", icon: LayoutDashboard, label: "Tableau de bord", roles: ["admin", "director", "reception"] },
-    { to: "/register", icon: UserPlus, label: "Inscription", roles: ["admin", "director"] },
-    { to: "/scanner", icon: ScanLine, label: "Scanner", roles: ["admin", "director", "reception"] },
-    { to: "/visitors", icon: Users, label: "Visiteurs", roles: ["admin", "director", "reception"] },
-    { to: "/statistics", icon: BarChart3, label: "Statistiques", roles: ["admin", "director"] },
+    { to: "/", icon: LayoutDashboard, label: t("nav.dashboard"), roles: ["admin", "director", "reception"] },
+    { to: "/register", icon: UserPlus, label: t("nav.register"), roles: ["admin", "director"] },
+    { to: "/scanner", icon: ScanLine, label: t("nav.scanner"), roles: ["admin", "director", "reception"] },
+    { to: "/visitors", icon: Users, label: t("nav.visitors"), roles: ["admin", "director", "reception"] },
+    { to: "/statistics", icon: BarChart3, label: t("nav.statistics"), roles: ["admin", "director"] },
   ].filter(item => role && item.roles.includes(role));
 
   const programNavItems = [
-    { to: "/programs", icon: GraduationCap, label: "Programmes" },
-    { to: "/program-attendance", icon: ClipboardCheck, label: "Présence" },
-    { to: "/program-report", icon: BarChart3, label: "Rapport" },
+    { to: "/programs", icon: GraduationCap, label: t("nav.programs") },
+    { to: "/program-attendance", icon: ClipboardCheck, label: t("nav.attendance") },
+    { to: "/program-report", icon: BarChart3, label: t("nav.report") },
   ];
 
   const showPrograms = isAdmin || isDirector || isReception;
 
   const restaurantNavItems = [
-    { to: "/restaurant/orders", icon: UtensilsCrossed, label: "Commandes" },
-    { to: "/restaurant/manual-order", icon: UserPlus, label: "Commande manuelle" },
-    { to: "/restaurant/products", icon: UtensilsCrossed, label: "Produits" },
-    { to: "/restaurant/analytics", icon: BarChart3, label: "Analytiques" },
+    { to: "/restaurant/orders", icon: UtensilsCrossed, label: t("nav.orders") },
+    { to: "/restaurant/manual-order", icon: UserPlus, label: t("nav.manualOrder") },
+    { to: "/restaurant/products", icon: UtensilsCrossed, label: t("nav.products") },
+    { to: "/restaurant/analytics", icon: BarChart3, label: t("nav.analytics") },
   ];
 
   const showRestaurant = isAdmin || isDirector;
 
   const adminNavItems = [
-    { to: "/users", icon: Shield, label: "Utilisateurs" },
+    { to: "/users", icon: Shield, label: t("nav.users") },
   ];
 
   const renderNavItem = (item: { to: string; icon: any; label: string }) => {
@@ -90,13 +93,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const ROLE_LABELS: Record<string, string> = {
-    admin: "Administrateur",
-    director: "Directeur",
-    reception: "Réception",
-  };
-
-  const displayName = role ? ROLE_LABELS[role] || role : "Utilisateur";
+  const displayName = role ? t(`roles.${role}`, { defaultValue: role }) : t("roles.user");
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
@@ -120,8 +117,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Sparkles className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-[15px] font-bold tracking-tight text-sidebar-foreground">GSS Access</h1>
-            <p className="text-[11px] text-sidebar-foreground/50 truncate">Gitega Study Space</p>
+            <h1 className="text-[15px] font-bold tracking-tight text-sidebar-foreground">{t("app.name")}</h1>
+            <p className="text-[11px] text-sidebar-foreground/50 truncate">{t("app.tagline")}</p>
           </div>
           <button
             className="ml-auto rounded-lg p-1.5 text-sidebar-foreground/60 hover:bg-sidebar-accent lg:hidden"
@@ -139,7 +136,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             className="flex w-full items-center justify-between px-3 mb-2"
           >
             <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
-              Présence Normale
+              {t("nav.groups.normal")}
             </p>
             <ChevronDown className={`h-3 w-3 text-sidebar-foreground/30 transition-transform ${normalOpen ? "" : "-rotate-90"}`} />
           </button>
@@ -157,7 +154,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 className="flex w-full items-center justify-between px-3 mb-2"
               >
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
-                  Présence Programme
+                  {t("nav.groups.program")}
                 </p>
                 <ChevronDown className={`h-3 w-3 text-sidebar-foreground/30 transition-transform ${programOpen ? "" : "-rotate-90"}`} />
               </button>
@@ -177,7 +174,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 className="flex w-full items-center justify-between px-3 mb-2"
               >
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
-                  Restaurant
+                  {t("nav.groups.restaurant")}
                 </p>
                 <ChevronDown className={`h-3 w-3 text-sidebar-foreground/30 transition-transform ${restaurantOpen ? "" : "-rotate-90"}`} />
               </button>
@@ -193,7 +190,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {isAdmin && (
             <>
               <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
-                Administration
+                {t("nav.groups.administration")}
               </p>
               <div className="space-y-1">
                 {adminNavItems.map(renderNavItem)}
@@ -215,7 +212,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <button
               onClick={signOut}
               className="rounded-lg p-1.5 text-sidebar-foreground/30 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground/60"
-              title="Se déconnecter"
+              title={t("common.logout")}
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -233,6 +230,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5 text-foreground" />
           </button>
           <div className="flex-1" />
+          <LanguageSwitcher />
         </header>
 
         <main className="flex-1 overflow-y-auto p-5 lg:p-8">{children}</main>

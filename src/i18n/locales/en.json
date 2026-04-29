@@ -1,0 +1,43 @@
+{
+  "common": {
+    "logout": "Sign out",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "language": "Language"
+  },
+  "roles": {
+    "admin": "Administrator",
+    "director": "Director",
+    "reception": "Reception",
+    "user": "User"
+  },
+  "nav": {
+    "groups": {
+      "normal": "Normal Attendance",
+      "program": "Program Attendance",
+      "restaurant": "Restaurant",
+      "administration": "Administration"
+    },
+    "dashboard": "Dashboard",
+    "register": "Registration",
+    "scanner": "Scanner",
+    "visitors": "Visitors",
+    "statistics": "Statistics",
+    "programs": "Programs",
+    "attendance": "Attendance",
+    "report": "Report",
+    "orders": "Orders",
+    "manualOrder": "Manual Order",
+    "products": "Products",
+    "analytics": "Analytics",
+    "users": "Users"
+  },
+  "app": {
+    "name": "GSS Access",
+    "tagline": "Gitega Study Space"
+  }
+}
