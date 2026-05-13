@@ -140,10 +140,7 @@ export default function ScholarshipTasksOverview({ programId, participants, onOp
       {overdueCount > 0 && (
         <Card className="p-3 border-destructive/40 bg-destructive/5 flex items-center gap-2 text-sm">
           <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
-          <span>
-            <strong>{overdueCount}</strong>{" "}
-            {t(overdueCount > 1 ? "programs.tasks.overview.overdueAlert_other" : "programs.tasks.overview.overdueAlert_one", { count: overdueCount }).replace(/<\/?1>/g, "").replace(String(overdueCount), "").trim()}
-          </span>
+          <span><strong>{overdueCount}</strong> {t("programs.tasks.overview.overdueAlert", { count: overdueCount })}</span>
         </Card>
       )}
 
