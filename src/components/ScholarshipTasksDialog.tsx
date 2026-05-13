@@ -12,6 +12,7 @@ import { Plus, Pencil, Trash2, CheckCircle2, Send, RotateCcw, ExternalLink, Targ
 import { toast } from "sonner";
 import { format, isPast, isToday, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,8 @@ const STATUS_STYLE: Record<TaskStatus, { variant: "default" | "secondary" | "out
 export default function ScholarshipTasksDialog({
   open, onClose, participantId, participantName, programId, canDelete,
 }: Props) {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "fr" ? fr : undefined;
   const { data: tasks = [], isLoading } = useParticipantTasks(participantId);
   const addTask = useAddProgramTask();
   const updateTask = useUpdateProgramTask();
@@ -72,7 +75,7 @@ export default function ScholarshipTasksDialog({
 
   const handleSave = async () => {
     if (!title.trim() || !expected.trim()) {
-      toast.error("Titre et résultat attendu requis");
+      toast.error(t("programs.tasks.missingFields"));
       return;
     }
     try {
@@ -85,7 +88,7 @@ export default function ScholarshipTasksDialog({
           reporting_instructions: reporting.trim() || null,
           deadline: deadline ? format(deadline, "yyyy-MM-dd") : null,
         });
-        toast.success("Tâche modifiée");
+        toast.success(t("programs.tasks.updated"));
       } else {
         await addTask.mutateAsync({
           participant_id: participantId,
@@ -95,11 +98,11 @@ export default function ScholarshipTasksDialog({
           reporting_instructions: reporting.trim() || undefined,
           deadline: deadline ? format(deadline, "yyyy-MM-dd") : null,
         });
-        toast.success("Tâche ajoutée");
+        toast.success(t("programs.tasks.added"));
       }
       resetForm();
     } catch {
-      toast.error("Erreur");
+      toast.error(t("programs.genericError"));
     }
   };
 
@@ -111,7 +114,7 @@ export default function ScholarshipTasksDialog({
   const handleSubmitLink = async () => {
     if (!linkDialog) return;
     if (!linkValue.trim()) {
-      toast.error("Lien requis");
+      toast.error(t("programs.tasks.linkRequired"));
       return;
     }
     try {
@@ -120,35 +123,35 @@ export default function ScholarshipTasksDialog({
         participant_id: participantId,
         submission_link: linkValue.trim(),
       });
-      toast.success("Compte rendu soumis !");
+      toast.success(t("programs.tasks.submitted"));
       setLinkDialog(null);
       setLinkValue("");
     } catch {
-      toast.error("Erreur");
+      toast.error(t("programs.genericError"));
     }
   };
 
   const handleValidate = async (t: ProgramTask) => {
     try {
       await validateTask.mutateAsync({ id: t.id, participant_id: participantId });
-      toast.success("Tâche validée");
-    } catch { toast.error("Erreur"); }
+      toast.success(i18n.t("programs.tasks.validated"));
+    } catch { toast.error(i18n.t("programs.genericError")); }
   };
 
   const handleReopen = async (t: ProgramTask) => {
-    if (!confirm("Rouvrir cette tâche ? Le lien et la validation seront effacés.")) return;
+    if (!confirm(i18n.t("programs.tasks.reopenConfirm"))) return;
     try {
       await reopenTask.mutateAsync({ id: t.id, participant_id: participantId });
-      toast.success("Tâche rouverte");
-    } catch { toast.error("Erreur"); }
+      toast.success(i18n.t("programs.tasks.reopened"));
+    } catch { toast.error(i18n.t("programs.genericError")); }
   };
 
   const handleDelete = async (t: ProgramTask) => {
-    if (!confirm(`Supprimer la tâche "${t.title}" ?`)) return;
+    if (!confirm(i18n.t("programs.tasks.deleteConfirm", { title: t.title }))) return;
     try {
       await deleteTask.mutateAsync({ id: t.id, participant_id: participantId });
-      toast.success("Tâche supprimée");
-    } catch { toast.error("Erreur"); }
+      toast.success(i18n.t("programs.tasks.deleted"));
+    } catch { toast.error(i18n.t("programs.genericError")); }
   };
 
   return (
@@ -158,17 +161,15 @@ export default function ScholarshipTasksDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />
-              Tâches Scholarship — {participantName}
+              {t("programs.tasks.title", { name: participantName })}
             </DialogTitle>
-            <DialogDescription>
-              Définissez les objectifs de la bourse et suivez les comptes rendus.
-            </DialogDescription>
+            <DialogDescription>{t("programs.tasks.description")}</DialogDescription>
           </DialogHeader>
 
           {!showForm && (
             <div className="flex justify-end">
               <Button onClick={() => setShowForm(true)} size="sm" className="gap-1.5">
-                <Plus className="h-4 w-4" /> Nouvelle tâche
+                <Plus className="h-4 w-4" /> {t("programs.tasks.new")}
               </Button>
             </div>
           )}
@@ -176,36 +177,36 @@ export default function ScholarshipTasksDialog({
           {showForm && (
             <Card className="p-4 space-y-3 border-primary/30">
               <div className="space-y-1.5">
-                <Label>Tâche / Objectif *</Label>
+                <Label>{t("programs.tasks.fields.title")}</Label>
                 <Input
                   value={title}
                   onChange={e => setTitle(e.target.value)}
-                  placeholder="Ex: Suivre la formation Python avancé"
+                  placeholder={t("programs.tasks.fields.titlePlaceholder")}
                   maxLength={200}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Résultat attendu *</Label>
+                <Label>{t("programs.tasks.fields.expected")}</Label>
                 <Textarea
                   value={expected}
                   onChange={e => setExpected(e.target.value)}
-                  placeholder="Ex: Obtenir le certificat avec une note ≥ 80%"
+                  placeholder={t("programs.tasks.fields.expectedPlaceholder")}
                   rows={3}
                   maxLength={1000}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Moyen de rendre compte (optionnel)</Label>
+                <Label>{t("programs.tasks.fields.reporting")}</Label>
                 <Textarea
                   value={reporting}
                   onChange={e => setReporting(e.target.value)}
-                  placeholder="Ex: Lien Google Drive du certificat, lien GitHub du projet…"
+                  placeholder={t("programs.tasks.fields.reportingPlaceholder")}
                   rows={2}
                   maxLength={500}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Deadline (optionnel)</Label>
+                <Label>{t("programs.tasks.fields.deadline")}</Label>
                 <div className="flex gap-2">
                   <Popover>
                     <PopoverTrigger asChild>
@@ -217,7 +218,7 @@ export default function ScholarshipTasksDialog({
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {deadline ? format(deadline, "PPP", { locale: fr }) : "Choisir une date"}
+                        {deadline ? format(deadline, "PPP", { locale: dateLocale }) : t("programs.tasks.fields.pickDate")}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -232,18 +233,18 @@ export default function ScholarshipTasksDialog({
                   </Popover>
                   {deadline && (
                     <Button variant="ghost" size="sm" onClick={() => setDeadline(undefined)}>
-                      Effacer
+                      {t("programs.tasks.fields.clear")}
                     </Button>
                   )}
                 </div>
               </div>
               <div className="flex gap-2 justify-end">
-                <Button variant="ghost" onClick={resetForm}>Annuler</Button>
+                <Button variant="ghost" onClick={resetForm}>{t("programs.tasks.cancel")}</Button>
                 <Button
                   onClick={handleSave}
                   disabled={addTask.isPending || updateTask.isPending}
                 >
-                  {editing ? "Enregistrer" : "Ajouter"}
+                  {editing ? t("programs.tasks.save") : t("programs.tasks.add")}
                 </Button>
               </div>
             </Card>
@@ -251,41 +252,39 @@ export default function ScholarshipTasksDialog({
 
           <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
             {isLoading ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Chargement…</p>
+              <p className="text-sm text-muted-foreground text-center py-4">{t("programs.tasks.loading")}</p>
             ) : tasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                Aucune tâche. Cliquez sur "Nouvelle tâche" pour commencer.
-              </p>
+              <p className="text-sm text-muted-foreground text-center py-8">{t("programs.tasks.empty")}</p>
             ) : (
-              tasks.map(t => {
-                const style = STATUS_STYLE[t.status];
-                const deadlineDate = t.deadline ? parseISO(t.deadline) : null;
-                const isValidated = t.status === "valide";
+              tasks.map(task => {
+                const style = STATUS_STYLE[task.status];
+                const deadlineDate = task.deadline ? parseISO(task.deadline) : null;
+                const isValidated = task.status === "valide";
                 let deadlineBadge: { label: string; className: string; icon: boolean } | null = null;
                 if (deadlineDate) {
                   if (isValidated) {
-                    const validatedDate = t.validated_at ? new Date(t.validated_at) : null;
+                    const validatedDate = task.validated_at ? new Date(task.validated_at) : null;
                     const onTime = validatedDate ? validatedDate <= new Date(deadlineDate.getTime() + 86400000) : true;
                     deadlineBadge = onTime
-                      ? { label: "✓ Atteinte dans les délais", className: "bg-emerald-600 hover:bg-emerald-600 text-white border-transparent", icon: false }
-                      : { label: "⚠ Atteinte en retard", className: "bg-amber-600 hover:bg-amber-600 text-white border-transparent", icon: false };
+                      ? { label: t("programs.tasks.deadline.onTime"), className: "bg-emerald-600 hover:bg-emerald-600 text-white border-transparent", icon: false }
+                      : { label: t("programs.tasks.deadline.late"), className: "bg-amber-600 hover:bg-amber-600 text-white border-transparent", icon: false };
                   } else if (isPast(deadlineDate) && !isToday(deadlineDate)) {
-                    deadlineBadge = { label: `En retard (${Math.abs(differenceInDays(deadlineDate, new Date()))}j)`, className: "bg-destructive hover:bg-destructive text-destructive-foreground border-transparent", icon: true };
+                    deadlineBadge = { label: t("programs.tasks.deadline.overdue", { days: Math.abs(differenceInDays(deadlineDate, new Date())) }), className: "bg-destructive hover:bg-destructive text-destructive-foreground border-transparent", icon: true };
                   } else if (isToday(deadlineDate)) {
-                    deadlineBadge = { label: "Échéance aujourd'hui", className: "bg-amber-500 hover:bg-amber-500 text-white border-transparent", icon: true };
+                    deadlineBadge = { label: t("programs.tasks.deadline.today"), className: "bg-amber-500 hover:bg-amber-500 text-white border-transparent", icon: true };
                   } else {
                     const days = differenceInDays(deadlineDate, new Date());
-                    deadlineBadge = { label: `Dans ${days + 1}j`, className: "border-primary/40 text-primary", icon: false };
+                    deadlineBadge = { label: t("programs.tasks.deadline.in", { days: days + 1 }), className: "border-primary/40 text-primary", icon: false };
                   }
                 }
                 return (
-                  <Card key={t.id} className="p-4 space-y-2">
+                  <Card key={task.id} className="p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm">{t.title}</h4>
+                        <h4 className="font-semibold text-sm">{task.title}</h4>
                         <div className="flex flex-wrap gap-1.5 mt-1">
                           <Badge variant={style.variant} className={style.className}>
-                            {style.emoji} {TASK_STATUS_LABELS[t.status]}
+                            {style.emoji} {t(`programs.tasks.status.${task.status}`)}
                           </Badge>
                           {deadlineBadge && (
                             <Badge variant="outline" className={cn("gap-1", deadlineBadge.className)}>
@@ -296,11 +295,11 @@ export default function ScholarshipTasksDialog({
                         </div>
                       </div>
                       <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(t)}>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(task)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
                         {canDelete && (
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(t)}>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(task)}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         )}
@@ -309,65 +308,65 @@ export default function ScholarshipTasksDialog({
 
                     <div className="text-xs space-y-1.5 pt-1">
                       <div>
-                        <span className="font-medium text-muted-foreground">Résultat attendu : </span>
-                        <span className="whitespace-pre-wrap">{t.expected_result}</span>
+                        <span className="font-medium text-muted-foreground">{t("programs.tasks.expectedLabel")} </span>
+                        <span className="whitespace-pre-wrap">{task.expected_result}</span>
                       </div>
-                      {t.reporting_instructions && (
+                      {task.reporting_instructions && (
                         <div>
-                          <span className="font-medium text-muted-foreground">Compte rendu : </span>
-                          <span className="whitespace-pre-wrap">{t.reporting_instructions}</span>
+                          <span className="font-medium text-muted-foreground">{t("programs.tasks.reportingLabel")} </span>
+                          <span className="whitespace-pre-wrap">{task.reporting_instructions}</span>
                         </div>
                       )}
                       {deadlineDate && (
                         <div>
-                          <span className="font-medium text-muted-foreground">Deadline : </span>
-                          <span>{format(deadlineDate, "PPP", { locale: fr })}</span>
+                          <span className="font-medium text-muted-foreground">{t("programs.tasks.deadlineLabel")} </span>
+                          <span>{format(deadlineDate, "PPP", { locale: dateLocale })}</span>
                         </div>
                       )}
-                      {t.submission_link && (
+                      {task.submission_link && (
                         <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-muted-foreground">Lien : </span>
+                          <span className="font-medium text-muted-foreground">{t("programs.tasks.linkLabel")} </span>
                           <a
-                            href={t.submission_link}
+                            href={task.submission_link}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-primary hover:underline inline-flex items-center gap-1 truncate max-w-[300px]"
                           >
-                            {t.submission_link} <ExternalLink className="h-3 w-3 shrink-0" />
+                            {task.submission_link} <ExternalLink className="h-3 w-3 shrink-0" />
                           </a>
                         </div>
                       )}
-                      {t.submitted_at && (
+                      {task.submitted_at && (
                         <p className="text-muted-foreground">
-                          Soumis le {format(new Date(t.submitted_at), "PPp", { locale: fr })}
+                          {t("programs.tasks.submittedOn", { date: format(new Date(task.submitted_at), "PPp", { locale: dateLocale }) })}
                         </p>
                       )}
-                      {t.validated_at && (
+                      {task.validated_at && (
                         <p className="text-emerald-700 dark:text-emerald-400">
-                          Validé le {format(new Date(t.validated_at), "PPp", { locale: fr })}
+                          {t("programs.tasks.validatedOn", { date: format(new Date(task.validated_at), "PPp", { locale: dateLocale }) })}
                         </p>
                       )}
                     </div>
 
                     <div className="flex flex-wrap gap-2 pt-2 border-t">
-                      {t.status === "en_cours" && (
-                        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => openLinkDialog(t)}>
-                          <Send className="h-3.5 w-3.5" /> Soumettre un lien
+                      {task.status === "en_cours" && (
+                        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => openLinkDialog(task)}>
+                          <Send className="h-3.5 w-3.5" /> {t("programs.tasks.submitLink")}
                         </Button>
                       )}
-                      {t.status === "soumis" && (
+                      {task.status === "soumis" && (
                         <>
-                          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => openLinkDialog(t)}>
-                            <Pencil className="h-3.5 w-3.5" /> Modifier le lien
+                          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => openLinkDialog(task)}>
+                            <Pencil className="h-3.5 w-3.5" /> {t("programs.tasks.editLink")}
                           </Button>
-                          <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700" onClick={() => handleValidate(t)}>
-                            <CheckCircle2 className="h-3.5 w-3.5" /> Valider
+                          <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700" onClick={() => handleValidate(task)}>
+                            <CheckCircle2 className="h-3.5 w-3.5" /> {t("programs.tasks.validate")}
                           </Button>
                         </>
                       )}
-                      {t.status === "valide" && (
-                        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => handleReopen(t)}>
-                          <RotateCcw className="h-3.5 w-3.5" /> Rouvrir
+                      {task.status === "valide" && (
+                        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => handleReopen(task)}>
+                          <RotateCcw className="h-3.5 w-3.5" /> {t("programs.tasks.reopen")}
                         </Button>
                       )}
                     </div>
@@ -382,14 +381,12 @@ export default function ScholarshipTasksDialog({
       <Dialog open={!!linkDialog} onOpenChange={v => { if (!v) { setLinkDialog(null); setLinkValue(""); } }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Soumettre un compte rendu</DialogTitle>
-            <DialogDescription>
-              Collez le lien (Drive, GitHub, document, etc.) prouvant le résultat.
-            </DialogDescription>
+            <DialogTitle>{t("programs.tasks.submitTitle")}</DialogTitle>
+            <DialogDescription>{t("programs.tasks.submitDesc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Lien du résultat *</Label>
+              <Label>{t("programs.tasks.linkValueLabel")}</Label>
               <Input
                 type="url"
                 value={linkValue}
@@ -399,9 +396,9 @@ export default function ScholarshipTasksDialog({
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => { setLinkDialog(null); setLinkValue(""); }}>Annuler</Button>
+              <Button variant="ghost" onClick={() => { setLinkDialog(null); setLinkValue(""); }}>{t("programs.tasks.cancel")}</Button>
               <Button onClick={handleSubmitLink} disabled={submitLink.isPending}>
-                {submitLink.isPending ? "..." : "Soumettre"}
+                {submitLink.isPending ? t("programs.tasks.submitting") : t("programs.tasks.submitBtn")}
               </Button>
             </div>
           </div>

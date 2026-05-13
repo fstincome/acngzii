@@ -6,8 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Target, AlertCircle, CalendarIcon, ExternalLink, User } from "lucide-react";
 import { format, isPast, isToday, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { useProgramTasks, TASK_STATUS_LABELS, type ProgramTask, type TaskStatus } from "@/lib/program-tasks-store";
+import { useProgramTasks, type ProgramTask, type TaskStatus } from "@/lib/program-tasks-store";
 import type { ProgramParticipant } from "@/lib/program-store";
 
 interface Props {
@@ -23,28 +24,30 @@ type DeadlineInfo = {
   overdue: boolean;
 } | null;
 
-function computeDeadlineInfo(t: ProgramTask): DeadlineInfo {
-  if (!t.deadline) return null;
-  const d = parseISO(t.deadline);
-  const isValidated = t.status === "valide";
+function computeDeadlineInfo(task: ProgramTask, t: (k: string, opts?: any) => string): DeadlineInfo {
+  if (!task.deadline) return null;
+  const d = parseISO(task.deadline);
+  const isValidated = task.status === "valide";
   if (isValidated) {
-    const validatedDate = t.validated_at ? new Date(t.validated_at) : null;
+    const validatedDate = task.validated_at ? new Date(task.validated_at) : null;
     const onTime = validatedDate ? validatedDate <= new Date(d.getTime() + 86400000) : true;
     return onTime
-      ? { label: "✓ Atteinte dans les délais", className: "bg-emerald-600 hover:bg-emerald-600 text-white border-transparent", alert: false, overdue: false }
-      : { label: "⚠ Atteinte en retard", className: "bg-amber-600 hover:bg-amber-600 text-white border-transparent", alert: false, overdue: true };
+      ? { label: t("programs.tasks.deadline.onTime"), className: "bg-emerald-600 hover:bg-emerald-600 text-white border-transparent", alert: false, overdue: false }
+      : { label: t("programs.tasks.deadline.late"), className: "bg-amber-600 hover:bg-amber-600 text-white border-transparent", alert: false, overdue: true };
   }
   if (isPast(d) && !isToday(d)) {
-    return { label: `En retard (${Math.abs(differenceInDays(d, new Date()))}j)`, className: "bg-destructive hover:bg-destructive text-destructive-foreground border-transparent", alert: true, overdue: true };
+    return { label: t("programs.tasks.deadline.overdue", { days: Math.abs(differenceInDays(d, new Date())) }), className: "bg-destructive hover:bg-destructive text-destructive-foreground border-transparent", alert: true, overdue: true };
   }
   if (isToday(d)) {
-    return { label: "Échéance aujourd'hui", className: "bg-amber-500 hover:bg-amber-500 text-white border-transparent", alert: true, overdue: false };
+    return { label: t("programs.tasks.deadline.today"), className: "bg-amber-500 hover:bg-amber-500 text-white border-transparent", alert: true, overdue: false };
   }
   const days = differenceInDays(d, new Date());
-  return { label: `Dans ${days + 1}j`, className: "border-primary/40 text-primary", alert: false, overdue: false };
+  return { label: t("programs.tasks.deadline.in", { days: days + 1 }), className: "border-primary/40 text-primary", alert: false, overdue: false };
 }
 
 export default function ScholarshipTasksOverview({ programId, participants, onOpenParticipantTasks }: Props) {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "fr" ? fr : undefined;
   const { data: tasks = [], isLoading } = useProgramTasks(programId);
 
   const participantsById = useMemo(() => {
@@ -69,7 +72,7 @@ export default function ScholarshipTasksOverview({ programId, participants, onOp
   );
 
   if (isLoading) {
-    return <Card className="p-6 text-center text-sm text-muted-foreground">Chargement…</Card>;
+    return <Card className="p-6 text-center text-sm text-muted-foreground">{t("programs.tasks.loading")}</Card>;
   }
 
   if (tasks.length === 0) {
@@ -78,28 +81,26 @@ export default function ScholarshipTasksOverview({ programId, participants, onOp
         <div className="icon-box h-12 w-12 mx-auto mb-3">
           <Target className="h-5 w-5 text-primary-foreground" />
         </div>
-        <h3 className="font-semibold text-foreground mb-1">Aucune tâche</h3>
-        <p className="text-sm text-muted-foreground">
-          Ajoutez des tâches via le bouton "Tâches" sur chaque participant.
-        </p>
+        <h3 className="font-semibold text-foreground mb-1">{t("programs.tasks.overview.empty")}</h3>
+        <p className="text-sm text-muted-foreground">{t("programs.tasks.overview.emptyHint")}</p>
       </Card>
     );
   }
 
-  const renderTask = (t: ProgramTask) => {
-    const participant = participantsById.get(t.participant_id);
-    const di = computeDeadlineInfo(t);
+  const renderTask = (task: ProgramTask) => {
+    const participant = participantsById.get(task.participant_id);
+    const di = computeDeadlineInfo(task, t);
     return (
-      <Card key={t.id} className="p-3 space-y-2">
+      <Card key={task.id} className="p-3 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm truncate">{t.title}</h4>
+            <h4 className="font-semibold text-sm truncate">{task.title}</h4>
             <button
               onClick={() => participant && onOpenParticipantTasks(participant)}
               className="mt-1 inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
             >
               <User className="h-3 w-3" />
-              {participant?.full_name ?? "Participant supprimé"}
+              {participant?.full_name ?? t("programs.tasks.overview.deletedParticipant")}
               {participant && (
                 <span className="text-muted-foreground font-mono">({participant.participant_code})</span>
               )}
@@ -112,21 +113,21 @@ export default function ScholarshipTasksOverview({ programId, participants, onOp
             </Badge>
           )}
         </div>
-        <p className="text-xs text-muted-foreground line-clamp-2">{t.expected_result}</p>
+        <p className="text-xs text-muted-foreground line-clamp-2">{task.expected_result}</p>
         <div className="flex items-center justify-between gap-2 text-xs">
-          {t.deadline ? (
+          {task.deadline ? (
             <span className="text-muted-foreground">
-              📅 {format(parseISO(t.deadline), "PPP", { locale: fr })}
+              📅 {format(parseISO(task.deadline), "PPP", { locale: dateLocale })}
             </span>
-          ) : <span className="text-muted-foreground italic">Sans deadline</span>}
-          {t.submission_link && (
+          ) : <span className="text-muted-foreground italic">{t("programs.tasks.overview.noDeadline")}</span>}
+          {task.submission_link && (
             <a
-              href={t.submission_link}
+              href={task.submission_link}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline inline-flex items-center gap-1 truncate max-w-[200px]"
             >
-              Lien <ExternalLink className="h-3 w-3 shrink-0" />
+              {t("programs.tasks.overview.linkShort")} <ExternalLink className="h-3 w-3 shrink-0" />
             </a>
           )}
         </div>
@@ -139,20 +140,20 @@ export default function ScholarshipTasksOverview({ programId, participants, onOp
       {overdueCount > 0 && (
         <Card className="p-3 border-destructive/40 bg-destructive/5 flex items-center gap-2 text-sm">
           <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
-          <span><strong>{overdueCount}</strong> tâche{overdueCount > 1 ? "s" : ""} en retard à traiter</span>
+          <span><strong>{overdueCount}</strong> {t("programs.tasks.overview.overdueAlert", { count: overdueCount })}</span>
         </Card>
       )}
 
       <Tabs defaultValue="en_cours" className="space-y-3">
         <TabsList className="bg-muted/60 p-1 rounded-xl">
           <TabsTrigger value="en_cours" className="rounded-lg">
-            ⏳ En cours ({grouped.en_cours.length})
+            {t("programs.tasks.overview.tabInProgress")} ({grouped.en_cours.length})
           </TabsTrigger>
           <TabsTrigger value="soumis" className="rounded-lg">
-            📤 Soumis ({grouped.soumis.length})
+            {t("programs.tasks.overview.tabSubmitted")} ({grouped.soumis.length})
           </TabsTrigger>
           <TabsTrigger value="valide" className="rounded-lg">
-            ✅ Validé ({grouped.valide.length})
+            {t("programs.tasks.overview.tabValidated")} ({grouped.valide.length})
           </TabsTrigger>
         </TabsList>
 
@@ -160,7 +161,7 @@ export default function ScholarshipTasksOverview({ programId, participants, onOp
           <TabsContent key={s} value={s} className="space-y-2">
             {grouped[s].length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">
-                Aucune tâche {TASK_STATUS_LABELS[s].toLowerCase()}
+                {t("programs.tasks.overview.noneIn", { status: t(`programs.tasks.status.${s}`).toLowerCase() })}
               </p>
             ) : (
               grouped[s].map(renderTask)
