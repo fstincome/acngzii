@@ -21,6 +21,7 @@ import { Plus, ArrowLeft, Users, Calendar, CreditCard, Pencil, BookOpen, Graduat
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import MembershipCard from "@/components/MembershipCard";
 import ScholarshipTasksDialog from "@/components/ScholarshipTasksDialog";
 import ScholarshipTasksOverview from "@/components/ScholarshipTasksOverview";
@@ -28,6 +29,8 @@ import { useNavigate } from "react-router-dom";
 import { Target } from "lucide-react";
 
 export default function Programs() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "fr" ? fr : undefined;
   const { role } = useAuth();
   const canEdit = role === "admin" || role === "director";
   const canDelete = role === "admin";
@@ -64,10 +67,10 @@ export default function Programs() {
         end_date: newEnd || undefined,
         logo_url: newLogo.trim() || undefined,
       });
-      toast.success("Programme créé !");
+      toast.success(t("programs.created"));
       setShowCreate(false);
       setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); setNewLogo("");
-    } catch { toast.error("Erreur lors de la création"); }
+    } catch { toast.error(t("programs.createError")); }
   };
 
   const handleUpdateProgram = async () => {
@@ -81,19 +84,19 @@ export default function Programs() {
         end_date: newEnd || null,
         logo_url: newLogo.trim() || null,
       });
-      toast.success("Programme modifié !");
+      toast.success(t("programs.updated"));
       setSelectedProgram(prev => prev?.id === editProgram.id ? { ...prev, name: newName.trim(), description: newDesc.trim() || null, start_date: newStart || null, end_date: newEnd || null, logo_url: newLogo.trim() || null } : prev);
       setEditProgram(null);
       setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); setNewLogo("");
-    } catch { toast.error("Erreur"); }
+    } catch { toast.error(t("programs.genericError")); }
   };
 
   const handleDeleteProgram = async (p: Program) => {
-    if (!confirm(`Supprimer le programme "${p.name}" et toutes ses données ?`)) return;
+    if (!confirm(t("programs.deleteConfirm", { name: p.name }))) return;
     try {
       await deleteProgram.mutateAsync(p.id);
-      toast.success("Programme supprimé !");
-    } catch { toast.error("Erreur lors de la suppression"); }
+      toast.success(t("programs.deleted"));
+    } catch { toast.error(t("programs.deleteError")); }
   };
 
   if (selectedProgram) {
@@ -103,32 +106,32 @@ export default function Programs() {
   const programFormFields = () => (
     <div className="space-y-4 pt-2">
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Nom du programme</label>
-        <Input placeholder="Ex: Formation Leadership 2026" value={newName} onChange={e => setNewName(e.target.value)} />
+        <label className="text-xs font-medium text-muted-foreground">{t("programs.fields.name")}</label>
+        <Input placeholder={t("programs.fields.namePlaceholder")} value={newName} onChange={e => setNewName(e.target.value)} />
       </div>
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Description (optionnel)</label>
-        <Input placeholder="Brève description du programme" value={newDesc} onChange={e => setNewDesc(e.target.value)} />
+        <label className="text-xs font-medium text-muted-foreground">{t("programs.fields.description")}</label>
+        <Input placeholder={t("programs.fields.descriptionPlaceholder")} value={newDesc} onChange={e => setNewDesc(e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Date début</label>
+          <label className="text-xs font-medium text-muted-foreground">{t("programs.fields.startDate")}</label>
           <Input type="date" value={newStart} onChange={e => setNewStart(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Date fin</label>
+          <label className="text-xs font-medium text-muted-foreground">{t("programs.fields.endDate")}</label>
           <Input type="date" value={newEnd} onChange={e => setNewEnd(e.target.value)} />
         </div>
       </div>
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-          <LinkIcon className="h-3 w-3" /> Lien du logo du programme (optionnel)
+          <LinkIcon className="h-3 w-3" /> {t("programs.fields.logo")}
         </label>
         <Input placeholder="https://example.com/logo.png" value={newLogo} onChange={e => setNewLogo(e.target.value)} />
         {newLogo && (
           <div className="flex items-center gap-2 mt-1">
             <img src={newLogo} alt="Logo" className="h-8 w-8 rounded object-contain border border-border" onError={e => (e.currentTarget.style.display = "none")} />
-            <span className="text-[10px] text-muted-foreground">Aperçu du logo</span>
+            <span className="text-[10px] text-muted-foreground">{t("programs.fields.logoPreview")}</span>
           </div>
         )}
       </div>
@@ -143,22 +146,22 @@ export default function Programs() {
             <div className="icon-box h-9 w-9">
               <BookOpen className="h-4.5 w-4.5 text-primary-foreground" />
             </div>
-            Programmes
+            {t("programs.title")}
           </h1>
-          <p className="page-subtitle">Gérez les programmes et leurs participants</p>
+          <p className="page-subtitle">{t("programs.subtitle")}</p>
         </div>
         {canEdit && (
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
             <DialogTrigger asChild>
               <Button className="gap-2 rounded-xl shadow-md" style={{ background: "var(--gradient-primary)" }}>
-                <Plus className="h-4 w-4" /> Nouveau programme
+                <Plus className="h-4 w-4" /> {t("programs.newProgram")}
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Créer un programme</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{t("programs.createProgram")}</DialogTitle></DialogHeader>
               {programFormFields()}
               <Button onClick={handleCreateProgram} disabled={addProgram.isPending} className="w-full mt-2" style={{ background: "var(--gradient-primary)" }}>
-                {addProgram.isPending ? "Création..." : "Créer le programme"}
+                {addProgram.isPending ? t("programs.creating") : t("programs.create")}
               </Button>
             </DialogContent>
           </Dialog>
@@ -179,8 +182,8 @@ export default function Programs() {
           <div className="icon-box h-14 w-14 mx-auto mb-4">
             <BookOpen className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h3 className="font-semibold text-foreground mb-1">Aucun programme</h3>
-          <p className="text-sm text-muted-foreground">Cliquez sur "Nouveau programme" pour commencer.</p>
+          <h3 className="font-semibold text-foreground mb-1">{t("programs.empty")}</h3>
+          <p className="text-sm text-muted-foreground">{t("programs.emptyHint")}</p>
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -213,9 +216,9 @@ export default function Programs() {
                 <div className="mt-3 flex items-center gap-2 text-xs">
                   <Badge variant="secondary" className="font-normal">
                     <Calendar className="h-3 w-3 mr-1" />
-                    {p.start_date && format(new Date(p.start_date), "dd MMM yyyy", { locale: fr })}
+                    {p.start_date && format(new Date(p.start_date), "dd MMM yyyy", { locale: dateLocale })}
                     {p.start_date && p.end_date && " → "}
-                    {p.end_date && format(new Date(p.end_date), "dd MMM yyyy", { locale: fr })}
+                    {p.end_date && format(new Date(p.end_date), "dd MMM yyyy", { locale: dateLocale })}
                   </Badge>
                 </div>
               )}
@@ -227,10 +230,10 @@ export default function Programs() {
       {/* Edit program dialog */}
       <Dialog open={!!editProgram} onOpenChange={v => { if (!v) { setEditProgram(null); setNewName(""); setNewDesc(""); setNewStart(""); setNewEnd(""); setNewLogo(""); } }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Modifier le programme</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("programs.editProgram")}</DialogTitle></DialogHeader>
           {programFormFields()}
           <Button onClick={handleUpdateProgram} disabled={updateProgram.isPending} className="w-full mt-2">
-            {updateProgram.isPending ? "..." : "Enregistrer"}
+            {updateProgram.isPending ? t("programs.saving") : t("programs.save")}
           </Button>
         </DialogContent>
       </Dialog>
