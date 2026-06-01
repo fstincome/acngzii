@@ -79,7 +79,8 @@ export function useVisits() {
       const { data, error } = await supabase
         .from("visits")
         .select("*")
-        .order("timestamp", { ascending: true });
+        .order("timestamp", { ascending: false })
+        .limit(50000);
       if (error) throw error;
       return (data ?? []) as Visit[];
     },
