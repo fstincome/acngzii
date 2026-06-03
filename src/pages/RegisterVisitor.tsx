@@ -259,6 +259,9 @@ export default function RegisterVisitor() {
   const [newVisitorId, setNewVisitorId] = useState("");
   const [fullName, setFullName] = useState("");
   const addVisitor = useAddVisitor();
+  const { data: programs = [] } = usePrograms();
+  const addParticipant = useAddParticipant();
+  const scholarshipProgram = programs.find(p => p.name.trim().toLowerCase().startsWith("scholarship"));
 
   const [form, setForm] = useState({
     fullName: "",
@@ -271,6 +274,45 @@ export default function RegisterVisitor() {
     institution: "",
     photo: "",
   });
+
+  const [activeTab, setActiveTab] = useState<"visitor" | "scholarship">("visitor");
+  const [schForm, setSchForm] = useState({
+    fullName: "", gender: "", dateOfBirth: "", phone: "", email: "",
+    neighborhood: "", occupation: "", institution: "", photo: "",
+  });
+  const updateSch = (key: string, value: string) => setSchForm(f => ({ ...f, [key]: value }));
+
+  const handleSubmitScholarship = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!schForm.fullName) { toast.error("Veuillez remplir le nom complet"); return; }
+    if (!scholarshipProgram) {
+      toast.error("Aucun programme « Scholarship » trouvé. Créez-le d'abord dans Programmes.");
+      return;
+    }
+    try {
+      const prefix = scholarshipProgram.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
+      const code = await generateParticipantCode(prefix);
+      await addParticipant.mutateAsync({
+        program_id: scholarshipProgram.id,
+        participant_code: code,
+        full_name: schForm.fullName,
+        gender: schForm.gender || "other",
+        date_of_birth: schForm.dateOfBirth || undefined,
+        phone: schForm.phone || undefined,
+        email: schForm.email || undefined,
+        neighborhood: schForm.neighborhood || "—",
+        occupation: schForm.occupation || "—",
+        institution: schForm.institution || undefined,
+        role: "eleve",
+        photo: schForm.photo || undefined,
+      });
+      toast.success(`Inscrit au programme Scholarship — code ${code}`);
+      setSchForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", institution: "", photo: "" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur lors de l'inscription Scholarship");
+    }
+  };
 
   // Duplicate detection
   const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
