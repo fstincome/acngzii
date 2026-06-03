@@ -370,6 +370,69 @@ export type Database = {
         }
         Relationships: []
       }
+      scholarship_applications: {
+        Row: {
+          age: number | null
+          created_at: string
+          engagement_signed: boolean | null
+          expected_results: string[] | null
+          form_number: string | null
+          id: string
+          nb_days_per_week: number | null
+          participant_id: string
+          performance_indicators: string[] | null
+          presence_days: string[] | null
+          project_domain: string | null
+          project_title: string | null
+          project_tools: string | null
+          sharing_link: string | null
+          signature: string | null
+          specific_objectives: string[] | null
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string
+          engagement_signed?: boolean | null
+          expected_results?: string[] | null
+          form_number?: string | null
+          id?: string
+          nb_days_per_week?: number | null
+          participant_id: string
+          performance_indicators?: string[] | null
+          presence_days?: string[] | null
+          project_domain?: string | null
+          project_title?: string | null
+          project_tools?: string | null
+          sharing_link?: string | null
+          signature?: string | null
+          specific_objectives?: string[] | null
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age?: number | null
+          created_at?: string
+          engagement_signed?: boolean | null
+          expected_results?: string[] | null
+          form_number?: string | null
+          id?: string
+          nb_days_per_week?: number | null
+          participant_id?: string
+          performance_indicators?: string[] | null
+          presence_days?: string[] | null
+          project_domain?: string | null
+          project_title?: string | null
+          project_tools?: string | null
+          sharing_link?: string | null
+          signature?: string | null
+          specific_objectives?: string[] | null
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sub_programs: {
         Row: {
           created_at: string
