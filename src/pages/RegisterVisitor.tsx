@@ -2,13 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAddVisitor, generateVisitorId } from "@/lib/supabase-store";
 import { findDuplicates, type DuplicateCandidate } from "@/lib/duplicate-check";
+import { usePrograms, useAddParticipant, generateParticipantCode } from "@/lib/program-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle, Building } from "lucide-react";
+import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle, Building, GraduationCap } from "lucide-react";
 import MembershipCard from "@/components/MembershipCard";
 import jsPDF from "jspdf";
 
