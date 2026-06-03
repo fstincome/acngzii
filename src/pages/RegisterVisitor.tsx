@@ -600,6 +600,19 @@ export default function RegisterVisitor() {
               </div>
             </div>
 
+            {/* Header: form number + start date */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-foreground">N° Formulaire</Label>
+                <Input value={schForm.formNumber} onChange={(e) => updateSch("formNumber", e.target.value)} placeholder="ex: 001" className="rounded-xl h-11" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Date de début</Label>
+                <Input type="date" value={schForm.startDate} onChange={(e) => updateSch("startDate", e.target.value)} className="rounded-xl h-11" />
+              </div>
+            </div>
+
+            <h3 className="text-sm font-bold text-foreground">👤 1. Informations personnelles</h3>
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="sm:col-span-2 space-y-2">
                 <Label className="text-foreground">Nom complet <span className="text-destructive">*</span></Label>
@@ -615,6 +628,10 @@ export default function RegisterVisitor() {
                     <SelectItem value="other">Autre</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Âge (max 23 ans)</Label>
+                <Input type="number" min={1} max={23} value={schForm.age} onChange={(e) => updateSch("age", e.target.value)} placeholder="ex: 21" className="rounded-xl h-11" />
               </div>
               <div className="space-y-2">
                 <Label className="text-foreground">Date de naissance</Label>
@@ -638,12 +655,95 @@ export default function RegisterVisitor() {
               </div>
               <div className="sm:col-span-2 space-y-2">
                 <Label className="text-foreground flex items-center gap-1.5">
-                  <Building className="h-3.5 w-3.5" /> Institution
+                  <Building className="h-3.5 w-3.5" /> École / Institution
                 </Label>
                 <Input value={schForm.institution} onChange={(e) => updateSch("institution", e.target.value)} placeholder="Ex: Université du Burundi" className="rounded-xl h-11" />
               </div>
               <div className="sm:col-span-2 space-y-2">
+                <Label className="text-foreground">Photo (URL)</Label>
                 <Input value={schForm.photo} onChange={(e) => updateSch("photo", e.target.value)} placeholder="Photo (URL Google Drive)" className="rounded-xl h-11" />
+              </div>
+            </div>
+
+            {/* Section 2: Project / Research */}
+            <div className="border-t border-border/40 pt-5 space-y-3">
+              <h3 className="text-sm font-bold text-foreground">💻 2. Projet / Recherche</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2 space-y-2">
+                  <Label className="text-foreground">Titre du projet</Label>
+                  <Input value={schForm.projectTitle} onChange={(e) => updateSch("projectTitle", e.target.value)} placeholder="Ex: Mon site portfolio" className="rounded-xl h-11" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-foreground">Domaine</Label>
+                  <Input value={schForm.projectDomain} onChange={(e) => updateSch("projectDomain", e.target.value)} placeholder="Dev web, Design, IA, Vidéo..." className="rounded-xl h-11" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-foreground">Logiciels / Outils</Label>
+                  <Input value={schForm.projectTools} onChange={(e) => updateSch("projectTools", e.target.value)} placeholder="VS Code, Figma, Coursera..." className="rounded-xl h-11" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Objectifs spécifiques</Label>
+                <p className="text-[11px] text-muted-foreground">Actions précises et réalisables. Soyez concret.</p>
+                <Input value={schForm.obj1} onChange={(e) => updateSch("obj1", e.target.value)} placeholder="1." className="rounded-xl h-11" />
+                <Input value={schForm.obj2} onChange={(e) => updateSch("obj2", e.target.value)} placeholder="2." className="rounded-xl h-11" />
+                <Input value={schForm.obj3} onChange={(e) => updateSch("obj3", e.target.value)} placeholder="3." className="rounded-xl h-11" />
+              </div>
+            </div>
+
+            {/* Section 3: Availability */}
+            <div className="border-t border-border/40 pt-5 space-y-3">
+              <h3 className="text-sm font-bold text-foreground">📅 3. Disponibilité</h3>
+              <div className="space-y-2">
+                <Label className="text-foreground">Jours de présence</Label>
+                <div className="flex flex-wrap gap-2">
+                  {DAYS.map(d => (
+                    <label key={d} className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/30 px-3 py-2 cursor-pointer">
+                      <Checkbox checked={presenceDays.includes(d)} onCheckedChange={() => togglePresenceDay(d)} />
+                      <span className="text-sm">{d}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2 max-w-[200px]">
+                <Label className="text-foreground">Nb jours / semaine</Label>
+                <Input type="number" min={1} max={6} value={schForm.nbDaysPerWeek} onChange={(e) => updateSch("nbDaysPerWeek", e.target.value)} placeholder="ex: 3" className="rounded-xl h-11" />
+              </div>
+            </div>
+
+            {/* Section 4: Performance & Suivi */}
+            <div className="border-t border-border/40 pt-5 space-y-4">
+              <h3 className="text-sm font-bold text-foreground">📊 4. Performance & Suivi</h3>
+              <div className="space-y-2">
+                <Label className="text-foreground">Résultats attendus</Label>
+                <p className="text-[11px] text-muted-foreground">Ce que tu auras PRODUIT à la fin du mois (visible, montrable).</p>
+                <Input value={schForm.res1} onChange={(e) => updateSch("res1", e.target.value)} placeholder="1." className="rounded-xl h-11" />
+                <Input value={schForm.res2} onChange={(e) => updateSch("res2", e.target.value)} placeholder="2." className="rounded-xl h-11" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Indicateurs de performance</Label>
+                <p className="text-[11px] text-muted-foreground">Preuves CHIFFRABLES de ta progression.</p>
+                <Input value={schForm.ind1} onChange={(e) => updateSch("ind1", e.target.value)} placeholder="1." className="rounded-xl h-11" />
+                <Input value={schForm.ind2} onChange={(e) => updateSch("ind2", e.target.value)} placeholder="2." className="rounded-xl h-11" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Lien de partage</Label>
+                <Input value={schForm.sharingLink} onChange={(e) => updateSch("sharingLink", e.target.value)} placeholder="Drive / GitHub / YouTube / Réseau social..." className="rounded-xl h-11" />
+              </div>
+            </div>
+
+            {/* Engagement */}
+            <div className="border-t border-border/40 pt-5 space-y-3">
+              <div className="rounded-xl bg-muted/30 border border-border/40 p-4 text-xs text-foreground/80 leading-relaxed">
+                <b>Engagement :</b> Je m'engage à utiliser les ressources responsablement, respecter mes jours de présence, partager mes avancées en ligne et prendre soin du matériel. Ce formulaire est valable 1 mois, renouvelable selon mes résultats.
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox checked={schForm.engagementSigned} onCheckedChange={(v) => updateSch("engagementSigned", v === true)} />
+                <span className="text-sm">Lu et approuvé <span className="text-destructive">*</span></span>
+              </label>
+              <div className="space-y-2">
+                <Label className="text-foreground">Signature (nom dactylographié)</Label>
+                <Input value={schForm.signature} onChange={(e) => updateSch("signature", e.target.value)} placeholder="Tapez votre nom complet" className="rounded-xl h-11" />
               </div>
             </div>
 
