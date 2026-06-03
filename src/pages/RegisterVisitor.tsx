@@ -2,13 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAddVisitor, generateVisitorId } from "@/lib/supabase-store";
 import { findDuplicates, type DuplicateCandidate } from "@/lib/duplicate-check";
+import { usePrograms, useAddParticipant, generateParticipantCode } from "@/lib/program-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle, Building } from "lucide-react";
+import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle, Building, GraduationCap } from "lucide-react";
 import MembershipCard from "@/components/MembershipCard";
 import jsPDF from "jspdf";
 
@@ -257,6 +259,9 @@ export default function RegisterVisitor() {
   const [newVisitorId, setNewVisitorId] = useState("");
   const [fullName, setFullName] = useState("");
   const addVisitor = useAddVisitor();
+  const { data: programs = [] } = usePrograms();
+  const addParticipant = useAddParticipant();
+  const scholarshipProgram = programs.find(p => p.name.trim().toLowerCase().startsWith("scholarship"));
 
   const [form, setForm] = useState({
     fullName: "",
@@ -269,6 +274,45 @@ export default function RegisterVisitor() {
     institution: "",
     photo: "",
   });
+
+  const [activeTab, setActiveTab] = useState<"visitor" | "scholarship">("visitor");
+  const [schForm, setSchForm] = useState({
+    fullName: "", gender: "", dateOfBirth: "", phone: "", email: "",
+    neighborhood: "", occupation: "", institution: "", photo: "",
+  });
+  const updateSch = (key: string, value: string) => setSchForm(f => ({ ...f, [key]: value }));
+
+  const handleSubmitScholarship = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!schForm.fullName) { toast.error("Veuillez remplir le nom complet"); return; }
+    if (!scholarshipProgram) {
+      toast.error("Aucun programme « Scholarship » trouvé. Créez-le d'abord dans Programmes.");
+      return;
+    }
+    try {
+      const prefix = scholarshipProgram.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
+      const code = await generateParticipantCode(prefix);
+      await addParticipant.mutateAsync({
+        program_id: scholarshipProgram.id,
+        participant_code: code,
+        full_name: schForm.fullName,
+        gender: schForm.gender || "other",
+        date_of_birth: schForm.dateOfBirth || undefined,
+        phone: schForm.phone || undefined,
+        email: schForm.email || undefined,
+        neighborhood: schForm.neighborhood || "—",
+        occupation: schForm.occupation || "—",
+        institution: schForm.institution || undefined,
+        role: "eleve",
+        photo: schForm.photo || undefined,
+      });
+      toast.success(`Inscrit au programme Scholarship — code ${code}`);
+      setSchForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", institution: "", photo: "" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur lors de l'inscription Scholarship");
+    }
+  };
 
   // Duplicate detection
   const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
@@ -374,8 +418,8 @@ export default function RegisterVisitor() {
     <div className="mx-auto max-w-2xl space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="page-header">
-          <h1 className="page-title">Inscrire un visiteur</h1>
-          <p className="page-subtitle">Ajouter un nouveau membre au Gitega Study Space</p>
+          <h1 className="page-title">Inscription</h1>
+          <p className="page-subtitle">Ajouter un visiteur ou un participant Scholarship</p>
         </div>
         <Button variant="outline" className="gap-2 rounded-xl h-11" onClick={() => setStep("preview-form")}>
           <FileText className="h-4 w-4" />
@@ -384,7 +428,18 @@ export default function RegisterVisitor() {
         </Button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "visitor" | "scholarship")} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 h-11 rounded-xl">
+          <TabsTrigger value="visitor" className="rounded-lg gap-2">
+            <UserPlus className="h-4 w-4" /> Visiteur
+          </TabsTrigger>
+          <TabsTrigger value="scholarship" className="rounded-lg gap-2">
+            <GraduationCap className="h-4 w-4" /> Scholarship
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="visitor" className="mt-4">
+          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
           <div className="grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2 space-y-2">
             <Label htmlFor="fullName" className="text-foreground">Nom complet <span className="text-destructive">*</span></Label>
@@ -481,7 +536,72 @@ export default function RegisterVisitor() {
           <UserPlus className="h-4 w-4" />
           {addVisitor.isPending ? "Inscription en cours..." : "Inscrire le visiteur"}
         </Button>
-      </form>
+          </form>
+        </TabsContent>
+
+        <TabsContent value="scholarship" className="mt-4">
+          <form onSubmit={handleSubmitScholarship} className="space-y-6 rounded-2xl border border-primary/30 bg-card p-7 shadow-sm">
+            <div className="flex items-start gap-3 rounded-xl bg-primary/5 border border-primary/20 p-3">
+              <GraduationCap className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div className="text-xs text-foreground/80">
+                Cette inscription va directement dans le programme <b>Scholarship</b>{scholarshipProgram ? "" : " (introuvable — créez-le dans Programmes)"}.
+              </div>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="sm:col-span-2 space-y-2">
+                <Label className="text-foreground">Nom complet <span className="text-destructive">*</span></Label>
+                <Input value={schForm.fullName} onChange={(e) => updateSch("fullName", e.target.value)} placeholder="Entrez le nom complet" className="rounded-xl h-11" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Genre</Label>
+                <Select value={schForm.gender} onValueChange={(v) => updateSch("gender", v)}>
+                  <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Homme</SelectItem>
+                    <SelectItem value="female">Femme</SelectItem>
+                    <SelectItem value="other">Autre</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Date de naissance</Label>
+                <Input type="date" value={schForm.dateOfBirth} onChange={(e) => updateSch("dateOfBirth", e.target.value)} className="rounded-xl h-11" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Téléphone</Label>
+                <Input value={schForm.phone} onChange={(e) => updateSch("phone", e.target.value)} placeholder="+257 xx xxx xxx" className="rounded-xl h-11" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Email</Label>
+                <Input type="email" value={schForm.email} onChange={(e) => updateSch("email", e.target.value)} placeholder="email@exemple.com" className="rounded-xl h-11" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Quartier / Commune</Label>
+                <Input value={schForm.neighborhood} onChange={(e) => updateSch("neighborhood", e.target.value)} placeholder="ex: Mushasha" className="rounded-xl h-11" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground">Profession</Label>
+                <Input value={schForm.occupation} onChange={(e) => updateSch("occupation", e.target.value)} placeholder="ex: Étudiant" className="rounded-xl h-11" />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
+                <Label className="text-foreground flex items-center gap-1.5">
+                  <Building className="h-3.5 w-3.5" /> Institution
+                </Label>
+                <Input value={schForm.institution} onChange={(e) => updateSch("institution", e.target.value)} placeholder="Ex: Université du Burundi" className="rounded-xl h-11" />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
+                <Input value={schForm.photo} onChange={(e) => updateSch("photo", e.target.value)} placeholder="Photo (URL Google Drive)" className="rounded-xl h-11" />
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full gap-2 rounded-xl h-12 text-sm font-semibold" size="lg" disabled={addParticipant.isPending || !scholarshipProgram}>
+              <GraduationCap className="h-4 w-4" />
+              {addParticipant.isPending ? "Inscription en cours..." : "Inscrire au programme Scholarship"}
+            </Button>
+          </form>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
