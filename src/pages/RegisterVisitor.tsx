@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle, Building, GraduationCap } from "lucide-react";
@@ -279,8 +282,26 @@ export default function RegisterVisitor() {
   const [schForm, setSchForm] = useState({
     fullName: "", gender: "", dateOfBirth: "", phone: "", email: "",
     neighborhood: "", occupation: "", institution: "", photo: "",
+    // Scholarship-specific
+    formNumber: "",
+    startDate: "",
+    age: "",
+    projectTitle: "",
+    projectDomain: "",
+    projectTools: "",
+    obj1: "", obj2: "", obj3: "",
+    nbDaysPerWeek: "",
+    res1: "", res2: "",
+    ind1: "", ind2: "",
+    sharingLink: "",
+    engagementSigned: false,
+    signature: "",
   });
-  const updateSch = (key: string, value: string) => setSchForm(f => ({ ...f, [key]: value }));
+  const updateSch = (key: string, value: string | boolean) => setSchForm(f => ({ ...f, [key]: value }));
+  const [presenceDays, setPresenceDays] = useState<string[]>([]);
+  const togglePresenceDay = (d: string) =>
+    setPresenceDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]);
+  const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
   const handleSubmitScholarship = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -289,10 +310,14 @@ export default function RegisterVisitor() {
       toast.error("Aucun programme « Scholarship » trouvé. Créez-le d'abord dans Programmes.");
       return;
     }
+    if (!schForm.engagementSigned) {
+      toast.error("Veuillez cocher l'engagement avant de valider.");
+      return;
+    }
     try {
       const prefix = scholarshipProgram.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
       const code = await generateParticipantCode(prefix);
-      await addParticipant.mutateAsync({
+      const participant = await addParticipant.mutateAsync({
         program_id: scholarshipProgram.id,
         participant_code: code,
         full_name: schForm.fullName,
@@ -306,8 +331,35 @@ export default function RegisterVisitor() {
         role: "eleve",
         photo: schForm.photo || undefined,
       });
+      // Save scholarship-specific application
+      const { error: appErr } = await supabase.from("scholarship_applications").insert({
+        participant_id: participant.id,
+        form_number: schForm.formNumber || null,
+        start_date: schForm.startDate || null,
+        age: schForm.age ? parseInt(schForm.age) : null,
+        project_title: schForm.projectTitle || null,
+        project_domain: schForm.projectDomain || null,
+        project_tools: schForm.projectTools || null,
+        specific_objectives: [schForm.obj1, schForm.obj2, schForm.obj3].filter(Boolean),
+        presence_days: presenceDays,
+        nb_days_per_week: schForm.nbDaysPerWeek ? parseInt(schForm.nbDaysPerWeek) : null,
+        expected_results: [schForm.res1, schForm.res2].filter(Boolean),
+        performance_indicators: [schForm.ind1, schForm.ind2].filter(Boolean),
+        sharing_link: schForm.sharingLink || null,
+        engagement_signed: schForm.engagementSigned,
+        signature: schForm.signature || null,
+      });
+      if (appErr) throw appErr;
       toast.success(`Inscrit au programme Scholarship — code ${code}`);
-      setSchForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", institution: "", photo: "" });
+      setSchForm({
+        fullName: "", gender: "", dateOfBirth: "", phone: "", email: "",
+        neighborhood: "", occupation: "", institution: "", photo: "",
+        formNumber: "", startDate: "", age: "", projectTitle: "", projectDomain: "",
+        projectTools: "", obj1: "", obj2: "", obj3: "", nbDaysPerWeek: "",
+        res1: "", res2: "", ind1: "", ind2: "", sharingLink: "",
+        engagementSigned: false, signature: "",
+      });
+      setPresenceDays([]);
     } catch (err) {
       console.error(err);
       toast.error("Erreur lors de l'inscription Scholarship");
