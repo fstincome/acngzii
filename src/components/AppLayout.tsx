@@ -57,7 +57,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { to: "/restaurant/analytics", icon: BarChart3, label: t("nav.analytics") },
   ];
 
-  const showRestaurant = isAdmin || isDirector;
+  // Restaurant module is hidden in American Corner mode (kept in code for safety)
+  const showRestaurant = false;
 
   const adminNavItems = [
     { to: "/users", icon: Shield, label: t("nav.users") },

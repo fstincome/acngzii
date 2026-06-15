@@ -17,19 +17,23 @@
   },
   "nav": {
     "groups": {
-      "normal": "Normal Attendance",
-      "program": "Program Attendance",
+      "normal": "Library & Lab",
+      "program": "Programs & Activities",
       "restaurant": "Restaurant",
+      "library": "Library",
       "administration": "Administration"
     },
     "dashboard": "Dashboard",
-    "register": "Registration",
-    "scanner": "Scanner",
-    "visitors": "Visitors",
+    "register": "Member Registration",
+    "scanner": "Check-in Scanner",
+    "visitors": "Members",
     "statistics": "Statistics",
     "programs": "Programs",
     "attendance": "Attendance",
     "report": "Report",
+    "books": "Book Catalog",
+    "loans": "Loans",
+    "libraryHistory": "Borrowing History",
     "orders": "Orders",
     "manualOrder": "Manual Order",
     "products": "Products",
@@ -37,8 +41,8 @@
     "users": "Users"
   },
   "app": {
-    "name": "GSS Access",
-    "tagline": "Gitega Study Space"
+    "name": "American Corner",
+    "tagline": "Member & Activities Management"
   },
   "dashboard": {
     "title": "Dashboard",
