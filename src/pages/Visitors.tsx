@@ -11,6 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import MembershipCard from "@/components/MembershipCard";
 import { toast } from "sonner";
+const MEMBER_TYPE_LABELS: Record<string, string> = {
+  visitor: "Visiteur", member: "Membre", student: "Étudiant",
+  professional: "Professionnel", entrepreneur: "Entrepreneur", volunteer: "Bénévole",
+};
+const STATUS_LABELS: Record<string, string> = { active: "Actif", pending: "En attente", inactive: "Inactif" };
+const STATUS_DOT: Record<string, string> = { active: "bg-success", pending: "bg-warning", inactive: "bg-muted-foreground" };
+
 
 function Detail({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
@@ -276,6 +283,10 @@ export default function Visitors() {
               <Detail icon={Calendar} label="Genre" value={genderLabel} />
               <Detail icon={Calendar} label="Date de naissance" value={selected.date_of_birth || "—"} />
               <Detail icon={Calendar} label="Inscrit le" value={selected.registration_date} />
+              <Detail icon={Briefcase} label="Institution" value={selected.institution || "—"} />
+              <Detail icon={User} label="Type de membre" value={MEMBER_TYPE_LABELS[selected.member_type] || selected.member_type} />
+              <Detail icon={User} label="Statut" value={STATUS_LABELS[selected.membership_status] || selected.membership_status} />
+              {selected.age_group && <Detail icon={Calendar} label="Tranche d'âge" value={selected.age_group} />}
               {selected.photo && (
                 <div className="col-span-2 flex items-start gap-3 rounded-xl bg-muted/40 px-4 py-3">
                   <Image className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
