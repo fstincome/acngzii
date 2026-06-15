@@ -321,32 +321,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Scholarship tasks */}
-      {taskStats.total > 0 && (
-        <div className="stat-card">
-          <div className="mb-3 flex items-center gap-2">
-            <ClipboardCheck className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">{t("dashboard.scholarshipTasks")}</h3>
-            <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-              {t("dashboard.tasksCount", { count: taskStats.total })}
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="flex items-center gap-2 rounded-xl bg-yellow-500/5 px-3 py-2">
-              <span className="text-xs text-muted-foreground">⏳ {t("dashboard.inProgress")}</span>
-              <span className="ml-auto text-sm font-bold text-yellow-600">{taskStats.en_cours}</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-xl bg-blue-500/5 px-3 py-2">
-              <span className="text-xs text-muted-foreground">📤 {t("dashboard.submitted")}</span>
-              <span className="ml-auto text-sm font-bold text-blue-600">{taskStats.soumis}</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-xl bg-green-500/5 px-3 py-2">
-              <span className="text-xs text-muted-foreground">✅ {t("dashboard.validated")}</span>
-              <span className="ml-auto text-sm font-bold text-green-600">{taskStats.valide}</span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Accounting — Restaurant (today) */}
       {accounting.totalCount > 0 && (
