@@ -93,7 +93,7 @@ export default function RestaurantEntry() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
             <UtensilsCrossed className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-xl">Restaurant GSS</CardTitle>
+          <CardTitle className="text-xl">American Corner Restaurant</CardTitle>
           <p className="text-sm text-muted-foreground">
             Scannez votre carte ou entrez votre identifiant
           </p>
@@ -128,7 +128,7 @@ export default function RestaurantEntry() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <Input
-              placeholder="GSS-XXXXXX"
+              placeholder="AC-XXXXXX"
               value={visitorId}
               onChange={(e) => setVisitorId(e.target.value)}
               className="text-center text-lg font-mono tracking-widest"

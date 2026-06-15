@@ -44,7 +44,7 @@ export const ROOM_LABELS: Record<RoomType, string> = {
   garden: "Jardin",
 };
 
-// Generate a random alphanumeric visitor ID like GSS-7K3M9X
+// Generate a random alphanumeric visitor ID like AC-7K3M9X
 export async function generateVisitorId(): Promise<string> {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let id: string;
@@ -54,7 +54,7 @@ export async function generateVisitorId(): Promise<string> {
     for (let i = 0; i < 6; i++) {
       code += chars[Math.floor(Math.random() * chars.length)];
     }
-    id = `GSS-${code}`;
+    id = `AC-${code}`;
     const { count } = await supabase
       .from("visitors")
       .select("*", { count: "exact", head: true })

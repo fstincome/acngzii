@@ -147,7 +147,7 @@ export default function OrderTracking() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
             <UtensilsCrossed className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold">GSS Restaurant</h1>
+          <h1 className="text-2xl font-bold">American Corner Restaurant</h1>
           <p className="text-white/80 text-sm">Suivi de commande</p>
         </div>
 

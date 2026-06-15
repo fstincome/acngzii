@@ -1,7 +1,7 @@
 {
-  "name": "GSS Access",
-  "short_name": "GSS",
-  "description": "Gitega Study Space - Système de gestion d'accès",
+  "name": "American Corner",
+  "short_name": "AC",
+  "description": "American Corner - Système de gestion d'accès",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a3a5c",
