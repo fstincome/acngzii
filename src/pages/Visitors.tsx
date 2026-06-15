@@ -41,16 +41,22 @@ export default function Visitors() {
   const updateVisitor = useUpdateVisitor();
   const deleteVisitor = useDeleteVisitor();
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Visitor | null>(null);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, string>>({});
 
-  const filtered = visitors.filter(
-    (v) =>
-      v.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      v.visitor_id.toLowerCase().includes(search.toLowerCase()) ||
-      v.phone.includes(search)
-  );
+  const filtered = visitors.filter((v) => {
+    const s = search.toLowerCase();
+    const matchSearch =
+      v.full_name.toLowerCase().includes(s) ||
+      v.visitor_id.toLowerCase().includes(s) ||
+      v.phone.includes(search);
+    const matchType = typeFilter === "all" || v.member_type === typeFilter;
+    const matchStatus = statusFilter === "all" || v.membership_status === statusFilter;
+    return matchSearch && matchType && matchStatus;
+  });
 
   const handleDeleteVisitor = async (v: Visitor) => {
     if (!confirm(`Supprimer le visiteur "${v.full_name}" et tout son historique ?`)) return;
