@@ -156,7 +156,7 @@ export function generateInvoicePDF(data: InvoiceData): jsPDF {
   doc.setTextColor(140, 140, 140);
   doc.text("Merci pour votre visite !", w / 2, y, { align: "center" });
   y += 3;
-  doc.text("Gitega Study Space — Multipurpose Room", w / 2, y, { align: "center" });
+  doc.text("American Corner — Multipurpose Room", w / 2, y, { align: "center" });
 
   return doc;
 }
@@ -323,7 +323,7 @@ export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
   ctx.fillText("Merci pour votre visite !", W / 2, y);
   y += 14;
   ctx.font = "400 9px Helvetica, Arial, sans-serif";
-  ctx.fillText("Gitega Study Space — Multipurpose Room", W / 2, y);
+  ctx.fillText("American Corner — Multipurpose Room", W / 2, y);
   y += 20;
 
   // ── Crop & download ──
@@ -411,7 +411,7 @@ export function printInvoice(doc: jsPDF) {
 export function shareInvoiceWhatsApp(data: InvoiceData) {
   const items = data.items.map(i => `• ${i.name} x${i.quantity} = ${(i.unitPrice * i.quantity).toLocaleString()} BIF`).join("\n");
   const msg = encodeURIComponent(
-    `🧾 *Facture — Gitega Study Space*\n\n` +
+    `🧾 *Facture — American Corner*\n\n` +
     `Commande: *${data.orderCode}*\n` +
     `Table: ${data.tableNumber}\n` +
     `Date: ${new Date(data.createdAt).toLocaleString("fr")}\n\n` +
@@ -426,9 +426,9 @@ export function shareInvoiceWhatsApp(data: InvoiceData) {
 
 export function shareInvoiceEmail(data: InvoiceData, recipientEmail?: string) {
   const items = data.items.map(i => `- ${i.name} x${i.quantity} = ${(i.unitPrice * i.quantity).toLocaleString()} BIF`).join("\n");
-  const subject = encodeURIComponent(`Facture ${data.orderCode} — Gitega Study Space`);
+  const subject = encodeURIComponent(`Facture ${data.orderCode} — American Corner`);
   const body = encodeURIComponent(
-    `Facture — Gitega Study Space\n\n` +
+    `Facture — American Corner\n\n` +
     `Commande: ${data.orderCode}\n` +
     `Table: ${data.tableNumber}\n` +
     `Date: ${new Date(data.createdAt).toLocaleString("fr")}\n\n` +

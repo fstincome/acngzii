@@ -1,9 +1,9 @@
-# GSS Access — Documentation Technique Complète
+# American Corner — Documentation Technique Complète
 
 ## 🏢 Vue d'ensemble
 
-**GSS Access** — *Gitega Study Space Visitor Management System*
-Système de gestion des visiteurs pour le centre numérique Gitega Study Space au Burundi. Application web progressive (SPA) déployée sur cPanel.
+**American Corner** — *American Corner Visitor Management System*
+Système de gestion des visiteurs pour le centre numérique American Corner au Burundi. Application web progressive (SPA) déployée sur cPanel.
 
 ---
 
@@ -236,4 +236,4 @@ Toutes les Edge Functions vérifient le rôle admin via `has_role()` sauf les cr
 
 ---
 
-*Document généré le 18 mars 2026 — GSS Access v1.0*
+*Document généré le 18 mars 2026 — American Corner v1.0*

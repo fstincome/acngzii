@@ -54,7 +54,7 @@ export async function generateVisitorId(): Promise<string> {
     for (let i = 0; i < 6; i++) {
       code += chars[Math.floor(Math.random() * chars.length)];
     }
-    id = `GSS-${code}`;
+    id = `AC-${code}`;
     const { count } = await supabase
       .from("visitors")
       .select("*", { count: "exact", head: true })

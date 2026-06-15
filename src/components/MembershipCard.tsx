@@ -233,7 +233,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
   const getWhatsAppUrl = () => {
     const cardUrl = `${window.location.origin}/card/${visitorId}`;
     const message =
-      `🎓 *Carte de membre - Gitega Study Space*\n\n` +
+      `🎓 *Carte de membre - American Corner*\n\n` +
       `👤 Nom: ${fullName}\n` +
       `🆔 ID: ${visitorId}\n\n` +
       `📱 Voir ma carte: ${cardUrl}\n\n` +
@@ -243,15 +243,15 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
 
   const getEmailUrl = () => {
     const cardUrl = `${window.location.origin}/card/${visitorId}`;
-    const subject = "Votre carte de membre - Gitega Study Space";
+    const subject = "Votre carte de membre - American Corner";
     const body =
       `Bonjour ${fullName},\n\n` +
-      `Bienvenue au Gitega Study Space !\n\n` +
+      `Bienvenue au American Corner !\n\n` +
       `Voici vos informations de membre :\n` +
       `- Identifiant : ${visitorId}\n` +
       `- Carte digitale : ${cardUrl}\n\n` +
       `Présentez votre QR code à chaque visite.\n\n` +
-      `Cordialement,\nGitega Study Space`;
+      `Cordialement,\nAmerican Corner`;
     return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
@@ -277,7 +277,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
             )}
             <div className="flex-1">
               <p className="text-xs font-bold text-white tracking-widest">{programName ? programName.toUpperCase() : "GITEGA STUDY SPACE"}</p>
-              <p className="text-[10px] text-white/50">{institution || (programName ? "Gitega Study Space" : "Carte de Membre")}</p>
+              <p className="text-[10px] text-white/50">{institution || (programName ? "American Corner" : "Carte de Membre")}</p>
             </div>
             {photo && (
               <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />

@@ -121,23 +121,23 @@ function FormPreview({ onBack }: { onBack: () => void }) {
   const getWhatsAppUrl = () => {
     const formUrl = `${window.location.origin}/formulaire`;
     const message =
-      `📋 *Formulaire d'inscription - Gitega Study Space*\n\n` +
+      `📋 *Formulaire d'inscription - American Corner*\n\n` +
       `Bonjour ! Veuillez remplir le formulaire d'inscription en suivant ce lien :\n\n` +
       `👉 ${formUrl}\n\n` +
       `Vous pouvez aussi télécharger le PDF depuis cette page pour le remplir à la main.\n\n` +
-      `Merci !\n— Gitega Study Space`;
+      `Merci !\n— American Corner`;
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   };
 
   const getEmailUrl = () => {
     const formUrl = `${window.location.origin}/formulaire`;
-    const subject = "Formulaire d'inscription - Gitega Study Space";
+    const subject = "Formulaire d'inscription - American Corner";
     const body =
       `Bonjour,\n\n` +
-      `Veuillez remplir votre formulaire d'inscription au Gitega Study Space en suivant ce lien :\n\n` +
+      `Veuillez remplir votre formulaire d'inscription au American Corner en suivant ce lien :\n\n` +
       `${formUrl}\n\n` +
       `Vous pouvez aussi télécharger le PDF depuis cette page pour le remplir à la main.\n\n` +
-      `Merci !\n\nCordialement,\nGitega Study Space`;
+      `Merci !\n\nCordialement,\nAmerican Corner`;
     return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
@@ -171,7 +171,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
         <div className="bg-gradient-to-r from-primary/10 to-accent/10 px-6 py-5 text-center border-b border-border/30">
           <div className="flex items-center justify-center gap-3 mb-2">
             <img src="/gss-logo.png" alt="American Spaces" className="h-8 w-8 rounded-lg object-contain" />
-            <h3 className="text-sm font-bold tracking-widest text-foreground uppercase">Gitega Study Space</h3>
+            <h3 className="text-sm font-bold tracking-widest text-foreground uppercase">American Corner</h3>
           </div>
           <p className="text-xs text-muted-foreground">Formulaire d'inscription — Visiteur</p>
           <div className="mt-3 h-px bg-border/50" />

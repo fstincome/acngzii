@@ -15,7 +15,7 @@ export function buildClientWhatsAppMessage(data: InvoiceData): string {
   const trackingUrl = getTrackingUrl(data.orderCode);
 
   return [
-    `🍽️ *Nouvelle commande - GSS Restaurant*`,
+    `🍽️ *Nouvelle commande - American Corner Restaurant*`,
     ``,
     `👤 *Expéditeur:* ${data.visitorName || data.visitorId}`,
     `📋 *Code:* ${data.orderCode}`,
@@ -48,7 +48,7 @@ export function buildStaffConfirmationMessage(order: {
   const trackingUrl = getTrackingUrl(order.order_code);
 
   return [
-    `✅ *Mise à jour de commande - GSS Restaurant*`,
+    `✅ *Mise à jour de commande - American Corner Restaurant*`,
     ``,
     `📋 *Commande:* ${order.order_code}`,
     `👤 *Client:* ${order.visitor_id}`,

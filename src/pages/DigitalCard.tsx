@@ -34,7 +34,7 @@ export default function DigitalCard() {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <h1 className="text-lg font-bold text-foreground">Ma Carte de Membre</h1>
-          <p className="text-sm text-muted-foreground">Gitega Study Space</p>
+          <p className="text-sm text-muted-foreground">American Corner</p>
         </div>
         <MembershipCard fullName={visitor.full_name} visitorId={visitor.visitor_id} photo={visitor.photo} />
       </div>

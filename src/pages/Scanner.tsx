@@ -173,7 +173,7 @@ export default function Scanner() {
           </div>
         </div>
         <p className="mb-5 text-center text-xs text-muted-foreground">
-          Scannez le QR code avec la caméra ou entrez l'ID (ex: GSS-000001)
+          Scannez le QR code avec la caméra ou entrez l'ID (ex: AC-000001)
         </p>
 
         {!cameraOpen && (
@@ -187,7 +187,7 @@ export default function Scanner() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="GSS-000001"
+            placeholder="AC-000001"
             className="font-mono rounded-xl h-11"
             onKeyDown={(e) => e.key === "Enter" && handleScan()}
           />

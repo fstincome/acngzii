@@ -1,8 +1,8 @@
-# 🏢 GSS Access
+# 🏢 American Corner
 
-**Gitega Study Space — Visitor Management System**
+**American Corner — Visitor Management System**
 
-Système moderne de gestion des visiteurs pour le centre numérique [Gitega Study Space](https://gssaccess.lovable.app) au Burundi. Suivi en temps réel de la fréquentation, gestion des programmes éducatifs et pointage par QR code.
+Système moderne de gestion des visiteurs pour le centre numérique [American Corner](https://gssaccess.lovable.app) au Burundi. Suivi en temps réel de la fréquentation, gestion des programmes éducatifs et pointage par QR code.
 
 ![React](https://img.shields.io/badge/React-18-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
@@ -26,7 +26,7 @@ Système moderne de gestion des visiteurs pour le centre numérique [Gitega Stud
 
 ## 🎯 Aperçu
 
-GSS Access permet de :
+American Corner permet de :
 
 - **Inscrire** les visiteurs avec détection automatique de doublons
 - **Scanner** les entrées/sorties par salle via QR code
@@ -227,6 +227,6 @@ npm run build
 
 ## 👤 Auteur
 
-Développé pour **Gitega Study Space** — Burundi
+Développé pour **American Corner** — Burundi
 
 *Construit avec [Lovable](https://lovable.dev)*

@@ -306,7 +306,7 @@ function buildFormPDF(): jsPDF {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.text(
-    "Free Tech Institute  |  Gitega Study Space, Q. Stade, Gitega  |  info@freeti.org  |  +257 69 03 49 65  |  www.freeti.org",
+    "Free Tech Institute  |  American Corner, Q. Stade, Gitega  |  info@freeti.org  |  +257 69 03 49 65  |  www.freeti.org",
     W / 2, y, { align: "center" }
   );
 
@@ -420,7 +420,7 @@ export default function RegistrationForm() {
             <img src="/gss-logo.png" alt="American Spaces" className="h-10 w-10 rounded-xl object-contain" />
           </div>
           <h1 className="text-xl font-bold text-foreground">Formulaires d'inscription</h1>
-          <p className="text-sm text-muted-foreground">Gitega Study Space</p>
+          <p className="text-sm text-muted-foreground">American Corner</p>
         </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as "visitor" | "scholarship")} className="w-full">
@@ -432,7 +432,7 @@ export default function RegistrationForm() {
           <TabsContent value="visitor" className="mt-4">
             <div className="rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden">
               <div className="bg-gradient-to-r from-primary/10 to-accent/10 px-6 py-5 text-center border-b border-border/30">
-                <h3 className="text-sm font-bold tracking-widest text-foreground uppercase">Gitega Study Space</h3>
+                <h3 className="text-sm font-bold tracking-widest text-foreground uppercase">American Corner</h3>
                 <p className="text-xs text-muted-foreground mt-1">Formulaire d'inscription — Visiteur</p>
               </div>
               <div className="px-6 py-4 space-y-3">

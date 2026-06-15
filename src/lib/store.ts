@@ -42,7 +42,7 @@ export function generateVisitorId(): string {
 const seedVisitors: Visitor[] = [
   {
     id: "1",
-    visitorId: "GSS-000001",
+    visitorId: "AC-000001",
     fullName: "Jean Pierre Ndayisaba",
     gender: "male",
     dateOfBirth: "1998-05-14",
@@ -71,7 +71,7 @@ const seedVisitors: Visitor[] = [
     dateOfBirth: "1995-03-08",
     phone: "+257 76 555 321",
     email: "emmanuel.h@email.com",
-    neighborhood: "Gitega Centre",
+    neighborhood: "American Corner",
     occupation: "Developer",
     registrationDate: "2026-02-01",
   },
@@ -103,8 +103,8 @@ const seedVisitors: Visitor[] = [
 const today = new Date().toISOString().split("T")[0];
 
 const seedVisits: Visit[] = [
-  { id: "v1", visitorId: "GSS-000001", room: "computer_lab", action: "check_in", timestamp: `${today}T08:30:00` },
-  { id: "v2", visitorId: "GSS-000001", room: "computer_lab", action: "check_out", timestamp: `${today}T10:45:00` },
+  { id: "v1", visitorId: "AC-000001", room: "computer_lab", action: "check_in", timestamp: `${today}T08:30:00` },
+  { id: "v2", visitorId: "AC-000001", room: "computer_lab", action: "check_out", timestamp: `${today}T10:45:00` },
   { id: "v3", visitorId: "GSS-000002", room: "multipurpose_room", action: "check_in", timestamp: `${today}T09:00:00` },
   { id: "v4", visitorId: "GSS-000003", room: "computer_lab", action: "check_in", timestamp: `${today}T09:15:00` },
   { id: "v5", visitorId: "GSS-000004", room: "computer_lab", action: "check_in", timestamp: `${today}T10:00:00` },

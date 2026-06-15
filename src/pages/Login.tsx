@@ -48,8 +48,8 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-2">
-          <img src={logoGss} alt="Gitega Study Space" className="h-20 w-20 mx-auto rounded-xl object-contain" />
-          <h1 className="text-2xl font-bold text-foreground">GSS Access</h1>
+          <img src={logoGss} alt="American Corner" className="h-20 w-20 mx-auto rounded-xl object-contain" />
+          <h1 className="text-2xl font-bold text-foreground">American Corner</h1>
           <p className="text-sm text-muted-foreground">Connectez-vous pour accéder au système</p>
         </div>
 
