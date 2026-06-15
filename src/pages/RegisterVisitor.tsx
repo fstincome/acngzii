@@ -275,6 +275,8 @@ export default function RegisterVisitor() {
     occupation: "",
     institution: "",
     photo: "",
+    memberType: "visitor",
+    membershipStatus: "active",
   });
 
   const [activeTab, setActiveTab] = useState<"visitor" | "scholarship">("visitor");
@@ -611,12 +613,14 @@ export default function RegisterVisitor() {
         occupation: form.occupation || "—",
         institution: form.institution || undefined,
         photo: form.photo || undefined,
+        member_type: (form.memberType || "visitor") as "student" | "professional" | "entrepreneur" | "visitor" | "volunteer" | "member",
+        membership_status: (form.membershipStatus || "active") as "active" | "inactive" | "pending",
       });
 
       setNewVisitorId(visitorId);
       setFullName(form.fullName);
       setStep("card");
-      toast.success("Visiteur inscrit avec succès !");
+      toast.success("Membre inscrit avec succès !");
     } catch (err) {
       console.error(err);
       toast.error("Erreur lors de l'inscription");
@@ -643,7 +647,7 @@ export default function RegisterVisitor() {
         <div className="flex gap-3">
           <Button className="flex-1 gap-2 rounded-xl h-11" variant="outline" onClick={() => {
             setStep("form");
-            setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", institution: "", photo: "" });
+            setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", institution: "", photo: "", memberType: "visitor", membershipStatus: "active" });
           }}>
             <UserPlus className="h-4 w-4" />
             Inscrire un autre
