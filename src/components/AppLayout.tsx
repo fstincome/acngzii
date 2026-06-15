@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import {
   LayoutDashboard,
   UserPlus,
