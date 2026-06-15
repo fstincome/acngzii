@@ -2,8 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useState } from "react";
 
 // Colors
 const C_BLUE: [number, number, number] = [30, 95, 184];
