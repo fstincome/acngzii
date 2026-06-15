@@ -261,8 +261,8 @@ export default function RegisterVisitor() {
   const [newVisitorId, setNewVisitorId] = useState("");
   const [fullName, setFullName] = useState("");
   const addVisitor = useAddVisitor();
-  const { data: programs = [] } = usePrograms();
-  const addParticipant = useAddParticipant();
+
+
   
 
   const [form, setForm] = useState({
