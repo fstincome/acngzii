@@ -910,17 +910,6 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         </DialogContent>
       </Dialog>
 
-      {/* Scholarship tasks dialog */}
-      {tasksParticipant && (
-        <ScholarshipTasksDialog
-          open={!!tasksParticipant}
-          onClose={() => setTasksParticipant(null)}
-          participantId={tasksParticipant.id}
-          participantName={tasksParticipant.full_name}
-          programId={program.id}
-          canDelete={canDelete}
-        />
-      )}
     </div>
   );
 }
