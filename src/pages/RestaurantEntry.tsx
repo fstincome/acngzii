@@ -128,7 +128,7 @@ export default function RestaurantEntry() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <Input
-              placeholder="AC-XXXXXX"
+              placeholder="ACG-XXXXXX"
               value={visitorId}
               onChange={(e) => setVisitorId(e.target.value)}
               className="text-center text-lg font-mono tracking-widest"
