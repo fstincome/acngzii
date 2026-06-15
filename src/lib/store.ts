@@ -31,18 +31,18 @@ export interface AppUser {
   role: UserRole;
 }
 
-// Generate visitor ID like AC-000234
+// Generate visitor ID like ACG-000234
 let visitorCounter = 5;
 export function generateVisitorId(): string {
   visitorCounter++;
-  return `AC-${String(visitorCounter).padStart(6, "0")}`;
+  return `ACG-${String(visitorCounter).padStart(6, "0")}`;
 }
 
 // Seed data
 const seedVisitors: Visitor[] = [
   {
     id: "1",
-    visitorId: "AC-000001",
+    visitorId: "ACG-000001",
     fullName: "Jean Pierre Ndayisaba",
     gender: "male",
     dateOfBirth: "1998-05-14",
@@ -54,7 +54,7 @@ const seedVisitors: Visitor[] = [
   },
   {
     id: "2",
-    visitorId: "AC-000002",
+    visitorId: "ACG-000002",
     fullName: "Marie Claire Niyonzima",
     gender: "female",
     dateOfBirth: "2001-11-22",
@@ -65,7 +65,7 @@ const seedVisitors: Visitor[] = [
   },
   {
     id: "3",
-    visitorId: "AC-000003",
+    visitorId: "ACG-000003",
     fullName: "Emmanuel Hakizimana",
     gender: "male",
     dateOfBirth: "1995-03-08",
@@ -77,7 +77,7 @@ const seedVisitors: Visitor[] = [
   },
   {
     id: "4",
-    visitorId: "AC-000004",
+    visitorId: "ACG-000004",
     fullName: "Diane Iradukunda",
     gender: "female",
     dateOfBirth: "2003-07-30",
@@ -88,7 +88,7 @@ const seedVisitors: Visitor[] = [
   },
   {
     id: "5",
-    visitorId: "AC-000005",
+    visitorId: "ACG-000005",
     fullName: "Patrick Nkurunziza",
     gender: "male",
     dateOfBirth: "1992-12-05",
@@ -103,13 +103,13 @@ const seedVisitors: Visitor[] = [
 const today = new Date().toISOString().split("T")[0];
 
 const seedVisits: Visit[] = [
-  { id: "v1", visitorId: "AC-000001", room: "computer_lab", action: "check_in", timestamp: `${today}T08:30:00` },
-  { id: "v2", visitorId: "AC-000001", room: "computer_lab", action: "check_out", timestamp: `${today}T10:45:00` },
-  { id: "v3", visitorId: "AC-000002", room: "multipurpose_room", action: "check_in", timestamp: `${today}T09:00:00` },
-  { id: "v4", visitorId: "AC-000003", room: "computer_lab", action: "check_in", timestamp: `${today}T09:15:00` },
-  { id: "v5", visitorId: "AC-000004", room: "computer_lab", action: "check_in", timestamp: `${today}T10:00:00` },
-  { id: "v6", visitorId: "AC-000005", room: "multipurpose_room", action: "check_in", timestamp: `${today}T10:30:00` },
-  { id: "v7", visitorId: "AC-000003", room: "computer_lab", action: "check_out", timestamp: `${today}T11:30:00` },
+  { id: "v1", visitorId: "ACG-000001", room: "computer_lab", action: "check_in", timestamp: `${today}T08:30:00` },
+  { id: "v2", visitorId: "ACG-000001", room: "computer_lab", action: "check_out", timestamp: `${today}T10:45:00` },
+  { id: "v3", visitorId: "ACG-000002", room: "multipurpose_room", action: "check_in", timestamp: `${today}T09:00:00` },
+  { id: "v4", visitorId: "ACG-000003", room: "computer_lab", action: "check_in", timestamp: `${today}T09:15:00` },
+  { id: "v5", visitorId: "ACG-000004", room: "computer_lab", action: "check_in", timestamp: `${today}T10:00:00` },
+  { id: "v6", visitorId: "ACG-000005", room: "multipurpose_room", action: "check_in", timestamp: `${today}T10:30:00` },
+  { id: "v7", visitorId: "ACG-000003", room: "computer_lab", action: "check_out", timestamp: `${today}T11:30:00` },
 ];
 
 // Simple global store
