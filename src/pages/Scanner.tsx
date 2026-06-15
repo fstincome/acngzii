@@ -20,13 +20,13 @@ import { toast } from "sonner";
 import { Html5Qrcode } from "html5-qrcode";
 
 const DURATION_OPTIONS = [
-  { value: "1", label: "1 heure" },
-  { value: "2", label: "2 heures" },
-  { value: "3", label: "3 heures" },
-  { value: "4", label: "4 heures" },
-  { value: "6", label: "6 heures" },
-  { value: "8", label: "8 heures" },
-  { value: "9", label: "9 heures (défaut)" },
+  { value: "1", label: "1 hour" },
+  { value: "2", label: "2 hours" },
+  { value: "3", label: "3 hours" },
+  { value: "4", label: "4 hours" },
+  { value: "6", label: "6 hours" },
+  { value: "8", label: "8 hours" },
+  { value: "9", label: "9 hours (default)" },
 ];
 
 export default function Scanner() {
