@@ -664,38 +664,28 @@ export default function RegisterVisitor() {
     <div className="mx-auto max-w-2xl space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="page-header">
-          <h1 className="page-title">Inscription Membre</h1>
-          <p className="page-subtitle">Ajouter un membre, étudiant, professionnel, bénévole ou un participant Scholarship</p>
+          <h1 className="page-title">Member Registration</h1>
+          <p className="page-subtitle">Add a member, student, professional or volunteer</p>
         </div>
         <Button variant="outline" className="gap-2 rounded-xl h-11" onClick={() => setStep("preview-form")}>
           <FileText className="h-4 w-4" />
-          <span className="hidden sm:inline">Formulaire papier</span>
+          <span className="hidden sm:inline">Paper form</span>
           <span className="sm:hidden">PDF</span>
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "visitor" | "scholarship")} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-11 rounded-xl">
-          <TabsTrigger value="visitor" className="rounded-lg gap-2">
-            <UserPlus className="h-4 w-4" /> Membre
-          </TabsTrigger>
-          <TabsTrigger value="scholarship" className="rounded-lg gap-2">
-            <GraduationCap className="h-4 w-4" /> Scholarship
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="visitor" className="mt-4">
-          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
-          <div className="grid gap-5 sm:grid-cols-2">
+      <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
+        <div className="grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2 space-y-2">
-            <Label htmlFor="fullName" className="text-foreground">Nom complet <span className="text-destructive">*</span></Label>
+            <Label htmlFor="fullName" className="text-foreground">Full name <span className="text-destructive">*</span></Label>
             <div className="flex gap-2">
-              <Input id="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Entrez le nom complet" className="rounded-xl h-11 flex-1" onBlur={() => handleCheckDuplicates(form.fullName)} />
+              <Input id="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Enter full name" className="rounded-xl h-11 flex-1" onBlur={() => handleCheckDuplicates(form.fullName)} />
               <Button type="button" variant="outline" size="sm" className="rounded-xl h-11 px-3 shrink-0" onClick={() => handleCheckDuplicates(form.fullName)} disabled={checkingDuplicates}>
-                {checkingDuplicates ? "..." : "Vérifier"}
+                {checkingDuplicates ? "..." : "Check"}
               </Button>
             </div>
           </div>
+
 
           {/* Duplicate alert */}
           {duplicateChecked && duplicates.length > 0 && (
