@@ -273,7 +273,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
             {programLogo ? (
               <img src={programLogo} alt="Logo" className="h-10 w-10 rounded-lg object-contain shrink-0" />
             ) : (
-              <img src="/gss-logo.png" alt="Gitega Study Space" className="h-10 w-10 rounded-lg object-contain shrink-0" />
+              <img src="/gss-logo.png" alt="American Spaces" className="h-10 w-10 rounded-lg object-contain shrink-0" />
             )}
             <div className="flex-1">
               <p className="text-xs font-bold text-white tracking-widest">{programName ? programName.toUpperCase() : "GITEGA STUDY SPACE"}</p>

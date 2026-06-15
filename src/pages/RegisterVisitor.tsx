@@ -170,7 +170,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
         {/* Form header */}
         <div className="bg-gradient-to-r from-primary/10 to-accent/10 px-6 py-5 text-center border-b border-border/30">
           <div className="flex items-center justify-center gap-3 mb-2">
-            <img src="/gss-logo.png" alt="GSS" className="h-8 w-8 rounded-lg object-contain" />
+            <img src="/gss-logo.png" alt="American Spaces" className="h-8 w-8 rounded-lg object-contain" />
             <h3 className="text-sm font-bold tracking-widest text-foreground uppercase">Gitega Study Space</h3>
           </div>
           <p className="text-xs text-muted-foreground">Formulaire d'inscription — Visiteur</p>
