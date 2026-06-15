@@ -342,19 +342,42 @@ export default function Visitors() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="page-header">
-          <h1 className="page-title">Visiteurs</h1>
+          <h1 className="page-title">Membres</h1>
           <p className="page-subtitle">{visitors.length} membres inscrits</p>
         </div>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-11 rounded-xl h-11"
-          placeholder="Rechercher par nom, ID ou téléphone..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="grid gap-3 sm:grid-cols-[1fr_180px_180px]">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-11 rounded-xl h-11"
+            placeholder="Rechercher par nom, ID ou téléphone..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Type" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les types</SelectItem>
+            <SelectItem value="visitor">Visiteur</SelectItem>
+            <SelectItem value="member">Membre</SelectItem>
+            <SelectItem value="student">Étudiant</SelectItem>
+            <SelectItem value="professional">Professionnel</SelectItem>
+            <SelectItem value="entrepreneur">Entrepreneur</SelectItem>
+            <SelectItem value="volunteer">Bénévole</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Statut" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les statuts</SelectItem>
+            <SelectItem value="active">Actif</SelectItem>
+            <SelectItem value="pending">En attente</SelectItem>
+            <SelectItem value="inactive">Inactif</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? (
@@ -373,13 +396,21 @@ export default function Visitors() {
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{v.full_name}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-semibold text-foreground truncate">{v.full_name}</p>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                    {MEMBER_TYPE_LABELS[v.member_type] || v.member_type}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
+                    <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[v.membership_status] || "bg-muted-foreground"}`} />
+                    {STATUS_LABELS[v.membership_status] || v.membership_status}
+                  </span>
+                </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   <span className="font-mono font-semibold text-primary">{v.visitor_id}</span>
                   <span className="mx-1.5 text-border">·</span>
                   {v.occupation}
-                  <span className="mx-1.5 text-border">·</span>
-                  {v.neighborhood}
+                  {v.institution && <><span className="mx-1.5 text-border">·</span>{v.institution}</>}
                 </p>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
