@@ -268,9 +268,9 @@ export default function Statistics() {
 
   // Room distribution for pie chart
   const roomDistribution = [
-    { name: "Salle Info", value: labCheckIns },
-    { name: "Salle Poly", value: multiCheckIns },
-    { name: "Jardin", value: gardenCheckIns },
+    { name: "Computer Lab", value: labCheckIns },
+    { name: "Discussion Room", value: multiCheckIns },
+    { name: "Reading Lounge", value: gardenCheckIns },
   ].filter((d) => d.value > 0);
 
   // Peak hour
@@ -376,9 +376,9 @@ export default function Statistics() {
 
       {/* Room breakdown */}
       <div className="grid grid-cols-3 gap-4">
-        <RoomStat icon={Monitor} label="Salle Info" value={labCheckIns} color="primary" />
-        <RoomStat icon={DoorOpen} label="Salle Poly" value={multiCheckIns} color="accent" />
-        <RoomStat icon={TreePine} label="Jardin" value={gardenCheckIns} color="garden" />
+        <RoomStat icon={Monitor} label="Computer Lab" value={labCheckIns} color="primary" />
+        <RoomStat icon={DoorOpen} label="Discussion Room" value={multiCheckIns} color="accent" />
+        <RoomStat icon={TreePine} label="Reading Lounge" value={gardenCheckIns} color="garden" />
       </div>
 
       {/* Restaurant Revenue */}
@@ -404,9 +404,9 @@ export default function Statistics() {
             <KpiCard icon={Calendar} label="Total pointages" value={progTotal} />
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <RoomStat icon={Monitor} label="Salle Info (Prog)" value={progLabCount} color="primary" />
-            <RoomStat icon={DoorOpen} label="Salle Poly (Prog)" value={progMultiCount} color="accent" />
-            <RoomStat icon={TreePine} label="Jardin (Prog)" value={progGardenCount} color="garden" />
+            <RoomStat icon={Monitor} label="Computer Lab (Prog)" value={progLabCount} color="primary" />
+            <RoomStat icon={DoorOpen} label="Discussion Room (Prog)" value={progMultiCount} color="accent" />
+            <RoomStat icon={TreePine} label="Reading Lounge (Prog)" value={progGardenCount} color="garden" />
           </div>
         </>
       )}
@@ -436,9 +436,9 @@ export default function Statistics() {
               <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="lab" fill="hsl(234,85%,60%)" radius={[3, 3, 0, 0]} name="Salle Info" stackId="a" />
-              <Bar dataKey="multi" fill="hsl(174,62%,47%)" radius={[0, 0, 0, 0]} name="Salle Poly" stackId="a" />
-              <Bar dataKey="garden" fill="hsl(142,64%,43%)" radius={[3, 3, 0, 0]} name="Jardin" stackId="a" />
+              <Bar dataKey="lab" fill="hsl(234,85%,60%)" radius={[3, 3, 0, 0]} name="Computer Lab" stackId="a" />
+              <Bar dataKey="multi" fill="hsl(174,62%,47%)" radius={[0, 0, 0, 0]} name="Discussion Room" stackId="a" />
+              <Bar dataKey="garden" fill="hsl(142,64%,43%)" radius={[3, 3, 0, 0]} name="Reading Lounge" stackId="a" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -453,9 +453,9 @@ export default function Statistics() {
               <XAxis dataKey="hour" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="labo" fill="hsl(234,85%,60%)" radius={[3, 3, 0, 0]} name="Salle Info" />
-              <Bar dataKey="poly" fill="hsl(174,62%,47%)" radius={[3, 3, 0, 0]} name="Salle Poly" />
-              <Bar dataKey="jardin" fill="hsl(142,64%,43%)" radius={[3, 3, 0, 0]} name="Jardin" />
+              <Bar dataKey="labo" fill="hsl(234,85%,60%)" radius={[3, 3, 0, 0]} name="Computer Lab" />
+              <Bar dataKey="poly" fill="hsl(174,62%,47%)" radius={[3, 3, 0, 0]} name="Discussion Room" />
+              <Bar dataKey="jardin" fill="hsl(142,64%,43%)" radius={[3, 3, 0, 0]} name="Reading Lounge" />
             </BarChart>
           </ResponsiveContainer>
         </div>

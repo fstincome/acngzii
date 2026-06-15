@@ -23,10 +23,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import MembershipCard from "@/components/MembershipCard";
-import ScholarshipTasksDialog from "@/components/ScholarshipTasksDialog";
-import ScholarshipTasksOverview from "@/components/ScholarshipTasksOverview";
 import { useNavigate } from "react-router-dom";
-import { Target } from "lucide-react";
 
 export default function Programs() {
   const { t, i18n } = useTranslation();
@@ -284,9 +281,8 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const [sessionDate, setSessionDate] = useState("");
 
   const [cardParticipant, setCardParticipant] = useState<typeof participants[0] | null>(null);
-  const [tasksParticipant, setTasksParticipant] = useState<typeof participants[0] | null>(null);
 
-  const isScholarship = program.name.trim().toLowerCase().startsWith("scholarship");
+  
   const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
 
   const resetAddForm = () => {
@@ -697,11 +693,6 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
           <TabsTrigger value="sessions" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
             <Calendar className="h-3.5 w-3.5" /> {t("programs.tabs.sessions")} ({sessions.length})
           </TabsTrigger>
-          {isScholarship && (
-            <TabsTrigger value="tasks" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
-              <Target className="h-3.5 w-3.5" /> {t("programs.tabs.tasks")}
-            </TabsTrigger>
-          )}
         </TabsList>
 
         {/* Participants tab */}
@@ -769,11 +760,6 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
                     {canDelete && (
                       <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={() => handleDeleteParticipant(p)}>
                         <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                    {isScholarship && (
-                      <Button size="sm" variant="outline" className="gap-1.5 rounded-lg" onClick={() => setTasksParticipant(p)}>
-                        <Target className="h-3.5 w-3.5" /> {t("programs.participants.tasks")}
                       </Button>
                     )}
                     <Button size="sm" variant="outline" className="gap-1.5 rounded-lg" onClick={() => setCardParticipant(p)}>
@@ -853,15 +839,6 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
           )}
         </TabsContent>
 
-        {isScholarship && (
-          <TabsContent value="tasks" className="space-y-4">
-            <ScholarshipTasksOverview
-              programId={program.id}
-              participants={participants}
-              onOpenParticipantTasks={(p) => setTasksParticipant(p)}
-            />
-          </TabsContent>
-        )}
       </Tabs>
 
       {/* Edit participant dialog */}
@@ -910,17 +887,6 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
         </DialogContent>
       </Dialog>
 
-      {/* Scholarship tasks dialog */}
-      {tasksParticipant && (
-        <ScholarshipTasksDialog
-          open={!!tasksParticipant}
-          onClose={() => setTasksParticipant(null)}
-          participantId={tasksParticipant.id}
-          participantName={tasksParticipant.full_name}
-          programId={program.id}
-          canDelete={canDelete}
-        />
-      )}
     </div>
   );
 }

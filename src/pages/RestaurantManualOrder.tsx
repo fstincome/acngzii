@@ -224,7 +224,7 @@ export default function RestaurantManualOrder() {
                   <Camera className="h-4 w-4" />
                   {cameraActive ? "Fermer" : "Scanner"}
                 </Button>
-                <Input placeholder="AC-XXXXXX" value={visitorQuery} onChange={e => setVisitorQuery(e.target.value)} className="font-mono"
+                <Input placeholder="ACG-XXXXXX" value={visitorQuery} onChange={e => setVisitorQuery(e.target.value)} className="font-mono"
                   onKeyDown={e => e.key === "Enter" && lookupVisitor()} />
                 <Button onClick={() => lookupVisitor()}><Search className="h-4 w-4" /></Button>
               </div>

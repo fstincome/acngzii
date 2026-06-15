@@ -39,12 +39,12 @@ export const DEFAULT_DURATION_HOURS = 9;
 export type RoomType = "computer_lab" | "multipurpose_room" | "garden";
 
 export const ROOM_LABELS: Record<RoomType, string> = {
-  computer_lab: "Salle Informatique",
-  multipurpose_room: "Salle Polyvalente",
-  garden: "Jardin",
+  computer_lab: "Computer Lab",
+  multipurpose_room: "Discussion Room",
+  garden: "Reading Lounge",
 };
 
-// Generate a random alphanumeric visitor ID like AC-7K3M9X
+// Generate a random alphanumeric visitor ID like ACG-7K3M9X
 export async function generateVisitorId(): Promise<string> {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let id: string;
@@ -54,7 +54,7 @@ export async function generateVisitorId(): Promise<string> {
     for (let i = 0; i < 6; i++) {
       code += chars[Math.floor(Math.random() * chars.length)];
     }
-    id = `AC-${code}`;
+    id = `ACG-${code}`;
     const { count } = await supabase
       .from("visitors")
       .select("*", { count: "exact", head: true })

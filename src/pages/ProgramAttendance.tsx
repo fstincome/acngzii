@@ -299,9 +299,9 @@ export default function ProgramAttendance() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="computer_lab">🖥️ Salle Informatique</SelectItem>
-                  <SelectItem value="multipurpose_room">🏠 Salle Polyvalente</SelectItem>
-                  <SelectItem value="garden">🌿 Jardin</SelectItem>
+                  <SelectItem value="computer_lab">🖥️ Computer Lab</SelectItem>
+                  <SelectItem value="multipurpose_room">🏠 Discussion Room</SelectItem>
+                  <SelectItem value="garden">🌿 Reading Lounge</SelectItem>
                 </SelectContent>
               </Select>
             </div>

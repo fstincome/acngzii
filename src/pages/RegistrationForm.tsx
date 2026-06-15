@@ -2,8 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useState } from "react";
 
 // Colors
 const C_BLUE: [number, number, number] = [30, 95, 184];
@@ -383,22 +381,20 @@ function buildVisitorFormPDF(): jsPDF {
 }
 
 export default function RegistrationForm() {
-  const [tab, setTab] = useState<"visitor" | "scholarship">("visitor");
-
   const handleDownload = () => {
-    const doc = tab === "scholarship" ? buildFormPDF() : buildVisitorFormPDF();
-    doc.save(tab === "scholarship" ? "formulaire-scholarship-application.pdf" : "formulaire-inscription-visiteur.pdf");
-    toast.success("Formulaire téléchargé !");
+    const doc = buildVisitorFormPDF();
+    doc.save("member-registration-form.pdf");
+    toast.success("Form downloaded!");
   };
 
   const handlePrint = () => {
     try {
-      const doc = tab === "scholarship" ? buildFormPDF() : buildVisitorFormPDF();
+      const doc = buildVisitorFormPDF();
       const pdfDataUri = doc.output("datauristring");
       const printWindow = window.open("", "_blank");
       if (printWindow) {
         printWindow.document.write(`
-          <!DOCTYPE html><html><head><title>Formulaire d'inscription</title></head>
+          <!DOCTYPE html><html><head><title>Registration Form</title></head>
           <body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f0f0f0;">
             <embed src="${pdfDataUri}" type="application/pdf" width="700" height="950" />
             <script>setTimeout(function(){window.print();},500);</script>
@@ -407,113 +403,63 @@ export default function RegistrationForm() {
         printWindow.document.close();
       }
     } catch {
-      toast.error("Erreur lors de l'impression");
+      toast.error("Print error");
     }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center py-8 px-4">
       <div className="w-full max-w-2xl space-y-6">
-        {/* Header */}
         <div className="text-center space-y-1">
           <div className="flex items-center justify-center gap-3 mb-2">
             <img src="/gss-logo.png" alt="American Spaces" className="h-10 w-10 rounded-xl object-contain" />
           </div>
-          <h1 className="text-xl font-bold text-foreground">Formulaires d'inscription</h1>
+          <h1 className="text-xl font-bold text-foreground">Registration Form</h1>
           <p className="text-sm text-muted-foreground">American Corner</p>
         </div>
 
-        <Tabs value={tab} onValueChange={(v) => setTab(v as "visitor" | "scholarship")} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="visitor">Visiteur</TabsTrigger>
-            <TabsTrigger value="scholarship">Scholarship</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="visitor" className="mt-4">
-            <div className="rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-primary/10 to-accent/10 px-6 py-5 text-center border-b border-border/30">
-                <h3 className="text-sm font-bold tracking-widest text-foreground uppercase">American Corner</h3>
-                <p className="text-xs text-muted-foreground mt-1">Formulaire d'inscription — Visiteur</p>
-              </div>
-              <div className="px-6 py-4 space-y-3">
-                {[
-                  "Nom complet *",
-                  "Genre (Homme / Femme / Autre)",
-                  "Date de naissance (JJ/MM/AAAA)",
-                  "Téléphone",
-                  "Email",
-                  "Quartier / Commune",
-                  "Profession",
-                  "Institution (école, université...)",
-                ].map((label, i) => (
-                  <div key={i} className="space-y-1">
-                    <p className="text-[11px] font-semibold text-foreground/80">{label}</p>
-                    <div className="h-8 rounded-lg border border-dashed border-border/60 bg-muted/30" />
-                  </div>
-                ))}
-                <div className="pt-2 space-y-1">
-                  <p className="text-[11px] font-semibold text-foreground/80">Photo passeport (coller ici)</p>
-                  <div className="h-24 w-20 rounded-lg border border-dashed border-border/60 bg-muted/30 flex items-center justify-center">
-                    <span className="text-[9px] text-muted-foreground">3.5 × 4.5 cm</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="scholarship" className="mt-4">
-            <div className="rounded-2xl border border-border/50 bg-white shadow-xl overflow-hidden text-[#1e3a72]">
-          <div className="bg-[#1E5FB8] text-white px-6 py-4 text-center">
-            <h3 className="text-base font-extrabold tracking-wide">GITEGA STUDY SPACE</h3>
-            <p className="text-[11px] opacity-95 mt-0.5">Formulaire d'Accès aux Machines | Free Tech Institute</p>
-            <p className="text-[10px] opacity-90">Valable 1 mois | Renouvelable | Lun-Sam 8h-17h | 15 machines</p>
+        <div className="rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-primary/10 to-accent/10 px-6 py-5 text-center border-b border-border/30">
+            <h3 className="text-sm font-bold tracking-widest text-foreground uppercase">American Corner</h3>
+            <p className="text-xs text-muted-foreground mt-1">Member Registration Form</p>
           </div>
-
-          <div className="p-5 space-y-3 text-xs">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="col-span-2 bg-[#E8F1FA] px-2 py-2 rounded">
-                <p className="font-bold text-[10px]">N° Formulaire :</p>
-              </div>
-              <div className="bg-[#E8F1FA] px-2 py-2 rounded text-center text-[10px]">Photo</div>
-            </div>
-
+          <div className="px-6 py-4 space-y-3">
             {[
-              { title: "1. INFORMATIONS PERSONNELLES", fields: ["Nom et Prénom", "Âge (max 23 ans)", "Tél / WhatsApp", "Province / Quartier", "École / Institution"] },
-              { title: "2. PROJET / RECHERCHE", fields: ["Titre du Projet", "Domaine", "Logiciels / Sites / Outils", "Objectifs Spécifiques (×3)"] },
-              { title: "3. DISPONIBILITÉ", fields: ["Jours de présence (Lun→Sam)", "Nb jours / semaine"] },
-              { title: "4. PERFORMANCE & SUIVI", fields: ["Résultats Attendus (×2)", "Indicateurs de Performance (×2)", "Lien de partage", "Engagement & Signatures"] },
-            ].map((s) => (
-              <div key={s.title} className="space-y-1.5">
-                <div className="bg-[#1E5FB8] text-white px-2 py-1 rounded text-[10px] font-bold">{s.title}</div>
-                {s.fields.map((f) => (
-                  <div key={f} className="bg-[#E8F1FA] px-2 py-1.5 rounded text-[10px] flex items-center">
-                    <span className="font-bold w-48">{f}</span>
-                    <span className="flex-1 border-b border-[#B8D4E8] ml-2 h-0" />
-                  </div>
-                ))}
+              "Full name *",
+              "Gender (Male / Female / Other)",
+              "Date of birth (DD/MM/YYYY)",
+              "Phone",
+              "Email",
+              "Neighborhood / Commune",
+              "Occupation",
+              "Institution (school, university...)",
+            ].map((label, i) => (
+              <div key={i} className="space-y-1">
+                <p className="text-[11px] font-semibold text-foreground/80">{label}</p>
+                <div className="h-8 rounded-lg border border-dashed border-border/60 bg-muted/30" />
               </div>
             ))}
-
-            <p className="text-[9px] text-muted-foreground text-center pt-2">
-              Aperçu — téléchargez le PDF pour la version imprimable complète.
-            </p>
-          </div>
+            <div className="pt-2 space-y-1">
+              <p className="text-[11px] font-semibold text-foreground/80">Passport photo (paste here)</p>
+              <div className="h-24 w-20 rounded-lg border border-dashed border-border/60 bg-muted/30 flex items-center justify-center">
+                <span className="text-[9px] text-muted-foreground">3.5 × 4.5 cm</span>
+              </div>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
 
-        {/* Actions */}
         <div className="grid grid-cols-2 gap-2.5">
           <Button onClick={handleDownload} className="gap-2 rounded-xl h-11" variant="default">
             <Download className="h-4 w-4" />
-            Télécharger PDF
+            Download PDF
           </Button>
           <Button onClick={handlePrint} className="gap-2 rounded-xl h-11" variant="secondary">
             <Printer className="h-4 w-4" />
-            Imprimer
+            Print
           </Button>
         </div>
       </div>
     </div>
   );
 }
+

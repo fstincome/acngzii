@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import {
   LayoutDashboard,
   UserPlus,
@@ -229,7 +228,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5 text-foreground" />
           </button>
           <div className="flex-1" />
-          <LanguageSwitcher />
         </header>
 
         <main className="flex-1 overflow-y-auto p-5 lg:p-8">{children}</main>

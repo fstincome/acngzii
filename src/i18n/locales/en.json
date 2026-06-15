@@ -52,14 +52,14 @@
     "backupSuccessDesc": "The backup file was downloaded successfully.",
     "error": "Error",
     "computerLab": "Computer Lab",
-    "multipurposeRoom": "Multipurpose Room",
-    "garden": "Garden",
+    "multipurposeRoom": "Discussion Room",
+    "garden": "Reading Lounge",
     "todayVisitors": "Today's visitors",
     "registeredMembers": "Registered members",
     "programAttendanceToday": "Program Attendance — today",
     "presentCount": "{{present}} / {{total}} present",
     "labShort": "Lab",
-    "multiShort": "Multi",
+    "multiShort": "Discussion",
     "scholarshipTasks": "Scholarship Tasks",
     "tasksCount": "{{count}} task",
     "tasksCount_other": "{{count}} tasks",
@@ -216,7 +216,10 @@
       "card": "Card",
       "tasks": "Tasks",
       "membershipCard": "Membership card",
-      "roleLabels": { "eleve": "Student", "mentor": "Mentor" }
+      "roleLabels": {
+        "eleve": "Student",
+        "mentor": "Mentor"
+      }
     },
     "sessions": {
       "add": "Add a session",
