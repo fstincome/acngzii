@@ -302,6 +302,134 @@ export default function RegisterVisitor() {
     setPresenceDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]);
   const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
+  // ---- Scholarship: duplicate check & prefill ----
+  type SchMatch = {
+    source: "participant" | "visitor";
+    participant_id?: string;
+    visitor_id?: string;
+    code: string;
+    full_name: string;
+    gender?: string | null;
+    date_of_birth?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    neighborhood?: string | null;
+    occupation?: string | null;
+    institution?: string | null;
+    photo?: string | null;
+  };
+  const [schMatches, setSchMatches] = useState<SchMatch[]>([]);
+  const [schChecked, setSchChecked] = useState(false);
+  const [schChecking, setSchChecking] = useState(false);
+  const [linkedParticipantId, setLinkedParticipantId] = useState<string | null>(null);
+
+  function nameSim(a: string, b: string): number {
+    const na = a.toLowerCase().trim().replace(/\s+/g, " ");
+    const nb = b.toLowerCase().trim().replace(/\s+/g, " ");
+    if (!na || !nb) return 0;
+    if (na === nb) return 1;
+    if (na.includes(nb) || nb.includes(na)) return 0.8;
+    const wa = na.split(" "), wb = nb.split(" ");
+    const common = wa.filter(w => wb.includes(w)).length;
+    return common / Math.max(wa.length, wb.length);
+  }
+
+  const handleCheckSchDuplicates = async (name: string) => {
+    if (name.trim().length < 3) { setSchMatches([]); setSchChecked(false); return; }
+    setSchChecking(true);
+    try {
+      const matches: SchMatch[] = [];
+      // Search existing scholarship participants first
+      if (scholarshipProgram) {
+        const { data: parts } = await supabase
+          .from("program_participants")
+          .select("*")
+          .eq("program_id", scholarshipProgram.id);
+        for (const p of parts || []) {
+          if (nameSim(name, p.full_name) >= 0.6) {
+            matches.push({
+              source: "participant",
+              participant_id: p.id,
+              code: p.participant_code,
+              full_name: p.full_name,
+              gender: p.gender, date_of_birth: p.date_of_birth, phone: p.phone, email: p.email,
+              neighborhood: p.neighborhood, occupation: p.occupation, institution: p.institution, photo: p.photo,
+            });
+          }
+        }
+      }
+      // Then visitors (old form)
+      const visitorDups = await findDuplicates(name.trim());
+      for (const v of visitorDups) {
+        matches.push({
+          source: "visitor",
+          visitor_id: v.id,
+          code: v.code,
+          full_name: v.full_name,
+          gender: v.gender, date_of_birth: v.date_of_birth, phone: v.phone, email: v.email,
+          neighborhood: v.neighborhood, occupation: v.occupation, institution: v.institution, photo: v.photo,
+        });
+      }
+      setSchMatches(matches);
+      setSchChecked(true);
+    } catch (err) { console.error(err); }
+    setSchChecking(false);
+  };
+
+  const fillSchFromMatch = async (m: SchMatch) => {
+    // Fill empty fields only — keep what user already typed
+    setSchForm(f => ({
+      ...f,
+      fullName: f.fullName || m.full_name,
+      gender: f.gender || m.gender || "",
+      dateOfBirth: f.dateOfBirth || m.date_of_birth || "",
+      phone: f.phone || m.phone || "",
+      email: f.email || m.email || "",
+      neighborhood: f.neighborhood || m.neighborhood || "",
+      occupation: f.occupation || m.occupation || "",
+      institution: f.institution || m.institution || "",
+      photo: f.photo || m.photo || "",
+    }));
+    if (m.source === "participant" && m.participant_id) {
+      setLinkedParticipantId(m.participant_id);
+      // Load existing scholarship application to prefill
+      const { data: app } = await supabase
+        .from("scholarship_applications")
+        .select("*")
+        .eq("participant_id", m.participant_id)
+        .maybeSingle();
+      if (app) {
+        setSchForm(f => ({
+          ...f,
+          formNumber: f.formNumber || app.form_number || "",
+          startDate: f.startDate || app.start_date || "",
+          age: f.age || (app.age != null ? String(app.age) : ""),
+          projectTitle: f.projectTitle || app.project_title || "",
+          projectDomain: f.projectDomain || app.project_domain || "",
+          projectTools: f.projectTools || app.project_tools || "",
+          obj1: f.obj1 || app.specific_objectives?.[0] || "",
+          obj2: f.obj2 || app.specific_objectives?.[1] || "",
+          obj3: f.obj3 || app.specific_objectives?.[2] || "",
+          nbDaysPerWeek: f.nbDaysPerWeek || (app.nb_days_per_week != null ? String(app.nb_days_per_week) : ""),
+          res1: f.res1 || app.expected_results?.[0] || "",
+          res2: f.res2 || app.expected_results?.[1] || "",
+          ind1: f.ind1 || app.performance_indicators?.[0] || "",
+          ind2: f.ind2 || app.performance_indicators?.[1] || "",
+          sharingLink: f.sharingLink || app.sharing_link || "",
+          signature: f.signature || app.signature || "",
+          engagementSigned: f.engagementSigned || !!app.engagement_signed,
+        }));
+        if (app.presence_days && app.presence_days.length) {
+          setPresenceDays(prev => prev.length ? prev : app.presence_days as string[]);
+        }
+      }
+      toast.success("Participant existant — données chargées. Complétez ce qui manque.");
+    } else {
+      setLinkedParticipantId(null);
+      toast.success("Données du visiteur pré-remplies. Complétez le formulaire Scholarship.");
+    }
+  };
+
   const handleSubmitScholarship = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schForm.fullName) { toast.error("Veuillez remplir le nom complet"); return; }
@@ -314,25 +442,52 @@ export default function RegisterVisitor() {
       return;
     }
     try {
-      const prefix = scholarshipProgram.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
-      const code = await generateParticipantCode(prefix);
-      const participant = await addParticipant.mutateAsync({
-        program_id: scholarshipProgram.id,
-        participant_code: code,
-        full_name: schForm.fullName,
-        gender: schForm.gender || "other",
-        date_of_birth: schForm.dateOfBirth || undefined,
-        phone: schForm.phone || undefined,
-        email: schForm.email || undefined,
-        neighborhood: schForm.neighborhood || "—",
-        occupation: schForm.occupation || "—",
-        institution: schForm.institution || undefined,
-        role: "eleve",
-        photo: schForm.photo || undefined,
-      });
-      // Save scholarship-specific application
-      const { error: appErr } = await supabase.from("scholarship_applications").insert({
-        participant_id: participant.id,
+      let participantId: string;
+      let code: string;
+      if (linkedParticipantId) {
+        // Update existing participant — fill missing fields only
+        const { data: existing } = await supabase
+          .from("program_participants").select("*").eq("id", linkedParticipantId).maybeSingle();
+        const patch: Record<string, unknown> = {
+          full_name: existing?.full_name || schForm.fullName,
+          gender: existing?.gender || schForm.gender || "other",
+          date_of_birth: existing?.date_of_birth || schForm.dateOfBirth || null,
+          phone: existing?.phone || schForm.phone || null,
+          email: existing?.email || schForm.email || null,
+          neighborhood: existing?.neighborhood || schForm.neighborhood || "—",
+          occupation: existing?.occupation || schForm.occupation || "—",
+          institution: existing?.institution || schForm.institution || null,
+          photo: existing?.photo || schForm.photo || null,
+        };
+        const { error: updErr } = await supabase
+          .from("program_participants").update(patch).eq("id", linkedParticipantId);
+        if (updErr) throw updErr;
+        participantId = linkedParticipantId;
+        code = existing?.participant_code || "";
+      } else {
+        const prefix = scholarshipProgram.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
+        code = await generateParticipantCode(prefix);
+        const participant = await addParticipant.mutateAsync({
+          program_id: scholarshipProgram.id,
+          participant_code: code,
+          full_name: schForm.fullName,
+          gender: schForm.gender || "other",
+          date_of_birth: schForm.dateOfBirth || undefined,
+          phone: schForm.phone || undefined,
+          email: schForm.email || undefined,
+          neighborhood: schForm.neighborhood || "—",
+          occupation: schForm.occupation || "—",
+          institution: schForm.institution || undefined,
+          role: "eleve",
+          photo: schForm.photo || undefined,
+        });
+        participantId = participant.id;
+      }
+      // Upsert scholarship-specific application — only fill missing fields if it exists
+      const { data: existingApp } = await supabase
+        .from("scholarship_applications").select("*").eq("participant_id", participantId).maybeSingle();
+      const appPayload = {
+        participant_id: participantId,
         form_number: schForm.formNumber || null,
         start_date: schForm.startDate || null,
         age: schForm.age ? parseInt(schForm.age) : null,
@@ -347,9 +502,26 @@ export default function RegisterVisitor() {
         sharing_link: schForm.sharingLink || null,
         engagement_signed: schForm.engagementSigned,
         signature: schForm.signature || null,
-      });
-      if (appErr) throw appErr;
-      toast.success(`Inscrit au programme Scholarship — code ${code}`);
+      };
+      if (existingApp) {
+        // Fill only missing fields (don't overwrite existing data)
+        const merged: Record<string, unknown> = { ...appPayload };
+        for (const k of Object.keys(appPayload) as (keyof typeof appPayload)[]) {
+          const ev = (existingApp as Record<string, unknown>)[k];
+          if (ev !== null && ev !== undefined && !(Array.isArray(ev) && ev.length === 0) && ev !== "") {
+            merged[k] = ev;
+          }
+        }
+        const { error: appErr } = await supabase
+          .from("scholarship_applications").update(merged).eq("participant_id", participantId);
+        if (appErr) throw appErr;
+      } else {
+        const { error: appErr } = await supabase.from("scholarship_applications").insert(appPayload);
+        if (appErr) throw appErr;
+      }
+      toast.success(linkedParticipantId
+        ? `Informations Scholarship mises à jour — ${code}`
+        : `Inscrit au programme Scholarship — code ${code}`);
       setSchForm({
         fullName: "", gender: "", dateOfBirth: "", phone: "", email: "",
         neighborhood: "", occupation: "", institution: "", photo: "",
@@ -359,6 +531,9 @@ export default function RegisterVisitor() {
         engagementSigned: false, signature: "",
       });
       setPresenceDays([]);
+      setLinkedParticipantId(null);
+      setSchMatches([]);
+      setSchChecked(false);
     } catch (err) {
       console.error(err);
       toast.error("Erreur lors de l'inscription Scholarship");
