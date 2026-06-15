@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export type MemberType = "student" | "professional" | "entrepreneur" | "visitor" | "volunteer" | "member";
+export type MembershipStatus = "active" | "inactive" | "pending";
+
 export interface Visitor {
   id: string;
   visitor_id: string;
@@ -14,6 +17,11 @@ export interface Visitor {
   institution: string | null;
   photo: string | null;
   registration_date: string;
+  member_type: MemberType;
+  age_group: string | null;
+  membership_status: MembershipStatus;
+  membership_start_date: string | null;
+  membership_end_date: string | null;
 }
 
 export interface Visit {
@@ -135,6 +143,11 @@ export function useAddVisitor() {
       occupation: string;
       institution?: string;
       photo?: string;
+      member_type?: MemberType;
+      age_group?: string;
+      membership_status?: MembershipStatus;
+      membership_start_date?: string;
+      membership_end_date?: string;
     }) => {
       const { data, error } = await supabase
         .from("visitors")
@@ -165,6 +178,11 @@ export function useUpdateVisitor() {
         occupation?: string;
         institution?: string | null;
         photo?: string | null;
+        member_type?: MemberType;
+        age_group?: string | null;
+        membership_status?: MembershipStatus;
+        membership_start_date?: string | null;
+        membership_end_date?: string | null;
       };
     }) => {
       const { data, error } = await supabase
