@@ -771,11 +771,6 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     )}
-                    {isScholarship && (
-                      <Button size="sm" variant="outline" className="gap-1.5 rounded-lg" onClick={() => setTasksParticipant(p)}>
-                        <Target className="h-3.5 w-3.5" /> {t("programs.participants.tasks")}
-                      </Button>
-                    )}
                     <Button size="sm" variant="outline" className="gap-1.5 rounded-lg" onClick={() => setCardParticipant(p)}>
                       <CreditCard className="h-3.5 w-3.5" /> {t("programs.participants.card")}
                     </Button>
