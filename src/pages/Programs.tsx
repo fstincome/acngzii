@@ -23,10 +23,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import MembershipCard from "@/components/MembershipCard";
-import ScholarshipTasksDialog from "@/components/ScholarshipTasksDialog";
-import ScholarshipTasksOverview from "@/components/ScholarshipTasksOverview";
 import { useNavigate } from "react-router-dom";
-import { Target } from "lucide-react";
 
 export default function Programs() {
   const { t, i18n } = useTranslation();
@@ -284,7 +281,6 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const [sessionDate, setSessionDate] = useState("");
 
   const [cardParticipant, setCardParticipant] = useState<typeof participants[0] | null>(null);
-  const [tasksParticipant, setTasksParticipant] = useState<typeof participants[0] | null>(null);
 
   
   const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
