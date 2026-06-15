@@ -126,7 +126,7 @@ export default function Scanner() {
 
       // Set expected_checkout on check_in
       if (action === "check_in") {
-        // Computer lab: always 9h fixed. Discussion/Reading: user-selected duration
+        // Computer lab: always 9h fixed. Discussion Room & Reading Lounge: user-selected duration
         const hours = room === "computer_lab" ? DEFAULT_DURATION_HOURS : (parseInt(duration) || DEFAULT_DURATION_HOURS);
         const checkout = new Date(now.getTime() + hours * 60 * 60 * 1000);
         visitData.expected_checkout = checkout.toISOString();
