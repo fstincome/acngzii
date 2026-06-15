@@ -114,9 +114,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       >
         {/* Logo */}
         <div className="flex h-[72px] items-center gap-3 px-6">
-          <div className="icon-box h-10 w-10 shrink-0">
-            <Sparkles className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <img src="/logo-gss.png" alt="American Spaces" className="h-10 w-10 rounded-lg object-contain shrink-0 bg-white p-0.5" />
           <div className="min-w-0">
             <h1 className="text-[15px] font-bold tracking-tight text-sidebar-foreground">{t("app.name")}</h1>
             <p className="text-[11px] text-sidebar-foreground/50 truncate">{t("app.tagline")}</p>
