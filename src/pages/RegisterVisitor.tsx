@@ -263,7 +263,7 @@ export default function RegisterVisitor() {
   const addVisitor = useAddVisitor();
   const { data: programs = [] } = usePrograms();
   const addParticipant = useAddParticipant();
-  const scholarshipProgram = programs.find(p => p.name.trim().toLowerCase().startsWith("scholarship"));
+  
 
   const [form, setForm] = useState({
     fullName: "",
