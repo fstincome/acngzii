@@ -44,7 +44,7 @@ export const ROOM_LABELS: Record<RoomType, string> = {
   garden: "Jardin",
 };
 
-// Generate a random alphanumeric visitor ID like GSS-7K3M9X
+// Generate a random alphanumeric visitor ID like AC-7K3M9X
 export async function generateVisitorId(): Promise<string> {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let id: string;

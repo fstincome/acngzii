@@ -1,6 +1,6 @@
 import type { InvoiceData } from "@/lib/invoice";
 
-const GSS_WHATSAPP = "25769034965";
+const AC_WHATSAPP = "25769034965";
 
 export function getTrackingUrl(orderCode: string): string {
   const base = window.location.origin;
@@ -34,7 +34,7 @@ export function buildClientWhatsAppMessage(data: InvoiceData): string {
 
 export function openClientWhatsApp(data: InvoiceData) {
   const msg = buildClientWhatsAppMessage(data);
-  const url = `https://wa.me/${GSS_WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  const url = `https://wa.me/${AC_WHATSAPP}?text=${encodeURIComponent(msg)}`;
   window.open(url, "_blank");
 }
 
