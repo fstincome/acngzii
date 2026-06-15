@@ -809,7 +809,12 @@ export default function RegisterVisitor() {
                 <div className="flex gap-2">
                   <Input
                     value={schForm.fullName}
-                    onChange={(e) => { updateSch("fullName", e.target.value); if (linkedParticipantId) setLinkedParticipantId(null); }}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      updateSch("fullName", v);
+                      if (linkedParticipantId) setLinkedParticipantId(null);
+                      handleCheckSchDuplicates(v);
+                    }}
                     onBlur={() => handleCheckSchDuplicates(schForm.fullName)}
                     placeholder="Entrez le nom complet"
                     className="rounded-xl h-11 flex-1"
@@ -818,34 +823,38 @@ export default function RegisterVisitor() {
                     {schChecking ? "..." : "Vérifier"}
                   </Button>
                 </div>
+                {schMatches.length > 0 && (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Recherche intelligente — sélectionner une personne existante</Label>
+                    <Select
+                      value=""
+                      onValueChange={(val) => {
+                        const m = schMatches.find(x => `${x.source}:${x.code}` === val);
+                        if (m) fillSchFromMatch(m);
+                      }}
+                    >
+                      <SelectTrigger className="rounded-xl h-11">
+                        <SelectValue placeholder={`${schMatches.length} correspondance(s) trouvée(s) — choisir...`} />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {schMatches.map((m) => (
+                          <SelectItem key={`${m.source}:${m.code}`} value={`${m.source}:${m.code}`}>
+                            <span className="font-medium">{m.full_name}</span>
+                            <span className="text-[10px] text-muted-foreground ml-2">
+                              {m.source === "participant" ? "Scholarship" : "Visiteur"} • {m.phone || "—"} • {m.code}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 {linkedParticipantId && (
                   <p className="text-[11px] text-primary flex items-center gap-1">
                     <Check className="h-3 w-3" /> Participant Scholarship existant lié — seuls les champs vides seront complétés.
                   </p>
                 )}
-                {schChecked && schMatches.length > 0 && (
-                  <Alert className="border-warning/50 bg-warning/5">
-                    <AlertTriangle className="h-4 w-4 text-warning" />
-                    <AlertDescription className="space-y-2">
-                      <p className="text-sm font-medium">Personne(s) similaire(s) trouvée(s) :</p>
-                      {schMatches.map((m, idx) => (
-                        <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-background border border-border/50">
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">{m.full_name}</p>
-                            <p className="text-[10px] text-muted-foreground">
-                              {m.source === "participant" ? "Participant Scholarship" : "Visiteur"} • {m.phone || "—"} • {m.code}
-                            </p>
-                          </div>
-                          <Button type="button" size="sm" variant="secondary" className="shrink-0 gap-1 text-xs" onClick={() => fillSchFromMatch(m)}>
-                            <Check className="h-3 w-3" /> Utiliser
-                          </Button>
-                        </div>
-                      ))}
-                      <p className="text-[10px] text-muted-foreground">Cliquez « Utiliser » pour pré-remplir. Les champs vides seront complétés, les autres restent inchangés.</p>
-                    </AlertDescription>
-                  </Alert>
-                )}
-                {schChecked && schMatches.length === 0 && (
+                {schChecked && schMatches.length === 0 && schForm.fullName.trim().length >= 2 && (
                   <p className="text-xs text-success flex items-center gap-1"><Check className="h-3 w-3" /> Aucune correspondance — nouvelle inscription</p>
                 )}
               </div>
