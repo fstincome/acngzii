@@ -417,7 +417,7 @@ export default function RegistrationForm() {
         {/* Header */}
         <div className="text-center space-y-1">
           <div className="flex items-center justify-center gap-3 mb-2">
-            <img src="/gss-logo.png" alt="GSS" className="h-10 w-10 rounded-xl object-contain" />
+            <img src="/gss-logo.png" alt="American Spaces" className="h-10 w-10 rounded-xl object-contain" />
           </div>
           <h1 className="text-xl font-bold text-foreground">Formulaires d'inscription</h1>
           <p className="text-sm text-muted-foreground">Gitega Study Space</p>
