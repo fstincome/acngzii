@@ -275,6 +275,8 @@ export default function RegisterVisitor() {
     occupation: "",
     institution: "",
     photo: "",
+    memberType: "visitor",
+    membershipStatus: "active",
   });
 
   const [activeTab, setActiveTab] = useState<"visitor" | "scholarship">("visitor");
@@ -611,12 +613,14 @@ export default function RegisterVisitor() {
         occupation: form.occupation || "—",
         institution: form.institution || undefined,
         photo: form.photo || undefined,
+        member_type: (form.memberType || "visitor") as "student" | "professional" | "entrepreneur" | "visitor" | "volunteer" | "member",
+        membership_status: (form.membershipStatus || "active") as "active" | "inactive" | "pending",
       });
 
       setNewVisitorId(visitorId);
       setFullName(form.fullName);
       setStep("card");
-      toast.success("Visiteur inscrit avec succès !");
+      toast.success("Membre inscrit avec succès !");
     } catch (err) {
       console.error(err);
       toast.error("Erreur lors de l'inscription");
@@ -643,7 +647,7 @@ export default function RegisterVisitor() {
         <div className="flex gap-3">
           <Button className="flex-1 gap-2 rounded-xl h-11" variant="outline" onClick={() => {
             setStep("form");
-            setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", institution: "", photo: "" });
+            setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", institution: "", photo: "", memberType: "visitor", membershipStatus: "active" });
           }}>
             <UserPlus className="h-4 w-4" />
             Inscrire un autre
@@ -660,8 +664,8 @@ export default function RegisterVisitor() {
     <div className="mx-auto max-w-2xl space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="page-header">
-          <h1 className="page-title">Inscription</h1>
-          <p className="page-subtitle">Ajouter un visiteur ou un participant Scholarship</p>
+          <h1 className="page-title">Inscription Membre</h1>
+          <p className="page-subtitle">Ajouter un membre, étudiant, professionnel, bénévole ou un participant Scholarship</p>
         </div>
         <Button variant="outline" className="gap-2 rounded-xl h-11" onClick={() => setStep("preview-form")}>
           <FileText className="h-4 w-4" />
@@ -673,7 +677,7 @@ export default function RegisterVisitor() {
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "visitor" | "scholarship")} className="w-full">
         <TabsList className="grid w-full grid-cols-2 h-11 rounded-xl">
           <TabsTrigger value="visitor" className="rounded-lg gap-2">
-            <UserPlus className="h-4 w-4" /> Visiteur
+            <UserPlus className="h-4 w-4" /> Membre
           </TabsTrigger>
           <TabsTrigger value="scholarship" className="rounded-lg gap-2">
             <GraduationCap className="h-4 w-4" /> Scholarship
@@ -768,6 +772,35 @@ export default function RegisterVisitor() {
             <Input id="institution" value={form.institution} onChange={(e) => update("institution", e.target.value)} placeholder="Ex: Université du Burundi" className="rounded-xl h-11" />
           </div>
 
+          <div className="space-y-2">
+            <Label className="text-foreground flex items-center gap-1.5">
+              <GraduationCap className="h-3.5 w-3.5" /> Type de membre
+            </Label>
+            <Select value={form.memberType} onValueChange={(v) => update("memberType", v)}>
+              <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="visitor">Visiteur</SelectItem>
+                <SelectItem value="member">Membre</SelectItem>
+                <SelectItem value="student">Étudiant</SelectItem>
+                <SelectItem value="professional">Professionnel</SelectItem>
+                <SelectItem value="entrepreneur">Entrepreneur</SelectItem>
+                <SelectItem value="volunteer">Bénévole</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-foreground">Statut d'adhésion</Label>
+            <Select value={form.membershipStatus} onValueChange={(v) => update("membershipStatus", v)}>
+              <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Actif</SelectItem>
+                <SelectItem value="pending">En attente</SelectItem>
+                <SelectItem value="inactive">Inactif</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="sm:col-span-2 space-y-2">
             <Input id="photo" value={form.photo} onChange={(e) => update("photo", e.target.value)} placeholder="https://lh3.googleusercontent.com/d/..." className="rounded-xl h-11" />
             <p className="text-[10px] text-muted-foreground">Format Google Drive : https://lh3.googleusercontent.com/d/ID</p>
@@ -776,7 +809,7 @@ export default function RegisterVisitor() {
 
         <Button type="submit" className="w-full gap-2 rounded-xl h-12 text-sm font-semibold" size="lg" disabled={addVisitor.isPending}>
           <UserPlus className="h-4 w-4" />
-          {addVisitor.isPending ? "Inscription en cours..." : "Inscrire le visiteur"}
+          {addVisitor.isPending ? "Inscription en cours..." : "Inscrire le membre"}
         </Button>
           </form>
         </TabsContent>

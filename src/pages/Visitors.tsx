@@ -11,6 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import MembershipCard from "@/components/MembershipCard";
 import { toast } from "sonner";
+const MEMBER_TYPE_LABELS: Record<string, string> = {
+  visitor: "Visiteur", member: "Membre", student: "Étudiant",
+  professional: "Professionnel", entrepreneur: "Entrepreneur", volunteer: "Bénévole",
+};
+const STATUS_LABELS: Record<string, string> = { active: "Actif", pending: "En attente", inactive: "Inactif" };
+const STATUS_DOT: Record<string, string> = { active: "bg-success", pending: "bg-warning", inactive: "bg-muted-foreground" };
+
 
 function Detail({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
@@ -34,16 +41,22 @@ export default function Visitors() {
   const updateVisitor = useUpdateVisitor();
   const deleteVisitor = useDeleteVisitor();
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Visitor | null>(null);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, string>>({});
 
-  const filtered = visitors.filter(
-    (v) =>
-      v.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      v.visitor_id.toLowerCase().includes(search.toLowerCase()) ||
-      v.phone.includes(search)
-  );
+  const filtered = visitors.filter((v) => {
+    const s = search.toLowerCase();
+    const matchSearch =
+      v.full_name.toLowerCase().includes(s) ||
+      v.visitor_id.toLowerCase().includes(s) ||
+      v.phone.includes(search);
+    const matchType = typeFilter === "all" || v.member_type === typeFilter;
+    const matchStatus = statusFilter === "all" || v.membership_status === statusFilter;
+    return matchSearch && matchType && matchStatus;
+  });
 
   const handleDeleteVisitor = async (v: Visitor) => {
     if (!confirm(`Supprimer le visiteur "${v.full_name}" et tout son historique ?`)) return;
@@ -69,7 +82,11 @@ export default function Visitors() {
         email: selected.email || "",
         neighborhood: selected.neighborhood,
         occupation: selected.occupation,
+        institution: selected.institution || "",
         photo: selected.photo || "",
+        member_type: selected.member_type || "visitor",
+        membership_status: selected.membership_status || "active",
+        age_group: selected.age_group || "",
       });
       setEditing(true);
     };
@@ -86,7 +103,11 @@ export default function Visitors() {
             email: editForm.email || null,
             neighborhood: editForm.neighborhood || "—",
             occupation: editForm.occupation || "—",
+            institution: editForm.institution || null,
             photo: editForm.photo || null,
+            member_type: (editForm.member_type || "visitor") as "student" | "professional" | "entrepreneur" | "visitor" | "volunteer" | "member",
+            membership_status: (editForm.membership_status || "active") as "active" | "inactive" | "pending",
+            age_group: editForm.age_group || null,
           },
         });
         setSelected({
@@ -98,10 +119,14 @@ export default function Visitors() {
           email: editForm.email || null,
           neighborhood: editForm.neighborhood || "—",
           occupation: editForm.occupation || "—",
+          institution: editForm.institution || null,
           photo: editForm.photo || null,
+          member_type: (editForm.member_type || "visitor") as Visitor["member_type"],
+          membership_status: (editForm.membership_status || "active") as Visitor["membership_status"],
+          age_group: editForm.age_group || null,
         });
         setEditing(false);
-        toast.success("Visiteur mis à jour avec succès");
+        toast.success("Membre mis à jour avec succès");
       } catch {
         toast.error("Erreur lors de la mise à jour");
       }
@@ -191,6 +216,48 @@ export default function Visitors() {
                 <Input value={editForm.occupation} onChange={(e) => setEditForm({ ...editForm, occupation: e.target.value })} className="rounded-xl h-10" />
               </div>
               <div className="sm:col-span-2 space-y-1.5">
+                <Label className="text-foreground text-xs">Institution (école, université...)</Label>
+                <Input value={editForm.institution} onChange={(e) => setEditForm({ ...editForm, institution: e.target.value })} placeholder="Ex: Université du Burundi" className="rounded-xl h-10" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-foreground text-xs">Type de membre</Label>
+                <Select value={editForm.member_type} onValueChange={(v) => setEditForm({ ...editForm, member_type: v })}>
+                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="visitor">Visiteur</SelectItem>
+                    <SelectItem value="member">Membre</SelectItem>
+                    <SelectItem value="student">Étudiant</SelectItem>
+                    <SelectItem value="professional">Professionnel</SelectItem>
+                    <SelectItem value="entrepreneur">Entrepreneur</SelectItem>
+                    <SelectItem value="volunteer">Bénévole</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-foreground text-xs">Statut d'adhésion</Label>
+                <Select value={editForm.membership_status} onValueChange={(v) => setEditForm({ ...editForm, membership_status: v })}>
+                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Actif</SelectItem>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="inactive">Inactif</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-foreground text-xs">Tranche d'âge (optionnel)</Label>
+                <Select value={editForm.age_group || ""} onValueChange={(v) => setEditForm({ ...editForm, age_group: v })}>
+                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="<18">Moins de 18</SelectItem>
+                    <SelectItem value="18-25">18-25</SelectItem>
+                    <SelectItem value="26-35">26-35</SelectItem>
+                    <SelectItem value="36-50">36-50</SelectItem>
+                    <SelectItem value="50+">50+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="sm:col-span-2 space-y-1.5">
                 <Label className="text-foreground text-xs">Lien photo passport</Label>
                 <Input value={editForm.photo} onChange={(e) => setEditForm({ ...editForm, photo: e.target.value })} placeholder="https://lh3.googleusercontent.com/d/..." className="rounded-xl h-10" />
               </div>
@@ -222,6 +289,10 @@ export default function Visitors() {
               <Detail icon={Calendar} label="Genre" value={genderLabel} />
               <Detail icon={Calendar} label="Date de naissance" value={selected.date_of_birth || "—"} />
               <Detail icon={Calendar} label="Inscrit le" value={selected.registration_date} />
+              <Detail icon={Briefcase} label="Institution" value={selected.institution || "—"} />
+              <Detail icon={User} label="Type de membre" value={MEMBER_TYPE_LABELS[selected.member_type] || selected.member_type} />
+              <Detail icon={User} label="Statut" value={STATUS_LABELS[selected.membership_status] || selected.membership_status} />
+              {selected.age_group && <Detail icon={Calendar} label="Tranche d'âge" value={selected.age_group} />}
               {selected.photo && (
                 <div className="col-span-2 flex items-start gap-3 rounded-xl bg-muted/40 px-4 py-3">
                   <Image className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
@@ -271,19 +342,42 @@ export default function Visitors() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="page-header">
-          <h1 className="page-title">Visiteurs</h1>
+          <h1 className="page-title">Membres</h1>
           <p className="page-subtitle">{visitors.length} membres inscrits</p>
         </div>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-11 rounded-xl h-11"
-          placeholder="Rechercher par nom, ID ou téléphone..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="grid gap-3 sm:grid-cols-[1fr_180px_180px]">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-11 rounded-xl h-11"
+            placeholder="Rechercher par nom, ID ou téléphone..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Type" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les types</SelectItem>
+            <SelectItem value="visitor">Visiteur</SelectItem>
+            <SelectItem value="member">Membre</SelectItem>
+            <SelectItem value="student">Étudiant</SelectItem>
+            <SelectItem value="professional">Professionnel</SelectItem>
+            <SelectItem value="entrepreneur">Entrepreneur</SelectItem>
+            <SelectItem value="volunteer">Bénévole</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Statut" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les statuts</SelectItem>
+            <SelectItem value="active">Actif</SelectItem>
+            <SelectItem value="pending">En attente</SelectItem>
+            <SelectItem value="inactive">Inactif</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? (
@@ -302,13 +396,21 @@ export default function Visitors() {
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{v.full_name}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-semibold text-foreground truncate">{v.full_name}</p>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                    {MEMBER_TYPE_LABELS[v.member_type] || v.member_type}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
+                    <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[v.membership_status] || "bg-muted-foreground"}`} />
+                    {STATUS_LABELS[v.membership_status] || v.membership_status}
+                  </span>
+                </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   <span className="font-mono font-semibold text-primary">{v.visitor_id}</span>
                   <span className="mx-1.5 text-border">·</span>
                   {v.occupation}
-                  <span className="mx-1.5 text-border">·</span>
-                  {v.neighborhood}
+                  {v.institution && <><span className="mx-1.5 text-border">·</span>{v.institution}</>}
                 </p>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
