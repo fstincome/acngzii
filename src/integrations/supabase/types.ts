@@ -485,6 +485,7 @@ export type Database = {
       }
       visitors: {
         Row: {
+          age_group: string | null
           created_at: string
           date_of_birth: string | null
           email: string | null
@@ -492,6 +493,10 @@ export type Database = {
           gender: string
           id: string
           institution: string | null
+          member_type: Database["public"]["Enums"]["member_type"]
+          membership_end_date: string | null
+          membership_start_date: string | null
+          membership_status: Database["public"]["Enums"]["membership_status"]
           neighborhood: string
           occupation: string
           phone: string
@@ -500,6 +505,7 @@ export type Database = {
           visitor_id: string
         }
         Insert: {
+          age_group?: string | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
@@ -507,6 +513,10 @@ export type Database = {
           gender: string
           id?: string
           institution?: string | null
+          member_type?: Database["public"]["Enums"]["member_type"]
+          membership_end_date?: string | null
+          membership_start_date?: string | null
+          membership_status?: Database["public"]["Enums"]["membership_status"]
           neighborhood: string
           occupation: string
           phone: string
@@ -515,6 +525,7 @@ export type Database = {
           visitor_id: string
         }
         Update: {
+          age_group?: string | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
@@ -522,6 +533,10 @@ export type Database = {
           gender?: string
           id?: string
           institution?: string | null
+          member_type?: Database["public"]["Enums"]["member_type"]
+          membership_end_date?: string | null
+          membership_start_date?: string | null
+          membership_status?: Database["public"]["Enums"]["membership_status"]
           neighborhood?: string
           occupation?: string
           phone?: string
@@ -585,6 +600,14 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "director" | "reception"
+      member_type:
+        | "student"
+        | "professional"
+        | "entrepreneur"
+        | "visitor"
+        | "volunteer"
+        | "member"
+      membership_status: "active" | "inactive" | "pending"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -713,6 +736,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "director", "reception"],
+      member_type: [
+        "student",
+        "professional",
+        "entrepreneur",
+        "visitor",
+        "volunteer",
+        "member",
+      ],
+      membership_status: ["active", "inactive", "pending"],
     },
   },
 } as const
