@@ -69,7 +69,11 @@ export default function Visitors() {
         email: selected.email || "",
         neighborhood: selected.neighborhood,
         occupation: selected.occupation,
+        institution: selected.institution || "",
         photo: selected.photo || "",
+        member_type: selected.member_type || "visitor",
+        membership_status: selected.membership_status || "active",
+        age_group: selected.age_group || "",
       });
       setEditing(true);
     };
@@ -86,7 +90,11 @@ export default function Visitors() {
             email: editForm.email || null,
             neighborhood: editForm.neighborhood || "—",
             occupation: editForm.occupation || "—",
+            institution: editForm.institution || null,
             photo: editForm.photo || null,
+            member_type: (editForm.member_type || "visitor") as "student" | "professional" | "entrepreneur" | "visitor" | "volunteer" | "member",
+            membership_status: (editForm.membership_status || "active") as "active" | "inactive" | "pending",
+            age_group: editForm.age_group || null,
           },
         });
         setSelected({
@@ -98,10 +106,14 @@ export default function Visitors() {
           email: editForm.email || null,
           neighborhood: editForm.neighborhood || "—",
           occupation: editForm.occupation || "—",
+          institution: editForm.institution || null,
           photo: editForm.photo || null,
+          member_type: (editForm.member_type || "visitor") as Visitor["member_type"],
+          membership_status: (editForm.membership_status || "active") as Visitor["membership_status"],
+          age_group: editForm.age_group || null,
         });
         setEditing(false);
-        toast.success("Visiteur mis à jour avec succès");
+        toast.success("Membre mis à jour avec succès");
       } catch {
         toast.error("Erreur lors de la mise à jour");
       }
@@ -189,6 +201,48 @@ export default function Visitors() {
               <div className="space-y-1.5">
                 <Label className="text-foreground text-xs">Profession</Label>
                 <Input value={editForm.occupation} onChange={(e) => setEditForm({ ...editForm, occupation: e.target.value })} className="rounded-xl h-10" />
+              </div>
+              <div className="sm:col-span-2 space-y-1.5">
+                <Label className="text-foreground text-xs">Institution (école, université...)</Label>
+                <Input value={editForm.institution} onChange={(e) => setEditForm({ ...editForm, institution: e.target.value })} placeholder="Ex: Université du Burundi" className="rounded-xl h-10" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-foreground text-xs">Type de membre</Label>
+                <Select value={editForm.member_type} onValueChange={(v) => setEditForm({ ...editForm, member_type: v })}>
+                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="visitor">Visiteur</SelectItem>
+                    <SelectItem value="member">Membre</SelectItem>
+                    <SelectItem value="student">Étudiant</SelectItem>
+                    <SelectItem value="professional">Professionnel</SelectItem>
+                    <SelectItem value="entrepreneur">Entrepreneur</SelectItem>
+                    <SelectItem value="volunteer">Bénévole</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-foreground text-xs">Statut d'adhésion</Label>
+                <Select value={editForm.membership_status} onValueChange={(v) => setEditForm({ ...editForm, membership_status: v })}>
+                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Actif</SelectItem>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="inactive">Inactif</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-foreground text-xs">Tranche d'âge (optionnel)</Label>
+                <Select value={editForm.age_group || ""} onValueChange={(v) => setEditForm({ ...editForm, age_group: v })}>
+                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="<18">Moins de 18</SelectItem>
+                    <SelectItem value="18-25">18-25</SelectItem>
+                    <SelectItem value="26-35">26-35</SelectItem>
+                    <SelectItem value="36-50">36-50</SelectItem>
+                    <SelectItem value="50+">50+</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="sm:col-span-2 space-y-1.5">
                 <Label className="text-foreground text-xs">Lien photo passport</Label>
