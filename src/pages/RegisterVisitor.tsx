@@ -329,13 +329,20 @@ export default function RegisterVisitor() {
     if (!na || !nb) return 0;
     if (na === nb) return 1;
     if (na.includes(nb) || nb.includes(na)) return 0.8;
-    const wa = na.split(" "), wb = nb.split(" ");
-    const common = wa.filter(w => wb.includes(w)).length;
-    return common / Math.max(wa.length, wb.length);
+    const wa = na.split(" ").filter(Boolean);
+    const wb = nb.split(" ").filter(Boolean);
+    // Word-level fuzzy: any word in query matches (substring) any word in candidate
+    let hits = 0;
+    for (const w of wa) {
+      if (w.length < 2) continue;
+      if (wb.some(x => x.includes(w) || w.includes(x))) hits++;
+    }
+    if (hits === 0) return 0;
+    return Math.min(1, 0.5 + (hits / wa.length) * 0.5);
   }
 
   const handleCheckSchDuplicates = async (name: string) => {
-    if (name.trim().length < 3) { setSchMatches([]); setSchChecked(false); return; }
+    if (name.trim().length < 2) { setSchMatches([]); setSchChecked(false); return; }
     setSchChecking(true);
     try {
       const matches: SchMatch[] = [];
@@ -346,7 +353,7 @@ export default function RegisterVisitor() {
           .select("*")
           .eq("program_id", scholarshipProgram.id);
         for (const p of parts || []) {
-          if (nameSim(name, p.full_name) >= 0.6) {
+          if (nameSim(name, p.full_name) >= 0.5) {
             matches.push({
               source: "participant",
               participant_id: p.id,
@@ -359,18 +366,27 @@ export default function RegisterVisitor() {
         }
       }
       // Then visitors (old form)
-      const visitorDups = await findDuplicates(name.trim());
-      for (const v of visitorDups) {
-        matches.push({
-          source: "visitor",
-          visitor_id: v.id,
-          code: v.code,
-          full_name: v.full_name,
-          gender: v.gender, date_of_birth: v.date_of_birth, phone: v.phone, email: v.email,
-          neighborhood: v.neighborhood, occupation: v.occupation, institution: v.institution, photo: v.photo,
-        });
+      const { data: visitors } = await supabase.from("visitors").select("*");
+      for (const v of visitors || []) {
+        if (nameSim(name, v.full_name) >= 0.5) {
+          matches.push({
+            source: "visitor",
+            visitor_id: v.id,
+            code: v.visitor_id,
+            full_name: v.full_name,
+            gender: v.gender, date_of_birth: v.date_of_birth, phone: v.phone, email: v.email,
+            neighborhood: v.neighborhood, occupation: v.occupation, institution: v.institution, photo: v.photo,
+          });
+        }
       }
-      setSchMatches(matches);
+      // Dedupe by full_name+code
+      const seen = new Set<string>();
+      const unique = matches.filter(m => {
+        const k = `${m.source}:${m.code}`;
+        if (seen.has(k)) return false;
+        seen.add(k); return true;
+      });
+      setSchMatches(unique);
       setSchChecked(true);
     } catch (err) { console.error(err); }
     setSchChecking(false);
