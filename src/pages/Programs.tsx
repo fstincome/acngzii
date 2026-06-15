@@ -286,7 +286,7 @@ function ProgramDetail({ program, onBack, onEditProgram, canEdit, canDelete }: {
   const [cardParticipant, setCardParticipant] = useState<typeof participants[0] | null>(null);
   const [tasksParticipant, setTasksParticipant] = useState<typeof participants[0] | null>(null);
 
-  const isScholarship = program.name.trim().toLowerCase().startsWith("scholarship");
+  
   const programPrefix = program.name.substring(0, 3).toUpperCase().replace(/\s/g, "");
 
   const resetAddForm = () => {
