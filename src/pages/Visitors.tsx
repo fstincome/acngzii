@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useVisitors, useVisits, useUpdateVisitor, useDeleteVisitor, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visitor, RoomType } from "@/lib/supabase-store";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { QRCodeSVG } from "qrcode.react";
-import { Search, User, ChevronRight, ArrowLeft, Calendar, Phone, MapPin, Briefcase, CreditCard, Pencil, Save, X, Image, Trash2 } from "lucide-react";
+import { Search, User, ArrowLeft, Calendar, Phone, MapPin, Briefcase, CreditCard, Pencil, Save, X, Image, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import MembershipCard from "@/components/MembershipCard";
 import { toast } from "sonner";
 const MEMBER_TYPE_LABELS: Record<string, string> = {
@@ -43,20 +44,48 @@ export default function Visitors() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [institutionFilter, setInstitutionFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Visitor | null>(null);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, string>>({});
 
-  const filtered = visitors.filter((v) => {
-    const s = search.toLowerCase();
-    const matchSearch =
-      v.full_name.toLowerCase().includes(s) ||
-      v.visitor_id.toLowerCase().includes(s) ||
-      v.phone.includes(search);
-    const matchType = typeFilter === "all" || v.member_type === typeFilter;
-    const matchStatus = statusFilter === "all" || v.membership_status === statusFilter;
-    return matchSearch && matchType && matchStatus;
-  });
+  type SortKey = "full_name" | "member_type" | "institution" | "membership_status" | "registration_date";
+  const [sortKey, setSortKey] = useState<SortKey>("full_name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleSort = (k: SortKey) => {
+    if (sortKey === k) setSortDir(d => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(k); setSortDir("asc"); }
+  };
+
+  const institutions = useMemo(() => {
+    const set = new Set<string>();
+    visitors.forEach(v => { if (v.institution && v.institution.trim()) set.add(v.institution.trim()); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [visitors]);
+
+  const filtered = useMemo(() => {
+    const s = search.toLowerCase().trim();
+    const list = visitors.filter((v) => {
+      const matchSearch = !s ||
+        v.full_name.toLowerCase().includes(s) ||
+        v.visitor_id.toLowerCase().includes(s) ||
+        (v.phone || "").toLowerCase().includes(s) ||
+        (v.email || "").toLowerCase().includes(s) ||
+        (v.institution || "").toLowerCase().includes(s) ||
+        (v.occupation || "").toLowerCase().includes(s);
+      const matchType = typeFilter === "all" || v.member_type === typeFilter;
+      const matchStatus = statusFilter === "all" || v.membership_status === statusFilter;
+      const matchInst = institutionFilter === "all" || (v.institution || "") === institutionFilter;
+      return matchSearch && matchType && matchStatus && matchInst;
+    });
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...list].sort((a, b) => {
+      const av = (a[sortKey] ?? "") as string;
+      const bv = (b[sortKey] ?? "") as string;
+      return av.toString().localeCompare(bv.toString(), undefined, { sensitivity: "base" }) * dir;
+    });
+  }, [visitors, search, typeFilter, statusFilter, institutionFilter, sortKey, sortDir]);
 
   const handleDeleteVisitor = async (v: Visitor) => {
     if (!confirm(`Supprimer le visiteur "${v.full_name}" et tout son historique ?`)) return;
