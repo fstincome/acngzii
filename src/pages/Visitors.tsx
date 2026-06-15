@@ -376,12 +376,12 @@ export default function Visitors() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-[1fr_180px_180px]">
+      <div className="grid gap-3 sm:grid-cols-[1fr_160px_180px_160px]">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-11 rounded-xl h-11"
-            placeholder="Rechercher par nom, ID ou téléphone..."
+            placeholder="Rechercher (nom, ID, téléphone, email, institution)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -398,6 +398,13 @@ export default function Visitors() {
             <SelectItem value="volunteer">Bénévole</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={institutionFilter} onValueChange={setInstitutionFilter}>
+          <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Institution" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les institutions</SelectItem>
+            {institutions.map((i) => (<SelectItem key={i} value={i}>{i}</SelectItem>))}
+          </SelectContent>
+        </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Statut" /></SelectTrigger>
           <SelectContent>
@@ -409,50 +416,98 @@ export default function Visitors() {
         </Select>
       </div>
 
+      <div className="flex items-center justify-between px-1">
+        <p className="text-xs text-muted-foreground">{filtered.length} résultat(s)</p>
+        {(search || typeFilter !== "all" || statusFilter !== "all" || institutionFilter !== "all") && (
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => { setSearch(""); setTypeFilter("all"); setStatusFilter("all"); setInstitutionFilter("all"); }}>
+            <X className="h-3 w-3" /> Réinitialiser
+          </Button>
+        )}
+      </div>
+
       {isLoading ? (
         <div className="py-12 text-center">
           <p className="text-sm text-muted-foreground">Chargement...</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map((v) => (
-            <button
-              key={v.id}
-              onClick={() => setSelected(v)}
-              className="flex w-full items-center gap-4 rounded-2xl border border-border/50 bg-card p-4 text-left transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 shrink-0">
-                <User className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm font-semibold text-foreground truncate">{v.full_name}</p>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-                    {MEMBER_TYPE_LABELS[v.member_type] || v.member_type}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
-                    <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[v.membership_status] || "bg-muted-foreground"}`} />
-                    {STATUS_LABELS[v.membership_status] || v.membership_status}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  <span className="font-mono font-semibold text-primary">{v.visitor_id}</span>
-                  <span className="mx-1.5 text-border">·</span>
-                  {v.occupation}
-                  {v.institution && <><span className="mx-1.5 text-border">·</span>{v.institution}</>}
-                </p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
-            </button>
-          ))}
-          {filtered.length === 0 && (
-            <div className="py-12 text-center">
-              <User className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">Aucun visiteur trouvé.</p>
-            </div>
-          )}
+        <div className="rounded-2xl border border-border/50 bg-card shadow-sm overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <SortHeader label="Nom" k="full_name" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
+                <SortHeader label="Type" k="member_type" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
+                <SortHeader label="Institution" k="institution" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
+                <SortHeader label="Statut" k="membership_status" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
+                <SortHeader label="Inscrit le" k="registration_date" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} className="hidden md:table-cell" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((v) => (
+                <TableRow key={v.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setSelected(v)}>
+                  <TableCell>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 shrink-0">
+                        <User className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{v.full_name}</p>
+                        <p className="text-[11px] text-muted-foreground font-mono">{v.visitor_id}</p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                      {MEMBER_TYPE_LABELS[v.member_type] || v.member_type}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs text-foreground/80 max-w-[200px] truncate">{v.institution || "—"}</TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground">
+                      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[v.membership_status] || "bg-muted-foreground"}`} />
+                      {STATUS_LABELS[v.membership_status] || v.membership_status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{v.registration_date}</TableCell>
+                </TableRow>
+              ))}
+              {filtered.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="py-12 text-center">
+                    <User className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Aucun membre trouvé.</p>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>
+  );
+}
+
+function SortHeader({
+  label, k, sortKey, sortDir, onClick, className,
+}: {
+  label: string;
+  k: "full_name" | "member_type" | "institution" | "membership_status" | "registration_date";
+  sortKey: string;
+  sortDir: "asc" | "desc";
+  onClick: (k: "full_name" | "member_type" | "institution" | "membership_status" | "registration_date") => void;
+  className?: string;
+}) {
+  const active = sortKey === k;
+  const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+  return (
+    <TableHead className={className}>
+      <button
+        type="button"
+        onClick={() => onClick(k)}
+        className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors ${active ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+      >
+        {label}
+        <Icon className="h-3 w-3" />
+      </button>
+    </TableHead>
   );
 }
