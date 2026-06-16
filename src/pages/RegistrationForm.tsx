@@ -156,7 +156,7 @@ function buildFormPDF(): jsPDF {
 
   // Info: Specific goals
   y = infoBox(doc, M, y, CW, "Specific Goals :",
-    "Actions précises et réalisables. Ex: \"Apprendre HTML\", \"Create une page web\", \"Finir un module Coursera\". Soyez concret et réaliste.");
+    "Precise, achievable actions. e.g. \"Learn HTML\", \"Build a web page\", \"Finish a Coursera module\". Be concrete and realistic.");
   y += 1;
   for (let i = 1; i <= 3; i++) {
     setFill(doc, C_FIELD_BG);
@@ -182,7 +182,7 @@ function buildFormPDF(): jsPDF {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.text("Days of attendance :", M + 2, y + 5);
-  const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   let cx = M + labelW + 2;
   setStroke(doc, C_BLUE_DARK);
   doc.setLineWidth(0.3);
@@ -194,11 +194,11 @@ function buildFormPDF(): jsPDF {
     cx += 22;
   });
   y += 9;
-  drawField(M, y, halfW, "Nb jours / semaine :");
+  drawField(M, y, halfW, "Days / week :");
   y += 11;
 
   // ===== 4. PERFORMANCE & SUIVI =====
-  y = sectionHeader(doc, M, y, CW, "4. PERFORMANCE & SUIVI");
+  y = sectionHeader(doc, M, y, CW, "4. PERFORMANCE & TRACKING");
   y += 1;
 
   y = infoBox(doc, M, y, CW, "Expected Results :",
@@ -217,8 +217,8 @@ function buildFormPDF(): jsPDF {
   }
   y += 2;
 
-  y = infoBox(doc, M, y, CW, "Indicateurs de Performance :",
-    "Preuves CHIFFRABLES de ta progression. Ex: \"3 modules terminés\", \"site en ligne avec 3 pages\", \"10 abonnés YouTube\". Ces chiffres déterminent le renouvellement de ton accès.");
+  y = infoBox(doc, M, y, CW, "Performance Indicators :",
+    "MEASURABLE evidence of your progress. e.g. \"3 modules completed\", \"site online with 3 pages\", \"10 YouTube subscribers\". These numbers determine whether your access is renewed.");
   y += 1;
   for (let i = 1; i <= 2; i++) {
     setFill(doc, C_FIELD_BG);
