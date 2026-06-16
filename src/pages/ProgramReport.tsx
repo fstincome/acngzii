@@ -76,11 +76,11 @@ export default function ProgramReport() {
         </Card>
       ) : sessions.length === 0 ? (
         <Card className="p-10 text-center border-dashed border-2">
-          <p className="text-muted-foreground">Nonee session pour ce programme.</p>
+          <p className="text-muted-foreground">No session pour ce programme.</p>
         </Card>
       ) : sortedParticipants.length === 0 ? (
         <Card className="p-10 text-center border-dashed border-2">
-          <p className="text-muted-foreground">None participant dans ce programme.</p>
+          <p className="text-muted-foreground">No participant dans ce programme.</p>
         </Card>
       ) : (
         <div className="space-y-6">

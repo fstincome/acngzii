@@ -220,7 +220,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* Mayn content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex h-16 items-center gap-4 border-b border-border/60 bg-card/80 backdrop-blur-md px-4 lg:px-8">
           <button

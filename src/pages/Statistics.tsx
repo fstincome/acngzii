@@ -338,7 +338,7 @@ export default function Statistics() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="page-header">
           <h1 className="page-title">Statistiques</h1>
-          <p className="page-subtitle">Analyses et tendances de fréquentation</p>
+          <p className="page-subtitle">Analytics and attendance trends</p>
         </div>
         <div className="flex items-center gap-3">
           <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
@@ -369,9 +369,9 @@ export default function Statistics() {
       {/* KPI cards with comparison */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard icon={Users} label="Visitors uniques" value={uniqueVisitors} change={visitorChange} period={period} />
-        <KpiCard icon={TrendingUp} label="Total entrées" value={checkIns.length} change={totalChange} period={period} />
+        <KpiCard icon={TrendingUp} label="Total check-ins" value={checkIns.length} change={totalChange} period={period} />
         <KpiCard icon={Clock} label="Moy. / jour" value={avgDaily} />
-        <KpiCard icon={Calendar} label="Heure de pointe" value={peakHour.hour} subtitle={`${peakHour.total} entrées`} />
+        <KpiCard icon={Calendar} label="Peak hour" value={peakHour.hour} subtitle={`${peakHour.total} check-ins`} />
       </div>
 
       {/* Room breakdown */}
@@ -384,7 +384,7 @@ export default function Statistics() {
       {/* Restaurant Revenue */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <KpiCard icon={DollarSign} label="Revenus restaurant" value={`${totalRevenue.toLocaleString()} BIF`} />
-        <KpiCard icon={TrendingUp} label="Bénéfice estimé" value={`${totalProfit.toLocaleString()} BIF`} />
+        <KpiCard icon={TrendingUp} label="Estimated profit" value={`${totalProfit.toLocaleString()} BIF`} />
         <KpiCard icon={ShoppingCart} label="Commandes" value={totalOrdersCount} />
       </div>
 
@@ -394,11 +394,11 @@ export default function Statistics() {
           <div className="page-header">
             <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
               <GraduationCap className="h-5 w-5 text-primary" />
-              Présence Programme
+              Program Attendance
             </h2>
           </div>
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <KpiCard icon={ClipboardCheck} label="Taux de présence" value={`${progRate}%`} />
+            <KpiCard icon={ClipboardCheck} label="Attendance rate" value={`${progRate}%`} />
             <KpiCard icon={GraduationCap} label="Presents" value={progPresent} />
             <KpiCard icon={Users} label="Absents" value={progAbsent} />
             <KpiCard icon={Calendar} label="Total pointages" value={progTotal} />
@@ -412,7 +412,7 @@ export default function Statistics() {
       )}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Tendance de fréquentation</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Attendance trend</h3>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={dailyTrend}>
               <defs>
@@ -430,7 +430,7 @@ export default function Statistics() {
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Fréquentation par salle</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Attendance by room</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={dailyTrend}>
               <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -461,7 +461,7 @@ export default function Statistics() {
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Répartition par espace</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Distribution by space</h3>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={roomDistribution} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} strokeWidth={0}>
@@ -475,7 +475,7 @@ export default function Statistics() {
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Répartition par genre</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Distribution by gender</h3>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={genderData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} strokeWidth={0}>
@@ -492,7 +492,7 @@ export default function Statistics() {
       {/* Charts row 3 */}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Visitors les plus fréquents</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Most frequent visitors</h3>
           <div className="space-y-2.5 max-h-72 overflow-y-auto">
             {topVisitors.map((v, i) => (
               <div key={v.name} className="flex items-center gap-3">
@@ -508,7 +508,7 @@ export default function Statistics() {
                 </div>
               </div>
             ))}
-            {topVisitors.length === 0 && <p className="text-sm text-muted-foreground">Nonee donnée disponible.</p>}
+            {topVisitors.length === 0 && <p className="text-sm text-muted-foreground">No donnée disponible.</p>}
           </div>
         </div>
 
@@ -540,7 +540,7 @@ export default function Statistics() {
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Fréquentation selon l'âge</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Attendance by age</h3>
           {ageData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={ageData}>
@@ -551,7 +551,7 @@ export default function Statistics() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-sm text-muted-foreground italic py-8 text-center">Nonee date de naissance renseignée pour cette période.</p>
+            <p className="text-sm text-muted-foreground italic py-8 text-center">No date de naissance renseignée pour cette period.</p>
           )}
         </div>
       </div>

@@ -232,7 +232,7 @@ export default function RestaurantMenu() {
                       </div>
                     ) : (
                       <Button size="sm" className="w-full h-8" onClick={() => addToCart(product)}>
-                        <Plus className="h-3 w-3 mr-1" /> Ajouter
+                        <Plus className="h-3 w-3 mr-1" /> Add
                       </Button>
                     )}
                   </CardContent>

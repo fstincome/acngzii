@@ -177,7 +177,7 @@ export default function ProgramAttendance() {
           <div className="icon-box h-9 w-9">
             <Fingerprint className="h-4.5 w-4.5 text-primary-foreground" />
           </div>
-          Présence Programme
+          Program Attendance
         </h1>
         <p className="page-subtitle">Pointez les participants pour chaque session</p>
       </div>
@@ -216,7 +216,7 @@ export default function ProgramAttendance() {
           <div className="icon-box h-14 w-14 mx-auto mb-4">
             <ScanLine className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h3 className="font-semibold text-foreground mb-1">Prêt pour le pointage</h3>
+          <h3 className="font-semibold text-foreground mb-1">Ready for check-in</h3>
           <p className="text-sm text-muted-foreground">Select un programme et une session pour commencer.</p>
         </Card>
       ) : (
@@ -236,7 +236,7 @@ export default function ProgramAttendance() {
                 </div>
                 <div className="text-right">
                   <p className="text-3xl font-bold">{presentList.length}<span className="text-lg opacity-70">/{participants.length}</span></p>
-                  <p className="text-xs opacity-80">présents</p>
+                  <p className="text-xs opacity-80">present</p>
                 </div>
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function ProgramAttendance() {
                 onClick={cameraActive ? stopCamera : startCamera}
               >
                 <Camera className="h-4 w-4" />
-                {cameraActive ? "Fermer" : "Caméra"}
+                {cameraActive ? "Close" : "Camera"}
               </Button>
               <div className="flex-1 relative">
                 <Input
@@ -292,7 +292,7 @@ export default function ProgramAttendance() {
             {/* Room selector */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5" /> Placer en salle
+                <MapPin className="h-3.5 w-3.5" /> Placer en room
               </label>
               <Select value={selectedRoom} onValueChange={v => setSelectedRoom(v as RoomType)}>
                 <SelectTrigger className="h-10">
@@ -359,7 +359,7 @@ export default function ProgramAttendance() {
 
             <TabsContent value="waiting" className="space-y-2 mt-4">
               {filteredParticipants(waitingList).length === 0 ? (
-                <p className="text-sm text-muted-foreground p-6 text-center">None participant en attente</p>
+                <p className="text-sm text-muted-foreground p-6 text-center">No participant en attente</p>
               ) : (
                  filteredParticipants(waitingList).map(p => (
                   <ParticipantRow key={p.id} participant={p} status="en_attente" onMark={async () => {
@@ -386,7 +386,7 @@ export default function ProgramAttendance() {
 
             <TabsContent value="present" className="space-y-2 mt-4">
               {filteredParticipants(presentList).length === 0 ? (
-                <p className="text-sm text-muted-foreground p-6 text-center">None participant présent</p>
+                <p className="text-sm text-muted-foreground p-6 text-center">No participant present</p>
               ) : (
                 filteredParticipants(presentList).map(p => {
                   const att = getAttendanceForParticipant(p.id);
@@ -397,7 +397,7 @@ export default function ProgramAttendance() {
 
             <TabsContent value="absent" className="space-y-2 mt-4">
               {filteredParticipants(absentList).length === 0 ? (
-                <p className="text-sm text-muted-foreground p-6 text-center">None participant absent</p>
+                <p className="text-sm text-muted-foreground p-6 text-center">No participant absent</p>
               ) : (
                 filteredParticipants(absentList).map(p => (
                   <ParticipantRow key={p.id} participant={p} status="absent" />

@@ -66,7 +66,7 @@ export default function RestaurantOrders() {
     enabled: !!selectedOrder,
   });
 
-  const MONTH_NAMES = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+  const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const START_YEAR = 2026;
   const START_MONTH = 2; // March (0-indexed)
 
@@ -150,7 +150,7 @@ export default function RestaurantOrders() {
   const handlePayment = async (orderId: string, method: string) => {
     try {
       await updatePayment.mutateAsync({ id: orderId, payment_status: method, payment_method: method === "unpaid" ? undefined : method });
-      toast.success("Paiement mis à jour");
+      toast.success("Payment updated");
     } catch {
       toast.error("Error");
     }
@@ -160,7 +160,7 @@ export default function RestaurantOrders() {
     if (!deleteId) return;
     try {
       await deleteOrder.mutateAsync(deleteId);
-      toast.success("Commande supprimée");
+      toast.success("Order deleted");
       setDeleteId(null);
       if (selectedOrder === deleteId) setSelectedOrder(null);
     } catch {
@@ -172,7 +172,7 @@ export default function RestaurantOrders() {
     if (!selOrder) return;
     try {
       await updateOrder.mutateAsync({ id: selOrder.id, updates: { table_number: editTable } });
-      toast.success("Commande modifiée");
+      toast.success("Order updated");
       setEditMode(false);
     } catch {
       toast.error("Error de modification");
@@ -196,7 +196,7 @@ export default function RestaurantOrders() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Commandes Restaurant</h1>
-        <p className="text-muted-foreground">Gestion en temps réel</p>
+        <p className="text-muted-foreground">Real-time management</p>
       </div>
 
       {/* Stats */}
@@ -210,9 +210,9 @@ export default function RestaurantOrders() {
       {/* Period filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Année</label>
+          <label className="text-xs text-muted-foreground mb-1 block">Year</label>
           <Select value={yearFilter} onValueChange={setYearFilter}>
-            <SelectTrigger><SelectValue placeholder="Année" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Toutes</SelectItem>
               {yearOptions.map(y => (
@@ -234,7 +234,7 @@ export default function RestaurantOrders() {
           </Select>
         </div>
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Période personnalisée</label>
+          <label className="text-xs text-muted-foreground mb-1 block">Custom period</label>
           <div className="flex gap-2">
             <Popover>
               <PopoverTrigger asChild>
@@ -272,7 +272,7 @@ export default function RestaurantOrders() {
         <TabsList className="w-full">
           <TabsTrigger value="active" className="flex-1">Actives ({counts.active})</TabsTrigger>
           <TabsTrigger value="pending" className="flex-1">En attente ({counts.pending})</TabsTrigger>
-          <TabsTrigger value="preparing" className="flex-1">Préparation ({counts.preparing})</TabsTrigger>
+          <TabsTrigger value="preparing" className="flex-1">Preparing ({counts.preparing})</TabsTrigger>
           <TabsTrigger value="ready" className="flex-1">Readys ({counts.ready})</TabsTrigger>
           <TabsTrigger value="all" className="flex-1">Toutes ({counts.all})</TabsTrigger>
         </TabsList>
@@ -280,7 +280,7 @@ export default function RestaurantOrders() {
 
       {/* Orders list */}
       <div className="space-y-3">
-        {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nonee commande</p>}
+        {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No commande</p>}
         {filtered.map(order => (
           <Card key={order.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setSelectedOrder(order.id); setEditMode(false); setEditTable(order.table_number); }}>
             <CardContent className="py-3 px-4">
@@ -446,7 +446,7 @@ export default function RestaurantOrders() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete cette commande ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. La commande et tous ses articles seront définitivement supprimés.
+              This action is irreversible. The order and all its items will be permanently deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -473,11 +473,11 @@ export default function RestaurantOrders() {
             onClick={() => {
               navigator.clipboard.writeText(confirmationMsg || "");
               setCopied(true);
-              toast.success("Message copié !");
+              toast.success("Message copied!");
             }}
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {copied ? "Copié !" : "Copier le message"}
+            {copied ? "Copied!" : "Copy message"}
           </Button>
         </DialogContent>
       </Dialog>

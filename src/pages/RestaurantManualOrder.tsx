@@ -39,7 +39,7 @@ export default function RestaurantManualOrder() {
       setVisitorId(data.visitor_id);
       setVisitorName(data.full_name);
       setVisitorQuery(data.visitor_id);
-      toast.success(`Visitor trouvé : ${data.full_name}`);
+      toast.success(`Visitor found : ${data.full_name}`);
     } else {
       toast.error("Visitor introuvable");
     }
@@ -58,7 +58,7 @@ export default function RestaurantManualOrder() {
         }
       }, 100);
     } catch {
-      toast.error("Impossible d'accéder à la caméra.");
+      toast.error("Cannot access camera.");
       setCameraActive(false);
     }
   };
@@ -139,7 +139,7 @@ export default function RestaurantManualOrder() {
       });
       setOrderDone(orderCode);
       setCart([]);
-      toast.success("Commande créée !");
+      toast.success("Order created!");
     } catch {
       toast.error("Error");
     }
@@ -158,7 +158,7 @@ export default function RestaurantManualOrder() {
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
               <Check className="h-8 w-8 text-success" />
             </div>
-            <h2 className="text-xl font-bold">Commande créée</h2>
+            <h2 className="text-xl font-bold">Order created</h2>
             <p className="font-mono text-lg text-primary">{orderDone}</p>
             {doneInvoice && (
               <>
@@ -222,7 +222,7 @@ export default function RestaurantManualOrder() {
                   onClick={cameraActive ? stopCamera : startCamera}
                 >
                   <Camera className="h-4 w-4" />
-                  {cameraActive ? "Fermer" : "Scanner"}
+                  {cameraActive ? "Close" : "Scanner"}
                 </Button>
                 <Input placeholder="ACG-XXXXXX" value={visitorQuery} onChange={e => setVisitorQuery(e.target.value)} className="font-mono"
                   onKeyDown={e => e.key === "Enter" && lookupVisitor()} />
@@ -270,7 +270,7 @@ export default function RestaurantManualOrder() {
                       <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => setCart(c => c.filter(x => x.product.id !== p.id))}><Trash2 className="h-3 w-3" /></Button>
                     </div>
                   ) : (
-                    <Button size="sm" variant="outline" onClick={() => addToCart(p)}><Plus className="h-3 w-3 mr-1" /> Ajouter</Button>
+                    <Button size="sm" variant="outline" onClick={() => addToCart(p)}><Plus className="h-3 w-3 mr-1" /> Add</Button>
                   )}
                 </div>
               );
@@ -282,7 +282,7 @@ export default function RestaurantManualOrder() {
       {/* Cart summary */}
       {cart.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-base">Récapitulatif</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Summary</CardTitle></CardHeader>
           <CardContent className="space-y-2">
             {cart.map(c => (
               <div key={c.product.id} className="flex justify-between text-sm">
