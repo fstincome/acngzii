@@ -51,13 +51,13 @@ export default function ProgramReport() {
           </div>
           Rapport Programme
         </h1>
-        <p className="page-subtitle">Visualisez la présence par programme et par session</p>
+        <p className="page-subtitle">View attendance by program and by session</p>
       </div>
 
       <div className="mb-6 max-w-sm space-y-1.5">
         <label className="text-xs font-medium text-muted-foreground">Programme</label>
         <Select value={selectedProgramId} onValueChange={setSelectedProgramId}>
-          <SelectTrigger className="h-11"><SelectValue placeholder="Sélectionner un programme" /></SelectTrigger>
+          <SelectTrigger className="h-11"><SelectValue placeholder="Select a program" /></SelectTrigger>
           <SelectContent>
             {programs.map(p => (
               <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
@@ -71,16 +71,16 @@ export default function ProgramReport() {
           <div className="icon-box h-14 w-14 mx-auto mb-4">
             <FileBarChart className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h3 className="font-semibold text-foreground mb-1">Rapport d'assiduité</h3>
-          <p className="text-sm text-muted-foreground">Sélectionnez un programme pour voir le rapport.</p>
+          <h3 className="font-semibold text-foreground mb-1">Attendance report</h3>
+          <p className="text-sm text-muted-foreground">Select a program to see the report.</p>
         </Card>
       ) : sessions.length === 0 ? (
         <Card className="p-10 text-center border-dashed border-2">
-          <p className="text-muted-foreground">Aucune session pour ce programme.</p>
+          <p className="text-muted-foreground">Nonee session pour ce programme.</p>
         </Card>
       ) : sortedParticipants.length === 0 ? (
         <Card className="p-10 text-center border-dashed border-2">
-          <p className="text-muted-foreground">Aucun participant dans ce programme.</p>
+          <p className="text-muted-foreground">None participant dans ce programme.</p>
         </Card>
       ) : (
         <div className="space-y-6">
@@ -98,7 +98,7 @@ export default function ProgramReport() {
                   <TrendingUp className="h-5 w-5 opacity-80" />
                   <span className="text-3xl font-bold">{globalRate}%</span>
                 </div>
-                <p className="text-xs opacity-80">Taux de présence global</p>
+                <p className="text-xs opacity-80">Overall attendance rate</p>
               </div>
             </div>
           </div>
@@ -107,7 +107,7 @@ export default function ProgramReport() {
           <div className="grid grid-cols-3 gap-3">
             <Card className="p-4 text-center border-l-4 border-l-success">
               <p className="text-2xl font-bold text-foreground">{totalPresent}</p>
-              <p className="text-xs text-muted-foreground">Présences totales</p>
+              <p className="text-xs text-muted-foreground">Total attendances</p>
             </Card>
             <Card className="p-4 text-center border-l-4 border-l-destructive">
               <p className="text-2xl font-bold text-foreground">{sortedParticipants.reduce((acc, p) => acc + getParticipantStats(p.id).absent, 0)}</p>
@@ -208,7 +208,7 @@ export default function ProgramReport() {
 
           {/* Legend */}
           <div className="flex items-center gap-4 text-xs text-muted-foreground justify-center">
-            <span className="flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> Présent</span>
+            <span className="flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> Present</span>
             <span className="flex items-center gap-1"><XCircle className="h-3.5 w-3.5 text-destructive" /> Absent</span>
             <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5 text-warning" /> En attente</span>
           </div>

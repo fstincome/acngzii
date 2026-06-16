@@ -13,8 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import MembershipCard from "@/components/MembershipCard";
 import { toast } from "sonner";
 const MEMBER_TYPE_LABELS: Record<string, string> = {
-  visitor: "Visiteur", member: "Membre", student: "Étudiant",
-  professional: "Professionnel", entrepreneur: "Entrepreneur", volunteer: "Bénévole",
+  visitor: "Visitor", member: "Member", student: "Student",
+  professional: "Professional", entrepreneur: "Entrepreneur", volunteer: "Volunteer",
 };
 const STATUS_LABELS: Record<string, string> = { active: "Actif", pending: "En attente", inactive: "Inactif" };
 const STATUS_DOT: Record<string, string> = { active: "bg-success", pending: "bg-warning", inactive: "bg-muted-foreground" };
@@ -88,12 +88,12 @@ export default function Visitors() {
   }, [visitors, search, typeFilter, statusFilter, institutionFilter, sortKey, sortDir]);
 
   const handleDeleteVisitor = async (v: Visitor) => {
-    if (!confirm(`Supprimer le visiteur "${v.full_name}" et tout son historique ?`)) return;
+    if (!confirm(`Delete le visiteur "${v.full_name}" et tout son historique ?`)) return;
     try {
       await deleteVisitor.mutateAsync(v.visitor_id);
-      toast.success("Visiteur supprimé !");
+      toast.success("Visitor deleted!");
       setSelected(null);
-    } catch { toast.error("Erreur lors de la suppression"); }
+    } catch { toast.error("Error lors de la suppression"); }
   };
 
   if (selected) {
@@ -155,9 +155,9 @@ export default function Visitors() {
           age_group: editForm.age_group || null,
         });
         setEditing(false);
-        toast.success("Membre mis à jour avec succès");
+        toast.success("Member updated successfully");
       } catch {
-        toast.error("Erreur lors de la mise à jour");
+        toast.error("Update error");
       }
     };
 
@@ -171,22 +171,22 @@ export default function Visitors() {
             {editing ? (
               <>
                 <Button variant="outline" className="gap-2 rounded-xl" onClick={() => setEditing(false)}>
-                  <X className="h-4 w-4" /> Annuler
+                  <X className="h-4 w-4" /> Cancel
                 </Button>
                 <Button className="gap-2 rounded-xl" onClick={saveEdit} disabled={updateVisitor.isPending}>
-                  <Save className="h-4 w-4" /> {updateVisitor.isPending ? "Enregistrement..." : "Enregistrer"}
+                  <Save className="h-4 w-4" /> {updateVisitor.isPending ? "Enregistrement..." : "Save"}
                 </Button>
               </>
             ) : (
               <>
                 {canDelete && (
                   <Button variant="outline" className="gap-2 rounded-xl text-destructive hover:text-destructive" onClick={() => handleDeleteVisitor(selected)}>
-                    <Trash2 className="h-4 w-4" /> Supprimer
+                    <Trash2 className="h-4 w-4" /> Delete
                   </Button>
                 )}
                 {canEdit && (
                   <Button variant="outline" className="gap-2 rounded-xl" onClick={startEdit}>
-                    <Pencil className="h-4 w-4" /> Modifier
+                    <Pencil className="h-4 w-4" /> Edit
                   </Button>
                 )}
                 <Dialog>
@@ -206,8 +206,8 @@ export default function Visitors() {
         </div>
         {editing ? (
           <div className="rounded-2xl border border-border/50 bg-card p-7 shadow-sm space-y-5">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Modifier les informations</h3>
-            <p className="text-xs text-muted-foreground -mt-3 mb-2">L'ID ({selected.visitor_id}) et le QR code ne peuvent pas être modifiés.</p>
+            <h3 className="text-sm font-semibold text-foreground mb-4">Edit les informations</h3>
+            <p className="text-xs text-muted-foreground -mt-3 mb-2">The ID ({selected.visitor_id}) and QR code cannot be changed.</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2 space-y-1.5">
                 <Label className="text-foreground text-xs">Nom complet <span className="text-destructive">*</span></Label>
@@ -216,7 +216,7 @@ export default function Visitors() {
               <div className="space-y-1.5">
                 <Label className="text-foreground text-xs">Genre</Label>
                 <Select value={editForm.gender} onValueChange={(v) => setEditForm({ ...editForm, gender: v })}>
-                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="male">Homme</SelectItem>
                     <SelectItem value="female">Femme</SelectItem>
@@ -229,7 +229,7 @@ export default function Visitors() {
                 <Input type="date" value={editForm.date_of_birth} onChange={(e) => setEditForm({ ...editForm, date_of_birth: e.target.value })} className="rounded-xl h-10" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-foreground text-xs">Téléphone</Label>
+                <Label className="text-foreground text-xs">Phone</Label>
                 <Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} className="rounded-xl h-10" />
               </div>
               <div className="space-y-1.5">
@@ -245,27 +245,27 @@ export default function Visitors() {
                 <Input value={editForm.occupation} onChange={(e) => setEditForm({ ...editForm, occupation: e.target.value })} className="rounded-xl h-10" />
               </div>
               <div className="sm:col-span-2 space-y-1.5">
-                <Label className="text-foreground text-xs">Institution (école, université...)</Label>
-                <Input value={editForm.institution} onChange={(e) => setEditForm({ ...editForm, institution: e.target.value })} placeholder="Ex: Université du Burundi" className="rounded-xl h-10" />
+                <Label className="text-foreground text-xs">Institution (school, university...)</Label>
+                <Input value={editForm.institution} onChange={(e) => setEditForm({ ...editForm, institution: e.target.value })} placeholder="e.g. Burundi University" className="rounded-xl h-10" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-foreground text-xs">Type de membre</Label>
                 <Select value={editForm.member_type} onValueChange={(v) => setEditForm({ ...editForm, member_type: v })}>
-                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="visitor">Visiteur</SelectItem>
-                    <SelectItem value="member">Membre</SelectItem>
-                    <SelectItem value="student">Étudiant</SelectItem>
-                    <SelectItem value="professional">Professionnel</SelectItem>
+                    <SelectItem value="visitor">Visitor</SelectItem>
+                    <SelectItem value="member">Member</SelectItem>
+                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="professional">Professional</SelectItem>
                     <SelectItem value="entrepreneur">Entrepreneur</SelectItem>
-                    <SelectItem value="volunteer">Bénévole</SelectItem>
+                    <SelectItem value="volunteer">Volunteer</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-foreground text-xs">Statut d'adhésion</Label>
+                <Label className="text-foreground text-xs">Membership status</Label>
                 <Select value={editForm.membership_status} onValueChange={(v) => setEditForm({ ...editForm, membership_status: v })}>
-                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="active">Actif</SelectItem>
                     <SelectItem value="pending">En attente</SelectItem>
@@ -274,9 +274,9 @@ export default function Visitors() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-foreground text-xs">Tranche d'âge (optionnel)</Label>
+                <Label className="text-foreground text-xs">Age range (optional)</Label>
                 <Select value={editForm.age_group || ""} onValueChange={(v) => setEditForm({ ...editForm, age_group: v })}>
-                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="<18">Moins de 18</SelectItem>
                     <SelectItem value="18-25">18-25</SelectItem>
@@ -312,7 +312,7 @@ export default function Visitors() {
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-2.5">
-              <Detail icon={Phone} label="Téléphone" value={selected.phone} />
+              <Detail icon={Phone} label="Phone" value={selected.phone} />
               <Detail icon={Briefcase} label="Profession" value={selected.occupation} />
               <Detail icon={MapPin} label="Quartier" value={selected.neighborhood} />
               <Detail icon={Calendar} label="Genre" value={genderLabel} />
@@ -321,7 +321,7 @@ export default function Visitors() {
               <Detail icon={Briefcase} label="Institution" value={selected.institution || "—"} />
               <Detail icon={User} label="Type de membre" value={MEMBER_TYPE_LABELS[selected.member_type] || selected.member_type} />
               <Detail icon={User} label="Statut" value={STATUS_LABELS[selected.membership_status] || selected.membership_status} />
-              {selected.age_group && <Detail icon={Calendar} label="Tranche d'âge" value={selected.age_group} />}
+              {selected.age_group && <Detail icon={Calendar} label="Age range" value={selected.age_group} />}
               {selected.photo && (
                 <div className="col-span-2 flex items-start gap-3 rounded-xl bg-muted/40 px-4 py-3">
                   <Image className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
@@ -343,7 +343,7 @@ export default function Visitors() {
             </span>
           </h3>
           {visits.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune visite enregistrée.</p>
+            <p className="text-sm text-muted-foreground">No visit recorded.</p>
           ) : (
             <div className="space-y-1.5">
               {visits.map((v) => (
@@ -351,7 +351,7 @@ export default function Visitors() {
                   <div className="flex items-center gap-2.5">
                     <span className={`h-2 w-2 rounded-full ${v.action === "check_in" ? "bg-success" : "bg-muted-foreground"}`} />
                     <span className="text-foreground font-medium">
-                      {v.action === "check_in" ? "Entrée" : "Sortie"}{" "}
+                      {v.action === "check_in" ? "Check-in" : "Check-out"}{" "}
                       {ROOM_LABELS[v.room as RoomType] || v.room}
                     </span>
                   </div>
@@ -371,7 +371,7 @@ export default function Visitors() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="page-header">
-          <h1 className="page-title">Membres</h1>
+          <h1 className="page-title">Members</h1>
           <p className="page-subtitle">{visitors.length} membres inscrits</p>
         </div>
       </div>
@@ -381,7 +381,7 @@ export default function Visitors() {
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-11 rounded-xl h-11"
-            placeholder="Rechercher (nom, ID, téléphone, email, institution)..."
+            placeholder="Search (name, ID, phone, email, institution)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -390,12 +390,12 @@ export default function Visitors() {
           <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous les types</SelectItem>
-            <SelectItem value="visitor">Visiteur</SelectItem>
-            <SelectItem value="member">Membre</SelectItem>
-            <SelectItem value="student">Étudiant</SelectItem>
-            <SelectItem value="professional">Professionnel</SelectItem>
+            <SelectItem value="visitor">Visitor</SelectItem>
+            <SelectItem value="member">Member</SelectItem>
+            <SelectItem value="student">Student</SelectItem>
+            <SelectItem value="professional">Professional</SelectItem>
             <SelectItem value="entrepreneur">Entrepreneur</SelectItem>
-            <SelectItem value="volunteer">Bénévole</SelectItem>
+            <SelectItem value="volunteer">Volunteer</SelectItem>
           </SelectContent>
         </Select>
         <Select value={institutionFilter} onValueChange={setInstitutionFilter}>
@@ -417,10 +417,10 @@ export default function Visitors() {
       </div>
 
       <div className="flex items-center justify-between px-1">
-        <p className="text-xs text-muted-foreground">{filtered.length} résultat(s)</p>
+        <p className="text-xs text-muted-foreground">{filtered.length} result(s)</p>
         {(search || typeFilter !== "all" || statusFilter !== "all" || institutionFilter !== "all") && (
           <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => { setSearch(""); setTypeFilter("all"); setStatusFilter("all"); setInstitutionFilter("all"); }}>
-            <X className="h-3 w-3" /> Réinitialiser
+            <X className="h-3 w-3" /> Reset
           </Button>
         )}
       </div>
@@ -474,7 +474,7 @@ export default function Visitors() {
                 <TableRow>
                   <TableCell colSpan={5} className="py-12 text-center">
                     <User className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
-                    <p className="text-sm text-muted-foreground">Aucun membre trouvé.</p>
+                    <p className="text-sm text-muted-foreground">No member found.</p>
                   </TableCell>
                 </TableRow>
               )}

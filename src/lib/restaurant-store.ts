@@ -44,7 +44,7 @@ export const CATEGORIES = [
   { value: "repas", label: "Repas" },
   { value: "desserts", label: "Desserts" },
   { value: "glaces", label: "Glaces" },
-  { value: "cafe_the", label: "Café / Thé" },
+  { value: "cafe_the", label: "Coffee / Tea" },
 ];
 
 export const ORDER_STATUSES = [
@@ -53,11 +53,11 @@ export const ORDER_STATUSES = [
 
 export const STATUS_LABELS: Record<string, string> = {
   pending: "En attente",
-  confirmed: "Confirmée",
-  preparing: "En préparation",
-  ready: "Prête",
-  delivered: "Livrée",
-  cancelled: "Annulée",
+  confirmed: "Confirmed",
+  preparing: "Preparing",
+  ready: "Ready",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
 };
 
 export const STATUS_COLORS: Record<string, string> = {
@@ -70,7 +70,7 @@ export const STATUS_COLORS: Record<string, string> = {
 };
 
 export const PAYMENT_LABELS: Record<string, string> = {
-  unpaid: "Non payé",
+  unpaid: "Unpaid",
   cash: "Cash",
   mobile_money: "Mobile Money",
   bitcoin: "Bitcoin",

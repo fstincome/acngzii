@@ -39,9 +39,9 @@ export default function RestaurantManualOrder() {
       setVisitorId(data.visitor_id);
       setVisitorName(data.full_name);
       setVisitorQuery(data.visitor_id);
-      toast.success(`Visiteur trouvé : ${data.full_name}`);
+      toast.success(`Visitor trouvé : ${data.full_name}`);
     } else {
-      toast.error("Visiteur introuvable");
+      toast.error("Visitor introuvable");
     }
   };
 
@@ -141,7 +141,7 @@ export default function RestaurantManualOrder() {
       setCart([]);
       toast.success("Commande créée !");
     } catch {
-      toast.error("Erreur");
+      toast.error("Error");
     }
   };
 
@@ -187,7 +187,7 @@ export default function RestaurantManualOrder() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Commande Manuelle</h1>
-        <p className="text-muted-foreground">Créer une commande pour un visiteur</p>
+        <p className="text-muted-foreground">Create une commande pour un visiteur</p>
       </div>
 
       {/* Step 1: Visitor */}
@@ -250,7 +250,7 @@ export default function RestaurantManualOrder() {
 
       {/* Step 3: Products */}
       <Card>
-        <CardHeader><CardTitle className="text-base">3. Sélectionner les produits</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">3. Select les produits</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <Input placeholder="Rechercher un produit..." value={searchProduct} onChange={e => setSearchProduct(e.target.value)} />
           <div className="max-h-60 overflow-y-auto space-y-2">
@@ -295,7 +295,7 @@ export default function RestaurantManualOrder() {
               <span className="text-primary">{total.toLocaleString()} BIF</span>
             </div>
             <Button className="w-full mt-2" disabled={!visitorId || !tableNumber || createOrder.isPending} onClick={handleSubmit}>
-              <ShoppingCart className="h-4 w-4 mr-2" /> Créer la commande
+              <ShoppingCart className="h-4 w-4 mr-2" /> Create la commande
             </Button>
           </CardContent>
         </Card>

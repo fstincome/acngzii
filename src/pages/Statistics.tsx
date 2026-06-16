@@ -368,7 +368,7 @@ export default function Statistics() {
 
       {/* KPI cards with comparison */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard icon={Users} label="Visiteurs uniques" value={uniqueVisitors} change={visitorChange} period={period} />
+        <KpiCard icon={Users} label="Visitors uniques" value={uniqueVisitors} change={visitorChange} period={period} />
         <KpiCard icon={TrendingUp} label="Total entrées" value={checkIns.length} change={totalChange} period={period} />
         <KpiCard icon={Clock} label="Moy. / jour" value={avgDaily} />
         <KpiCard icon={Calendar} label="Heure de pointe" value={peakHour.hour} subtitle={`${peakHour.total} entrées`} />
@@ -399,7 +399,7 @@ export default function Statistics() {
           </div>
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <KpiCard icon={ClipboardCheck} label="Taux de présence" value={`${progRate}%`} />
-            <KpiCard icon={GraduationCap} label="Présents" value={progPresent} />
+            <KpiCard icon={GraduationCap} label="Presents" value={progPresent} />
             <KpiCard icon={Users} label="Absents" value={progAbsent} />
             <KpiCard icon={Calendar} label="Total pointages" value={progTotal} />
           </div>
@@ -492,7 +492,7 @@ export default function Statistics() {
       {/* Charts row 3 */}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Visiteurs les plus fréquents</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Visitors les plus fréquents</h3>
           <div className="space-y-2.5 max-h-72 overflow-y-auto">
             {topVisitors.map((v, i) => (
               <div key={v.name} className="flex items-center gap-3">
@@ -508,7 +508,7 @@ export default function Statistics() {
                 </div>
               </div>
             ))}
-            {topVisitors.length === 0 && <p className="text-sm text-muted-foreground">Aucune donnée disponible.</p>}
+            {topVisitors.length === 0 && <p className="text-sm text-muted-foreground">Nonee donnée disponible.</p>}
           </div>
         </div>
 
@@ -519,7 +519,7 @@ export default function Statistics() {
               <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={90} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="value" fill="hsl(234,85%,60%)" radius={[0, 6, 6, 0]} name="Membres" />
+              <Bar dataKey="value" fill="hsl(234,85%,60%)" radius={[0, 6, 6, 0]} name="Members" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -534,7 +534,7 @@ export default function Statistics() {
               <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="value" fill="hsl(174,62%,47%)" radius={[6, 6, 0, 0]} name="Visiteurs" />
+              <Bar dataKey="value" fill="hsl(174,62%,47%)" radius={[6, 6, 0, 0]} name="Visitors" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -547,11 +547,11 @@ export default function Statistics() {
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="value" fill="hsl(280,65%,55%)" radius={[6, 6, 0, 0]} name="Visiteurs" />
+                <Bar dataKey="value" fill="hsl(280,65%,55%)" radius={[6, 6, 0, 0]} name="Visitors" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-sm text-muted-foreground italic py-8 text-center">Aucune date de naissance renseignée pour cette période.</p>
+            <p className="text-sm text-muted-foreground italic py-8 text-center">Nonee date de naissance renseignée pour cette période.</p>
           )}
         </div>
       </div>

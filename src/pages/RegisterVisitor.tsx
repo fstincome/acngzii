@@ -26,7 +26,7 @@ function buildFormPDF(): jsPDF {
   y += 6;
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Formulaire d'inscription — Visiteur", w / 2, y, { align: "center" });
+  doc.text("Formulaire d'inscription — Visitor", w / 2, y, { align: "center" });
   y += 4;
   doc.setDrawColor(80, 80, 80);
   doc.setLineWidth(0.4);
@@ -37,11 +37,11 @@ function buildFormPDF(): jsPDF {
     "Nom complet *",
     "Genre (Homme / Femme / Autre)",
     "Date de naissance (JJ/MM/AAAA)",
-    "Téléphone",
+    "Phone",
     "Email",
     "Quartier / Commune",
     "Profession",
-    "Institution (école, université...)",
+    "Institution (school, university...)",
   ];
 
   const fieldH = 8;
@@ -91,7 +91,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
   const handleDownload = () => {
     const doc = buildFormPDF();
     doc.save("formulaire-inscription-visiteur.pdf");
-    toast.success("Formulaire PDF téléchargé !");
+    toast.success("PDF form downloaded!");
   };
 
   const handlePrint = () => {
@@ -121,7 +121,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
       `📋 *Formulaire d'inscription - American Corner*\n\n` +
       `Bonjour ! Veuillez remplir le formulaire d'inscription en suivant ce lien :\n\n` +
       `👉 ${formUrl}\n\n` +
-      `Vous pouvez aussi télécharger le PDF depuis cette page pour le remplir à la main.\n\n` +
+      `You can also download the PDF from this page to fill it in by hand.\n\n` +
       `Merci !\n— American Corner`;
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   };
@@ -133,7 +133,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
       `Bonjour,\n\n` +
       `Veuillez remplir votre formulaire d'inscription au American Corner en suivant ce lien :\n\n` +
       `${formUrl}\n\n` +
-      `Vous pouvez aussi télécharger le PDF depuis cette page pour le remplir à la main.\n\n` +
+      `You can also download the PDF from this page to fill it in by hand.\n\n` +
       `Merci !\n\nCordialement,\nAmerican Corner`;
     return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
@@ -142,11 +142,11 @@ function FormPreview({ onBack }: { onBack: () => void }) {
     "Nom complet *",
     "Genre (Homme / Femme / Autre)",
     "Date de naissance (JJ/MM/AAAA)",
-    "Téléphone",
+    "Phone",
     "Email",
     "Quartier / Commune",
     "Profession",
-    "Institution (école, université...)",
+    "Institution (school, university...)",
   ];
 
   return (
@@ -158,7 +158,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
         </Button>
         <div>
           <h2 className="text-lg font-bold text-foreground">Formulaire d'inscription</h2>
-          <p className="text-sm text-muted-foreground">Aperçu du formulaire papier</p>
+          <p className="text-sm text-muted-foreground">Paper form preview</p>
         </div>
       </div>
 
@@ -170,7 +170,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
             <img src="/gss-logo.png" alt="American Spaces" className="h-8 w-8 rounded-lg object-contain" />
             <h3 className="text-sm font-bold tracking-widest text-foreground uppercase">American Corner</h3>
           </div>
-          <p className="text-xs text-muted-foreground">Formulaire d'inscription — Visiteur</p>
+          <p className="text-xs text-muted-foreground">Formulaire d'inscription — Visitor</p>
           <div className="mt-3 h-px bg-border/50" />
         </div>
 
@@ -205,7 +205,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
         {/* Footer */}
         <div className="px-6 py-3 bg-muted/20 border-t border-border/30">
           <p className="text-[9px] text-muted-foreground italic text-center">
-            Ce formulaire est à remplir par le visiteur. Le Directeur se chargera de saisir les données dans le système.
+            This form must be filled in by the visitor. The Director will then enter the data into the system.
           </p>
         </div>
       </div>
@@ -215,7 +215,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
         <div className="grid grid-cols-2 gap-2.5">
           <Button onClick={handleDownload} className="gap-2 rounded-xl h-11" variant="default">
             <Download className="h-4 w-4" />
-            Télécharger PDF
+            Download PDF
           </Button>
           <Button onClick={handlePrint} disabled={generating} className="gap-2 rounded-xl h-11" variant="secondary">
             <Printer className="h-4 w-4" />
@@ -309,7 +309,7 @@ export default function RegisterVisitor() {
       institution: d.institution || f.institution,
       photo: d.photo || f.photo,
     }));
-    toast.success("Données pré-remplies. Vérifiez et modifiez si nécessaire.");
+    toast.success("Data pre-filled. Review and edit if needed.");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -339,10 +339,10 @@ export default function RegisterVisitor() {
       setNewVisitorId(visitorId);
       setFullName(form.fullName);
       setStep("card");
-      toast.success("Membre inscrit avec succès !");
+      toast.success("Member registered successfully!");
     } catch (err) {
       console.error(err);
-      toast.error("Erreur lors de l'inscription");
+      toast.error("Error lors de l'inscription");
     }
   };
 
@@ -357,8 +357,8 @@ export default function RegisterVisitor() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10">
             <Check className="h-8 w-8 text-success" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">Inscription terminée</h2>
-          <p className="mt-1 text-sm text-muted-foreground">La carte de membre est prête</p>
+          <h2 className="text-xl font-bold text-foreground">Registration complete</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Membership card is ready</p>
         </div>
 
         <MembershipCard fullName={fullName} visitorId={newVisitorId} />
@@ -412,13 +412,13 @@ export default function RegisterVisitor() {
               <Alert className="border-warning/50 bg-warning/5">
                 <AlertTriangle className="h-4 w-4 text-warning" />
                 <AlertDescription className="space-y-2">
-                  <p className="text-sm font-medium">⚠️ Personne(s) similaire(s) trouvée(s) :</p>
+                  <p className="text-sm font-medium">⚠️ Similar person(s) found:</p>
                   {duplicates.map(d => (
                     <div key={d.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-background border border-border/50">
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{d.full_name}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          {d.source === "visitor" ? "Visiteur" : "Participant"} • {d.phone || "—"} • {d.code}
+                          {d.source === "visitor" ? "Visitor" : "Participant"} • {d.phone || "—"} • {d.code}
                         </p>
                       </div>
                       <Button type="button" size="sm" variant="secondary" className="shrink-0 gap-1 text-xs" onClick={() => fillFromDuplicate(d)}>
@@ -426,21 +426,21 @@ export default function RegisterVisitor() {
                       </Button>
                     </div>
                   ))}
-                  <p className="text-[10px] text-muted-foreground">Si c'est la même personne, elle est déjà enregistrée. Sinon, continuez l'inscription.</p>
+                  <p className="text-[10px] text-muted-foreground">If it's the same person, they are already registered. Otherwise, continue the registration.</p>
                 </AlertDescription>
               </Alert>
             </div>
           )}
           {duplicateChecked && duplicates.length === 0 && (
             <div className="sm:col-span-2">
-              <p className="text-xs text-success flex items-center gap-1"><Check className="h-3 w-3" /> Aucun doublon détecté</p>
+              <p className="text-xs text-success flex items-center gap-1"><Check className="h-3 w-3" /> No duplicates found</p>
             </div>
           )}
 
           <div className="space-y-2">
             <Label className="text-foreground">Genre</Label>
             <Select value={form.gender} onValueChange={(v) => update("gender", v)}>
-              <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+              <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="male">Homme</SelectItem>
                 <SelectItem value="female">Femme</SelectItem>
@@ -455,12 +455,12 @@ export default function RegisterVisitor() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
+            <Label htmlFor="phone" className="text-foreground">Phone</Label>
             <Input id="phone" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+257 xx xxx xxx" className="rounded-xl h-11" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-foreground">Email (optionnel)</Label>
+            <Label htmlFor="email" className="text-foreground">Email (optional)</Label>
             <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="email@exemple.com" className="rounded-xl h-11" />
           </div>
 
@@ -471,14 +471,14 @@ export default function RegisterVisitor() {
 
           <div className="space-y-2">
             <Label htmlFor="occupation" className="text-foreground">Profession</Label>
-            <Input id="occupation" value={form.occupation} onChange={(e) => update("occupation", e.target.value)} placeholder="ex: Étudiant, Entrepreneur" className="rounded-xl h-11" />
+            <Input id="occupation" value={form.occupation} onChange={(e) => update("occupation", e.target.value)} placeholder="e.g. Student, Entrepreneur" className="rounded-xl h-11" />
           </div>
 
           <div className="sm:col-span-2 space-y-2">
             <Label htmlFor="institution" className="text-foreground flex items-center gap-1.5">
-              <Building className="h-3.5 w-3.5" /> Institution (école, université...)
+              <Building className="h-3.5 w-3.5" /> Institution (school, university...)
             </Label>
-            <Input id="institution" value={form.institution} onChange={(e) => update("institution", e.target.value)} placeholder="Ex: Université du Burundi" className="rounded-xl h-11" />
+            <Input id="institution" value={form.institution} onChange={(e) => update("institution", e.target.value)} placeholder="e.g. Burundi University" className="rounded-xl h-11" />
           </div>
 
           <div className="space-y-2">
@@ -486,22 +486,22 @@ export default function RegisterVisitor() {
               <GraduationCap className="h-3.5 w-3.5" /> Type de membre
             </Label>
             <Select value={form.memberType} onValueChange={(v) => update("memberType", v)}>
-              <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+              <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="visitor">Visiteur</SelectItem>
-                <SelectItem value="member">Membre</SelectItem>
-                <SelectItem value="student">Étudiant</SelectItem>
-                <SelectItem value="professional">Professionnel</SelectItem>
+                <SelectItem value="visitor">Visitor</SelectItem>
+                <SelectItem value="member">Member</SelectItem>
+                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="professional">Professional</SelectItem>
                 <SelectItem value="entrepreneur">Entrepreneur</SelectItem>
-                <SelectItem value="volunteer">Bénévole</SelectItem>
+                <SelectItem value="volunteer">Volunteer</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-foreground">Statut d'adhésion</Label>
+            <Label className="text-foreground">Membership status</Label>
             <Select value={form.membershipStatus} onValueChange={(v) => update("membershipStatus", v)}>
-              <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+              <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="active">Actif</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>

@@ -156,7 +156,7 @@ function buildFormPDF(): jsPDF {
 
   // Info: Objectifs spécifiques
   y = infoBox(doc, M, y, CW, "Objectifs Spécifiques :",
-    "Actions précises et réalisables. Ex: \"Apprendre HTML\", \"Créer une page web\", \"Finir un module Coursera\". Soyez concret et réaliste.");
+    "Actions précises et réalisables. Ex: \"Apprendre HTML\", \"Create une page web\", \"Finir un module Coursera\". Soyez concret et réaliste.");
   y += 1;
   for (let i = 1; i <= 3; i++) {
     setFill(doc, C_FIELD_BG);
@@ -325,7 +325,7 @@ function buildVisitorFormPDF(): jsPDF {
   y += 6;
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Formulaire d'inscription — Visiteur", w / 2, y, { align: "center" });
+  doc.text("Formulaire d'inscription — Visitor", w / 2, y, { align: "center" });
   y += 4;
   doc.setDrawColor(80, 80, 80);
   doc.setLineWidth(0.4);
@@ -336,11 +336,11 @@ function buildVisitorFormPDF(): jsPDF {
     "Nom complet *",
     "Genre (Homme / Femme / Autre)",
     "Date de naissance (JJ/MM/AAAA)",
-    "Téléphone",
+    "Phone",
     "Email",
     "Quartier / Commune",
     "Profession",
-    "Institution (école, université...)",
+    "Institution (school, university...)",
   ];
   const fieldH = 8;
   for (const label of fields) {

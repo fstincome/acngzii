@@ -13,7 +13,7 @@ export interface InvoiceData {
 }
 
 const PAYMENT_LABELS: Record<string, string> = {
-  unpaid: "Non payé",
+  unpaid: "Unpaid",
   cash: "Cash",
   mobile_money: "Mobile Money",
   bitcoin: "Bitcoin",
@@ -40,7 +40,7 @@ export function generateInvoicePDF(data: InvoiceData): jsPDF {
   doc.setFont("helvetica", "normal");
   doc.text("Restaurant — Facture", w / 2, y + 11, { align: "center" });
   doc.setFontSize(6);
-  doc.text("Tél: +257 61 154 065", w / 2, y + 15, { align: "center" });
+  doc.text("Tel: +257 61 154 065", w / 2, y + 15, { align: "center" });
 
   y = 30;
 
@@ -60,7 +60,7 @@ export function generateInvoicePDF(data: InvoiceData): jsPDF {
 
   const infoPairs = [
     ["Date", new Date(data.createdAt).toLocaleString("fr")],
-    ["Visiteur", data.visitorName || data.visitorId],
+    ["Visitor", data.visitorName || data.visitorId],
     ["Table", String(data.tableNumber)],
   ];
   infoPairs.forEach(([label, value]) => {
@@ -89,7 +89,7 @@ export function generateInvoicePDF(data: InvoiceData): jsPDF {
   doc.setFontSize(6.5);
   doc.setFont("helvetica", "bold");
   doc.text("ARTICLE", mx + 2, y);
-  doc.text("QTÉ", 48, y, { align: "center" });
+  doc.text("QTY", 48, y, { align: "center" });
   doc.text("TOTAL", w - mx - 1, y, { align: "right" });
   y += 5;
 
@@ -213,7 +213,7 @@ export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
   y += 14;
   ctx.font = "300 11px Helvetica, Arial, sans-serif";
   ctx.fillStyle = "rgba(255,255,255,0.8)";
-  ctx.fillText("Tél: +257 61 154 065", W / 2, y);
+  ctx.fillText("Tel: +257 61 154 065", W / 2, y);
 
   y = headerH + 16;
 
@@ -229,7 +229,7 @@ export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
   // ── Info section ──
   const infoPairs: [string, string][] = [
     ["Date", new Date(data.createdAt).toLocaleString("fr")],
-    ["Visiteur", data.visitorName || data.visitorId],
+    ["Visitor", data.visitorName || data.visitorId],
     ["Table", String(data.tableNumber)],
   ];
   ctx.textAlign = "left";
@@ -255,7 +255,7 @@ export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
   ctx.textAlign = "left";
   ctx.fillText("ARTICLE", px + 8, y + 15);
   ctx.textAlign = "center";
-  ctx.fillText("QTÉ", W / 2 + 30, y + 15);
+  ctx.fillText("QTY", W / 2 + 30, y + 15);
   ctx.textAlign = "right";
   ctx.fillText("TOTAL", W - px - 8, y + 15);
   y += 28;

@@ -143,7 +143,7 @@ export default function RestaurantOrders() {
         setCopied(false);
       }
     } catch {
-      toast.error("Erreur");
+      toast.error("Error");
     }
   };
 
@@ -152,7 +152,7 @@ export default function RestaurantOrders() {
       await updatePayment.mutateAsync({ id: orderId, payment_status: method, payment_method: method === "unpaid" ? undefined : method });
       toast.success("Paiement mis à jour");
     } catch {
-      toast.error("Erreur");
+      toast.error("Error");
     }
   };
 
@@ -164,7 +164,7 @@ export default function RestaurantOrders() {
       setDeleteId(null);
       if (selectedOrder === deleteId) setSelectedOrder(null);
     } catch {
-      toast.error("Erreur de suppression");
+      toast.error("Error de suppression");
     }
   };
 
@@ -175,7 +175,7 @@ export default function RestaurantOrders() {
       toast.success("Commande modifiée");
       setEditMode(false);
     } catch {
-      toast.error("Erreur de modification");
+      toast.error("Error de modification");
     }
   };
 
@@ -204,7 +204,7 @@ export default function RestaurantOrders() {
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold">{todayOrders.length}</p><p className="text-xs text-muted-foreground">Commandes aujourd'hui</p></CardContent></Card>
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-primary">{todayRevenue.toLocaleString()}</p><p className="text-xs text-muted-foreground">Revenus (BIF)</p></CardContent></Card>
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-warning">{pendingCount}</p><p className="text-xs text-muted-foreground">En attente</p></CardContent></Card>
-        <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-success">{todayOrders.filter(o => o.status === "delivered").length}</p><p className="text-xs text-muted-foreground">Livrées</p></CardContent></Card>
+        <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-success">{todayOrders.filter(o => o.status === "delivered").length}</p><p className="text-xs text-muted-foreground">Delivereds</p></CardContent></Card>
       </div>
 
       {/* Period filters */}
@@ -273,14 +273,14 @@ export default function RestaurantOrders() {
           <TabsTrigger value="active" className="flex-1">Actives ({counts.active})</TabsTrigger>
           <TabsTrigger value="pending" className="flex-1">En attente ({counts.pending})</TabsTrigger>
           <TabsTrigger value="preparing" className="flex-1">Préparation ({counts.preparing})</TabsTrigger>
-          <TabsTrigger value="ready" className="flex-1">Prêtes ({counts.ready})</TabsTrigger>
+          <TabsTrigger value="ready" className="flex-1">Readys ({counts.ready})</TabsTrigger>
           <TabsTrigger value="all" className="flex-1">Toutes ({counts.all})</TabsTrigger>
         </TabsList>
       </Tabs>
 
       {/* Orders list */}
       <div className="space-y-3">
-        {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Aucune commande</p>}
+        {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nonee commande</p>}
         {filtered.map(order => (
           <Card key={order.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setSelectedOrder(order.id); setEditMode(false); setEditTable(order.table_number); }}>
             <CardContent className="py-3 px-4">
@@ -348,9 +348,9 @@ export default function RestaurantOrders() {
             <div className="space-y-4">
               {editMode ? (
                 <div className="space-y-3 border rounded-lg p-3 bg-muted/50">
-                  <p className="text-sm font-medium">Modifier la commande</p>
+                  <p className="text-sm font-medium">Edit la commande</p>
                   <div>
-                    <label className="text-sm text-muted-foreground">Numéro de table</label>
+                    <label className="text-sm text-muted-foreground">Table number</label>
                     <Select value={String(editTable)} onValueChange={(v) => setEditTable(Number(v))}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -360,12 +360,12 @@ export default function RestaurantOrders() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button className="w-full" onClick={handleEditSave}>Enregistrer</Button>
+                  <Button className="w-full" onClick={handleEditSave}>Save</Button>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div><span className="text-muted-foreground">Table:</span> {selOrder.table_number}</div>
-                  <div><span className="text-muted-foreground">Visiteur:</span> {selOrder.visitor_id}</div>
+                  <div><span className="text-muted-foreground">Visitor:</span> {selOrder.visitor_id}</div>
                   <div><span className="text-muted-foreground">Date:</span> {new Date(selOrder.created_at).toLocaleString("fr")}</div>
                   <div><span className="text-muted-foreground">Total:</span> <strong>{selOrder.total_amount.toLocaleString()} BIF</strong></div>
                 </div>
@@ -400,7 +400,7 @@ export default function RestaurantOrders() {
                 <Select value={selOrder.payment_status} onValueChange={(s) => handlePayment(selOrder.id, s)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unpaid">Non payé</SelectItem>
+                    <SelectItem value="unpaid">Unpaid</SelectItem>
                     <SelectItem value="cash">Cash</SelectItem>
                     <SelectItem value="mobile_money">Mobile Money</SelectItem>
                     <SelectItem value="bitcoin">Bitcoin</SelectItem>
@@ -432,7 +432,7 @@ export default function RestaurantOrders() {
 
               {selOrder.status !== "cancelled" && selOrder.status !== "delivered" && (
                 <Button variant="destructive" className="w-full" onClick={() => handleStatusChange(selOrder.id, "cancelled")}>
-                  Annuler la commande
+                  Cancel la commande
                 </Button>
               )}
             </div>
@@ -444,15 +444,15 @@ export default function RestaurantOrders() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette commande ?</AlertDialogTitle>
+            <AlertDialogTitle>Delete cette commande ?</AlertDialogTitle>
             <AlertDialogDescription>
               Cette action est irréversible. La commande et tous ses articles seront définitivement supprimés.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Supprimer
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

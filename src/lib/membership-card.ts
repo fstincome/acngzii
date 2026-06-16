@@ -71,7 +71,7 @@ export async function generateMembershipCardPDF(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(4.5);
   doc.setTextColor(...MUTED_TEXT);
-  doc.text("Carte de Membre", 18, 12.5);
+  doc.text("Carte de Member", 18, 12.5);
 
   // Divider line
   doc.setDrawColor(80, 80, 120);
@@ -124,7 +124,7 @@ export async function generateMembershipCardPDF(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(3.5);
   doc.setTextColor(...MUTED_TEXT);
-  doc.text("Présentez cette carte à chaque visite", 5, CARD_HEIGHT - 4);
+  doc.text("Show this card on every visit", 5, CARD_HEIGHT - 4);
   doc.text("+257 61 154 065", CARD_WIDTH - 5, CARD_HEIGHT - 4, { align: "right" });
 
   return doc;
@@ -165,7 +165,7 @@ export function shareViaWhatsApp(visitorId: string, fullName: string) {
     `👤 Nom: ${fullName}\n` +
     `🆔 ID: ${visitorId}\n\n` +
     `📱 Voir ma carte: ${cardUrl}\n\n` +
-    `Présentez votre QR code à chaque visite.`;
+    `Show your QR code on every visit.`;
   
   // Use api.whatsapp.com which works on both mobile and desktop
   const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
@@ -181,7 +181,7 @@ export function shareViaEmail(visitorId: string, fullName: string, recipientEmai
     `Voici vos informations de membre :\n` +
     `- Identifiant : ${visitorId}\n` +
     `- Carte digitale : ${cardUrl}\n\n` +
-    `Présentez votre QR code à chaque visite.\n\n` +
+    `Show your QR code on every visit.\n\n` +
     `Cordialement,\nAmerican Corner`;
 
   const mailto = `mailto:${recipientEmail || ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

@@ -25,7 +25,7 @@ export default function RestaurantEntry() {
     const { data: visitor } = await supabase.from("visitors").select("visitor_id").eq("visitor_id", trimmed).maybeSingle();
     if (!visitor) {
       setLoading(false);
-      toast.error("Visiteur introuvable. Vérifiez votre identifiant.");
+      toast.error("Visitor introuvable. Vérifiez votre identifiant.");
       return;
     }
     setLoading(false);

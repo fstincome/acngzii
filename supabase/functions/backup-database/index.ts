@@ -19,11 +19,11 @@ Deno.serve(async (req) => {
 
     // Verify caller is admin
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Non autorisé");
+    if (!authHeader) throw new Error("Not authorized");
 
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-    if (authErr || !user) throw new Error("Non autorisé");
+    if (authErr || !user) throw new Error("Not authorized");
 
     const { data: roleCheck } = await supabase.rpc("has_role", {
       _user_id: user.id,
