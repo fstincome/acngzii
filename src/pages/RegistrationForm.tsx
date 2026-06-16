@@ -154,7 +154,7 @@ function buildFormPDF(): jsPDF {
   drawField(M, y, CW, "Field (Web dev, Design, AI, Video...) :"); y += 9;
   drawField(M, y, CW, "Software / Sites / Tools needed :"); y += 11;
 
-  // Info: Objectifs spécifiques
+  // Info: Specific goals
   y = infoBox(doc, M, y, CW, "Specific Goals :",
     "Actions précises et réalisables. Ex: \"Apprendre HTML\", \"Create une page web\", \"Finir un module Coursera\". Soyez concret et réaliste.");
   y += 1;

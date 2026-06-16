@@ -51,7 +51,7 @@ export default function InvoiceActions({ data, compact }: InvoiceActionsProps) {
           <Download className="h-4 w-4" /> Download PDF
         </Button>
         <Button variant="outline" className="gap-2" onClick={handleDownloadPNG}>
-          <Image className="h-4 w-4" /> Télécharger PNG
+          <Image className="h-4 w-4" /> Download PNG
         </Button>
       </div>
       <Button variant="outline" className="gap-2 w-full" onClick={handlePrint}>

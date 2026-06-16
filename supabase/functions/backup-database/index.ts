@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
       _user_id: user.id,
       _role: "admin",
     });
-    if (!roleCheck) throw new Error("Accès réservé aux administrateurs");
+    if (!roleCheck) throw new Error("Access restricted to administrators");
 
     // Export all tables
     const tables = [

@@ -46,7 +46,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       downloadCardPDF(doc, visitorId);
       toast.success("Carte PDF downloadede !");
     } catch (err) {
-      toast.error("Error lors de la génération");
+      toast.error("Error during generation");
       console.error(err);
     } finally {
       setGenerating(false);
@@ -207,7 +207,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       link.click();
       toast.success("Carte PNG downloadede !");
     } catch (err) {
-      toast.error("Error lors de la génération PNG");
+      toast.error("Error during PNG generation");
       console.error(err);
     } finally {
       setGenerating(false);
@@ -335,7 +335,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
               variant="secondary"
             >
               <ImageIcon className="h-4 w-4" />
-              Télécharger PNG
+              Download PNG
             </Button>
           </div>
 

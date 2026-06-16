@@ -106,7 +106,7 @@ export default function OrderTracking() {
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted">
               <XCircle className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h2 className="text-xl font-bold">Lien expiré</h2>
+            <h2 className="text-xl font-bold">Link expired</h2>
             <p className="text-muted-foreground">Ce lien de suivi n'est plus disponible.</p>
           </CardContent>
         </Card>
@@ -128,7 +128,7 @@ export default function OrderTracking() {
         <Card className="w-full max-w-sm text-center">
           <CardContent className="pt-8 space-y-4">
             <h2 className="text-xl font-bold">Commande introuvable</h2>
-            <p className="text-muted-foreground">Vérifiez le code de votre commande.</p>
+            <p className="text-muted-foreground">Check your order code.</p>
           </CardContent>
         </Card>
       </div>
@@ -160,7 +160,7 @@ export default function OrderTracking() {
               <span className="text-2xl font-bold">{STATUS_LABELS[order.status]}</span>
             </div>
             {isCancelled && (
-              <Badge variant="destructive" className="text-sm">Commande annulée</Badge>
+              <Badge variant="destructive" className="text-sm">Order cancelled</Badge>
             )}
           </div>
 
@@ -211,7 +211,7 @@ export default function OrderTracking() {
 
             {/* Items */}
             <div className="border rounded-lg p-3 space-y-2">
-              <p className="font-medium text-sm">Articles commandés</p>
+              <p className="font-medium text-sm">Items ordered</p>
               {items.map(item => (
                 <div key={item.id} className="flex justify-between text-sm">
                   <span>{productMap.get(item.product_id) || "Produit"} ×{item.quantity}</span>
@@ -225,13 +225,13 @@ export default function OrderTracking() {
             </div>
 
             <p className="text-xs text-center text-muted-foreground">
-              Commandé le {new Date(order.created_at).toLocaleString("fr")}
+              Ordered on {new Date(order.created_at).toLocaleString("en")}
             </p>
           </CardContent>
         </Card>
 
         <p className="text-center text-white/60 text-xs">
-          Cette page se met à jour automatiquement
+          This page updates automatically
         </p>
       </div>
     </div>

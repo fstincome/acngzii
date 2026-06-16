@@ -508,7 +508,7 @@ export default function Statistics() {
                 </div>
               </div>
             ))}
-            {topVisitors.length === 0 && <p className="text-sm text-muted-foreground">No donnée disponible.</p>}
+            {topVisitors.length === 0 && <p className="text-sm text-muted-foreground">No data available.</p>}
           </div>
         </div>
 
@@ -551,7 +551,7 @@ export default function Statistics() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-sm text-muted-foreground italic py-8 text-center">No date de naissance renseignée pour cette period.</p>
+            <p className="text-sm text-muted-foreground italic py-8 text-center">No date of birth recorded for this period.</p>
           )}
         </div>
       </div>
