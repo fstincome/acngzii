@@ -20,14 +20,17 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data: { user: caller } } = await supabaseAdmin.auth.getUser(token);
-    if (!caller) throw new Error("Non authentifié");
+    if (!caller) throw new Error("Not authenticated");
 
-    const { data: callerRole } = await supabaseAdmin.rpc("get_user_role", { _user_id: caller.id });
-    if (callerRole !== "admin") throw new Error("Non autorisé");
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+      _user_id: caller.id,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Not authorized");
 
     const { user_id, new_password } = await req.json();
-    if (!user_id || !new_password) throw new Error("user_id et new_password requis");
-    if (new_password.length < 6) throw new Error("Le mot de passe doit contenir au moins 6 caractères");
+    if (!user_id || !new_password) throw new Error("user_id and new_password are required");
+    if (new_password.length < 6) throw new Error("Password must be at least 6 characters");
 
     const { error } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
       password: new_password,

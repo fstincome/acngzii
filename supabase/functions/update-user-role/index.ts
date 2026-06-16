@@ -6,6 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const ALLOWED_ROLES = ["admin", "national_coordinator", "director", "reception"];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -20,18 +22,32 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data: { user: caller } } = await supabaseAdmin.auth.getUser(token);
-    if (!caller) throw new Error("Non authentifié");
+    if (!caller) throw new Error("Not authenticated");
 
-    const { data: callerRole } = await supabaseAdmin.rpc("get_user_role", { _user_id: caller.id });
-    if (callerRole !== "admin") throw new Error("Non autorisé");
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+      _user_id: caller.id,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Not authorized");
 
-    const { user_id, role, full_name } = await req.json();
+    const {
+      user_id,
+      role,
+      full_name,
+      phone,
+      national_id,
+      job_title,
+      department,
+      hire_date,
+      address,
+      emergency_contact,
+      photo,
+    } = await req.json();
 
-    if (!user_id) throw new Error("user_id requis");
+    if (!user_id) throw new Error("user_id is required");
 
-    // Update role if provided
     if (role) {
-      // Upsert role
+      if (!ALLOWED_ROLES.includes(role)) throw new Error("Invalid role");
       const { data: existing } = await supabaseAdmin
         .from("user_roles")
         .select("id")
@@ -52,11 +68,21 @@ serve(async (req) => {
       }
     }
 
-    // Update profile name if provided
-    if (full_name !== undefined) {
+    const updates: Record<string, unknown> = {};
+    if (full_name !== undefined) updates.full_name = full_name;
+    if (phone !== undefined) updates.phone = phone || null;
+    if (national_id !== undefined) updates.national_id = national_id || null;
+    if (job_title !== undefined) updates.job_title = job_title || null;
+    if (department !== undefined) updates.department = department || null;
+    if (hire_date !== undefined) updates.hire_date = hire_date || null;
+    if (address !== undefined) updates.address = address || null;
+    if (emergency_contact !== undefined) updates.emergency_contact = emergency_contact || null;
+    if (photo !== undefined) updates.photo = photo || null;
+
+    if (Object.keys(updates).length > 0) {
       const { error } = await supabaseAdmin
         .from("profiles")
-        .update({ full_name })
+        .update(updates)
         .eq("id", user_id);
       if (error) throw error;
     }
