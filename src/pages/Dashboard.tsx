@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mayl, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck, DollarSign, ShoppingCart, Wallet } from "lucide-react";
+import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck, DollarSign, ShoppingCart, Wallet } from "lucide-react";
 import { useVisitors, useVisits, computeOccupancy, COMPUTER_LAB_CAPACITY, useVisitsRealtime, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visitor, Visit, RoomType } from "@/lib/supabase-store";
 import {
@@ -470,7 +470,7 @@ export default function Dashboard() {
               </div>
               <div className="grid gap-3">
                 <DetailRow icon={Phone} label={t("dashboard.phone")} value={selectedVisitor.phone} />
-                {selectedVisitor.email && <DetailRow icon={Mayl} label={t("dashboard.email")} value={selectedVisitor.email} />}
+                {selectedVisitor.email && <DetailRow icon={Mail} label={t("dashboard.email")} value={selectedVisitor.email} />}
                 <DetailRow icon={MapPin} label={t("dashboard.neighborhood")} value={selectedVisitor.neighborhood} />
                 <DetailRow icon={Briefcase} label={t("dashboard.occupation")} value={selectedVisitor.occupation} />
                 <DetailRow icon={Users} label={t("dashboard.gender")} value={selectedVisitor.gender === "male" ? t("dashboard.male") : selectedVisitor.gender === "female" ? t("dashboard.female") : t("dashboard.other")} />

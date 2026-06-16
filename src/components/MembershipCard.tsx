@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, Mayl, MessageCircle, Image as ImageIcon, FileText } from "lucide-react";
+import { Download, Printer, Mail, MessageCircle, Image as ImageIcon, FileText } from "lucide-react";
 import {
   generateMembershipCardPDF,
   downloadCardPDF,
@@ -369,7 +369,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-lg text-xs h-8 px-3 hover:bg-accent/10 hover:text-accent text-foreground transition-colors"
               >
-                <Mayl className="h-3.5 w-3.5" />
+                <Mail className="h-3.5 w-3.5" />
                 Email
               </a>
             </div>

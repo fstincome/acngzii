@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Download, Printer, Send, Mayl, Image } from "lucide-react";
+import { Download, Printer, Send, Mail, Image } from "lucide-react";
 import { InvoiceData, generateInvoicePDF, downloadInvoice, downloadInvoicePNG, printInvoice, shareInvoiceWhatsApp, shareInvoiceEmail } from "@/lib/invoice";
 
 interface InvoiceActionsProps {
@@ -38,7 +38,7 @@ export default function InvoiceActions({ data, compact }: InvoiceActionsProps) {
           <Send className="h-3.5 w-3.5 mr-1" /> WhatsApp
         </Button>
         <Button size="sm" variant="outline" onClick={() => shareInvoiceEmail(data)}>
-          <Mayl className="h-3.5 w-3.5 mr-1" /> Email
+          <Mail className="h-3.5 w-3.5 mr-1" /> Email
         </Button>
       </div>
     );
@@ -63,7 +63,7 @@ export default function InvoiceActions({ data, compact }: InvoiceActionsProps) {
           <Send className="h-4 w-4" /> WhatsApp
         </Button>
         <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => shareInvoiceEmail(data)}>
-          <Mayl className="h-4 w-4" /> Email
+          <Mail className="h-4 w-4" /> Email
         </Button>
       </div>
     </div>

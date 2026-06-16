@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mayl, ArrowLeft, AlertTriangle, Building, GraduationCap } from "lucide-react";
+import { UserPlus, Check, FileText, Printer, Download, MessageCircle, Mail, ArrowLeft, AlertTriangle, Building, GraduationCap } from "lucide-react";
 import MembershipCard from "@/components/MembershipCard";
 import jsPDF from "jspdf";
 
@@ -241,7 +241,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-lg text-xs h-8 px-3 hover:bg-accent/10 hover:text-accent text-foreground transition-colors"
             >
-              <Mayl className="h-3.5 w-3.5" />
+              <Mail className="h-3.5 w-3.5" />
               Email
             </a>
           </div>
