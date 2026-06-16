@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, isAdminLike } from "@/hooks/useAuth";
 import {
   LayoutDashboard,
   UserPlus,
@@ -28,17 +28,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { role, user, signOut } = useAuth();
   const { t } = useTranslation();
 
-  // Role-based nav filtering
-  const isAdmin = role === "admin";
+  // Role-based nav filtering — National Coordinator inherits Admin permissions
+  const isAdmin = isAdminLike(role);
   const isDirector = role === "director";
   const isReception = role === "reception";
 
+  const adminLikeRoles = ["admin", "national_coordinator"];
+
   const normalNavItems = [
-    { to: "/", icon: LayoutDashboard, label: t("nav.dashboard"), roles: ["admin", "director", "reception"] },
-    { to: "/register", icon: UserPlus, label: t("nav.register"), roles: ["admin", "director"] },
-    { to: "/scanner", icon: ScanLine, label: t("nav.scanner"), roles: ["admin", "director", "reception"] },
-    { to: "/visitors", icon: Users, label: t("nav.visitors"), roles: ["admin", "director", "reception"] },
-    { to: "/statistics", icon: BarChart3, label: t("nav.statistics"), roles: ["admin", "director"] },
+    { to: "/", icon: LayoutDashboard, label: t("nav.dashboard"), roles: [...adminLikeRoles, "director", "reception"] },
+    { to: "/register", icon: UserPlus, label: t("nav.register"), roles: [...adminLikeRoles, "director"] },
+    { to: "/scanner", icon: ScanLine, label: t("nav.scanner"), roles: [...adminLikeRoles, "director", "reception"] },
+    { to: "/visitors", icon: Users, label: t("nav.visitors"), roles: [...adminLikeRoles, "director", "reception"] },
+    { to: "/statistics", icon: BarChart3, label: t("nav.statistics"), roles: [...adminLikeRoles, "director"] },
   ].filter(item => role && item.roles.includes(role));
 
   const programNavItems = [
