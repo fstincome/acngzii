@@ -157,7 +157,7 @@ export default function Scanner() {
       {cameraOpen && (
         <div className="rounded-2xl border border-border/50 bg-card p-4 shadow-sm animate-fade-in">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-semibold text-foreground">Caméra active</p>
+            <p className="text-sm font-semibold text-foreground">Camera active</p>
             <Button variant="ghost" size="sm" onClick={stopCamera} className="rounded-xl">
               <X className="h-4 w-4" />
             </Button>

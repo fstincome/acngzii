@@ -63,7 +63,7 @@ export default function ProgramAttendance() {
   const handleScan = useCallback(async (code: string) => {
     const participant = participants.find(p => p.participant_code === code);
     if (!participant) {
-      toast.error("Participant non trouvé dans ce programme");
+      toast.error("Participant not found in this program");
       return;
     }
     const att = getAttendanceForParticipant(participant.id);
@@ -75,18 +75,18 @@ export default function ProgramAttendance() {
           .from("program_attendance")
           .insert({ participant_id: participant.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString(), room: selectedRoom });
         if (error) throw error;
-        toast.success(`${participant.full_name} — Présent(e) ✓ (${roomLabel})`);
+        toast.success(`${participant.full_name} — Present ✓ (${roomLabel})`);
       } catch {
-        toast.error("Erreur lors du pointage");
+        toast.error("Error lors du pointage");
       }
       return;
     }
     if (att.status === "present") {
-      toast.info(`${participant.full_name} est déjà pointé(e) !`);
+      toast.info(`${participant.full_name} is already checked in!`);
       return;
     }
     if (att.status === "absent") {
-      toast.warning(`${participant.full_name} est marqué(e) absent(e)`);
+      toast.warning(`${participant.full_name} is marked absent`);
       return;
     }
     try {
@@ -95,9 +95,9 @@ export default function ProgramAttendance() {
         .update({ status: "present", marked_at: new Date().toISOString(), room: selectedRoom })
         .eq("id", att.id);
       if (error) throw error;
-      toast.success(`${participant.full_name} — Présent(e) ✓ (${roomLabel})`);
+      toast.success(`${participant.full_name} — Present ✓ (${roomLabel})`);
     } catch {
-      toast.error("Erreur lors du pointage");
+      toast.error("Error lors du pointage");
     }
   }, [participants, attendance, selectedSessionId, selectedRoom]);
 
@@ -123,7 +123,7 @@ export default function ProgramAttendance() {
         }
       }, 100);
     } catch {
-      toast.error("Impossible d'accéder à la caméra. Vérifiez les permissions.");
+      toast.error("Cannot access camera. Check permissions.");
       setCameraActive(false);
     }
   };
@@ -177,7 +177,7 @@ export default function ProgramAttendance() {
           <div className="icon-box h-9 w-9">
             <Fingerprint className="h-4.5 w-4.5 text-primary-foreground" />
           </div>
-          Présence Programme
+          Program Attendance
         </h1>
         <p className="page-subtitle">Pointez les participants pour chaque session</p>
       </div>
@@ -187,7 +187,7 @@ export default function ProgramAttendance() {
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Programme</label>
           <Select value={selectedProgramId} onValueChange={v => { setSelectedProgramId(v); setSelectedSessionId(""); }}>
-            <SelectTrigger className="h-11"><SelectValue placeholder="Sélectionner un programme" /></SelectTrigger>
+            <SelectTrigger className="h-11"><SelectValue placeholder="Select a program" /></SelectTrigger>
             <SelectContent>
               {programs.map(p => (
                 <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
@@ -198,7 +198,7 @@ export default function ProgramAttendance() {
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Session</label>
           <Select value={selectedSessionId} onValueChange={setSelectedSessionId} disabled={!selectedProgramId}>
-            <SelectTrigger className="h-11"><SelectValue placeholder="Sélectionner une session" /></SelectTrigger>
+            <SelectTrigger className="h-11"><SelectValue placeholder="Select une session" /></SelectTrigger>
             <SelectContent>
               {sessions.map(s => (
                 <SelectItem key={s.id} value={s.id}>
@@ -216,8 +216,8 @@ export default function ProgramAttendance() {
           <div className="icon-box h-14 w-14 mx-auto mb-4">
             <ScanLine className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h3 className="font-semibold text-foreground mb-1">Prêt pour le pointage</h3>
-          <p className="text-sm text-muted-foreground">Sélectionnez un programme et une session pour commencer.</p>
+          <h3 className="font-semibold text-foreground mb-1">Ready for check-in</h3>
+          <p className="text-sm text-muted-foreground">Select un programme et une session pour commencer.</p>
         </Card>
       ) : (
         <div className="space-y-6">
@@ -236,7 +236,7 @@ export default function ProgramAttendance() {
                 </div>
                 <div className="text-right">
                   <p className="text-3xl font-bold">{presentList.length}<span className="text-lg opacity-70">/{participants.length}</span></p>
-                  <p className="text-xs opacity-80">présents</p>
+                  <p className="text-xs opacity-80">present</p>
                 </div>
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function ProgramAttendance() {
                 onClick={cameraActive ? stopCamera : startCamera}
               >
                 <Camera className="h-4 w-4" />
-                {cameraActive ? "Fermer" : "Caméra"}
+                {cameraActive ? "Close" : "Camera"}
               </Button>
               <div className="flex-1 relative">
                 <Input
@@ -292,7 +292,7 @@ export default function ProgramAttendance() {
             {/* Room selector */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5" /> Placer en salle
+                <MapPin className="h-3.5 w-3.5" /> Placer en room
               </label>
               <Select value={selectedRoom} onValueChange={v => setSelectedRoom(v as RoomType)}>
                 <SelectTrigger className="h-10">
@@ -314,7 +314,7 @@ export default function ProgramAttendance() {
                 <CheckCircle2 className="h-5 w-5 text-success" />
                 <span className="text-2xl font-bold text-foreground">{presentList.length}</span>
               </div>
-              <p className="text-xs text-muted-foreground font-medium">Présents</p>
+              <p className="text-xs text-muted-foreground font-medium">Presents</p>
             </Card>
             <Card className="p-4 text-center border-l-4 border-l-warning">
               <div className="flex items-center justify-center gap-1.5 mb-1">
@@ -350,7 +350,7 @@ export default function ProgramAttendance() {
                 <Clock className="h-3.5 w-3.5" /> En attente ({waitingList.length})
               </TabsTrigger>
               <TabsTrigger value="present" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Présents ({presentList.length})
+                <CheckCircle2 className="h-3.5 w-3.5" /> Presents ({presentList.length})
               </TabsTrigger>
               <TabsTrigger value="absent" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
                 <XCircle className="h-3.5 w-3.5" /> Absents ({absentList.length})
@@ -359,7 +359,7 @@ export default function ProgramAttendance() {
 
             <TabsContent value="waiting" className="space-y-2 mt-4">
               {filteredParticipants(waitingList).length === 0 ? (
-                <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant en attente</p>
+                <p className="text-sm text-muted-foreground p-6 text-center">No participant en attente</p>
               ) : (
                  filteredParticipants(waitingList).map(p => (
                   <ParticipantRow key={p.id} participant={p} status="en_attente" onMark={async () => {
@@ -370,14 +370,14 @@ export default function ProgramAttendance() {
                         .from("program_attendance")
                         .update({ status: "present", marked_at: new Date().toISOString(), room: selectedRoom })
                         .eq("id", att.id);
-                      if (!error) toast.success(`${p.full_name} — Présent(e) ✓ (${roomLabel})`);
-                      else toast.error("Erreur lors du pointage");
+                      if (!error) toast.success(`${p.full_name} — Present ✓ (${roomLabel})`);
+                      else toast.error("Error lors du pointage");
                     } else if (selectedSessionId) {
                       const { error } = await supabase
                         .from("program_attendance")
                         .insert({ participant_id: p.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString(), room: selectedRoom });
-                      if (!error) toast.success(`${p.full_name} — Présent(e) ✓ (${roomLabel})`);
-                      else toast.error("Erreur lors du pointage");
+                      if (!error) toast.success(`${p.full_name} — Present ✓ (${roomLabel})`);
+                      else toast.error("Error lors du pointage");
                     }
                   }} />
                 ))
@@ -386,7 +386,7 @@ export default function ProgramAttendance() {
 
             <TabsContent value="present" className="space-y-2 mt-4">
               {filteredParticipants(presentList).length === 0 ? (
-                <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant présent</p>
+                <p className="text-sm text-muted-foreground p-6 text-center">No participant present</p>
               ) : (
                 filteredParticipants(presentList).map(p => {
                   const att = getAttendanceForParticipant(p.id);
@@ -397,7 +397,7 @@ export default function ProgramAttendance() {
 
             <TabsContent value="absent" className="space-y-2 mt-4">
               {filteredParticipants(absentList).length === 0 ? (
-                <p className="text-sm text-muted-foreground p-6 text-center">Aucun participant absent</p>
+                <p className="text-sm text-muted-foreground p-6 text-center">No participant absent</p>
               ) : (
                 filteredParticipants(absentList).map(p => (
                   <ParticipantRow key={p.id} participant={p} status="absent" />
@@ -458,7 +458,7 @@ function ParticipantRow({ participant, status, room, onMark }: {
               {roomEmojis[room] || ""} {ROOM_LABELS[room as keyof typeof ROOM_LABELS]}
             </Badge>
           )}
-          <Badge className="bg-success/10 text-success border-success/20">✓ Présent</Badge>
+          <Badge className="bg-success/10 text-success border-success/20">✓ Present</Badge>
         </div>
       )}
       {status === "absent" && (

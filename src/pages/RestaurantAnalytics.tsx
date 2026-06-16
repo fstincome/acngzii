@@ -153,7 +153,7 @@ export default function RestaurantAnalytics() {
         <Card>
           <CardHeader><CardTitle className="text-base">Revenus par jour</CardTitle></CardHeader>
           <CardContent>
-            {dailyRevenue.length === 0 ? <p className="text-muted-foreground text-sm py-8 text-center">Pas de données</p> : (
+            {dailyRevenue.length === 0 ? <p className="text-muted-foreground text-sm py-8 text-center">No data</p> : (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={dailyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -171,7 +171,7 @@ export default function RestaurantAnalytics() {
         <Card>
           <CardHeader><CardTitle className="text-base">Produits les plus vendus</CardTitle></CardHeader>
           <CardContent>
-            {topProducts.length === 0 ? <p className="text-muted-foreground text-sm py-8 text-center">Pas de données</p> : (
+            {topProducts.length === 0 ? <p className="text-muted-foreground text-sm py-8 text-center">No data</p> : (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={topProducts} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" />
@@ -187,9 +187,9 @@ export default function RestaurantAnalytics() {
 
         {/* Payment distribution */}
         <Card>
-          <CardHeader><CardTitle className="text-base">Méthodes de paiement</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Payment methods</CardTitle></CardHeader>
           <CardContent>
-            {paymentDist.length === 0 ? <p className="text-muted-foreground text-sm py-8 text-center">Pas de données</p> : (
+            {paymentDist.length === 0 ? <p className="text-muted-foreground text-sm py-8 text-center">No data</p> : (
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie data={paymentDist} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>

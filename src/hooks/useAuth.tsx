@@ -2,7 +2,11 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-export type AppRole = "admin" | "director" | "reception";
+export type AppRole = "admin" | "national_coordinator" | "director" | "reception";
+
+export const ADMIN_LIKE_ROLES: AppRole[] = ["admin", "national_coordinator"];
+export const isAdminLike = (role: AppRole | null | undefined) =>
+  !!role && ADMIN_LIKE_ROLES.includes(role);
 
 interface AuthContextType {
   user: User | null;
@@ -27,13 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Use setTimeout to avoid Supabase auth deadlock
           setTimeout(() => fetchRole(session.user.id), 0);
         } else {
           setRole(null);
@@ -42,7 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Then check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);

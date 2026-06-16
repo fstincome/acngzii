@@ -46,7 +46,7 @@ export interface ProgramAttendance {
 }
 
 export const PARTICIPANT_ROLES = {
-  eleve: "Élève",
+  eleve: "Student",
   mentor: "Mentor",
 };
 
@@ -69,7 +69,7 @@ export async function generateParticipantCode(programPrefix: string): Promise<st
   return code!;
 }
 
-/** Sort participants: mentors first, then élèves */
+/** Sort participants: mentors first, then students */
 export function sortParticipants<T extends { role: string }>(list: T[]): T[] {
   return [...list].sort((a, b) => {
     if (a.role === "mentor" && b.role !== "mentor") return -1;

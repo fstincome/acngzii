@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, isAdminLike, AppRole } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -13,19 +13,60 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Users, UserPlus, Shield, Trash2, Loader2, Pencil, KeyRound, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-type AppRole = "admin" | "director" | "reception";
-
 const ROLE_LABELS: Record<AppRole, string> = {
-  admin: "Administrateur",
-  director: "Directeur",
-  reception: "Agent de réception",
+  admin: "Administrator",
+  national_coordinator: "National Coordinator",
+  director: "Director",
+  reception: "Reception Agent",
 };
 
 const ROLE_COLORS: Record<AppRole, string> = {
   admin: "destructive",
+  national_coordinator: "destructive",
   director: "default",
   reception: "secondary",
 };
+
+const DEPARTMENTS = [
+  "Administration",
+  "Reception",
+  "Education / Programs",
+  "Library",
+  "IT / Computer Lab",
+  "Operations",
+  "Communications",
+  "Other",
+];
+
+interface StaffForm {
+  full_name: string;
+  email: string;
+  password: string;
+  role: AppRole;
+  phone: string;
+  national_id: string;
+  job_title: string;
+  department: string;
+  hire_date: string;
+  address: string;
+  emergency_contact: string;
+  photo: string;
+}
+
+const emptyForm = (): StaffForm => ({
+  full_name: "",
+  email: "",
+  password: "",
+  role: "reception",
+  phone: "",
+  national_id: "",
+  job_title: "",
+  department: "",
+  hire_date: "",
+  address: "",
+  emergency_contact: "",
+  photo: "",
+});
 
 function useUsers() {
   return useQuery({
@@ -49,12 +90,8 @@ export default function UserManagement() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<any>(null);
-  const [editName, setEditName] = useState("");
-  const [editRole, setEditRole] = useState<AppRole>("reception");
-  const [newEmail, setNewEmail] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [newName, setNewName] = useState("");
-  const [newRole, setNewRole] = useState<AppRole>("reception");
+  const [editForm, setEditForm] = useState<StaffForm>(emptyForm());
+  const [createForm, setCreateForm] = useState<StaffForm>(emptyForm());
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
@@ -72,40 +109,69 @@ export default function UserManagement() {
     return pwd;
   };
 
-  if (currentRole !== "admin") {
+  if (!isAdminLike(currentRole)) {
     return (
       <div className="p-12 text-center">
-        <p className="text-muted-foreground">Accès non autorisé</p>
+        <p className="text-muted-foreground">Access denied</p>
       </div>
     );
   }
+
+  const setCreate = <K extends keyof StaffForm>(key: K, value: StaffForm[K]) =>
+    setCreateForm((f) => ({ ...f, [key]: value }));
+  const setEdit = <K extends keyof StaffForm>(key: K, value: StaffForm[K]) =>
+    setEditForm((f) => ({ ...f, [key]: value }));
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
     try {
-      const res = await supabase.functions.invoke("create-user", {
-        body: { email: newEmail, password: newPassword, full_name: newName, role: newRole },
-      });
+      const payload = {
+        email: createForm.email.trim(),
+        password: createForm.password,
+        full_name: createForm.full_name.trim(),
+        role: createForm.role,
+        phone: createForm.phone.trim(),
+        national_id: createForm.national_id.trim(),
+        job_title: createForm.job_title.trim(),
+        department: createForm.department,
+        hire_date: createForm.hire_date || null,
+        address: createForm.address.trim(),
+        emergency_contact: createForm.emergency_contact.trim(),
+        photo: createForm.photo.trim(),
+      };
+      const res = await supabase.functions.invoke("create-user", { body: payload });
       if (res.error) throw res.error;
       if (res.data?.error) throw new Error(res.data.error);
-      toast({ title: "Utilisateur créé", description: `${newName} a été ajouté comme ${ROLE_LABELS[newRole]}` });
+      toast({
+        title: "User created",
+        description: `${payload.full_name} added as ${ROLE_LABELS[payload.role as AppRole]}`,
+      });
       setCreateOpen(false);
-      setNewEmail("");
-      setNewPassword("");
-      setNewName("");
-      setNewRole("reception");
+      setCreateForm(emptyForm());
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
     setCreating(false);
   };
 
   const handleEdit = (user: any) => {
     setEditUser(user);
-    setEditName(user.full_name || "");
-    setEditRole(user.role || "reception");
+    setEditForm({
+      full_name: user.full_name || "",
+      email: user.email || "",
+      password: "",
+      role: (user.role as AppRole) || "reception",
+      phone: user.phone || "",
+      national_id: user.national_id || "",
+      job_title: user.job_title || "",
+      department: user.department || "",
+      hire_date: user.hire_date || "",
+      address: user.address || "",
+      emergency_contact: user.emergency_contact || "",
+      photo: user.photo || "",
+    });
     setEditOpen(true);
   };
 
@@ -115,24 +181,35 @@ export default function UserManagement() {
     setUpdating(true);
     try {
       const res = await supabase.functions.invoke("update-user-role", {
-        body: { user_id: editUser.id, full_name: editName, role: editRole },
+        body: {
+          user_id: editUser.id,
+          full_name: editForm.full_name.trim(),
+          role: editForm.role,
+          phone: editForm.phone.trim(),
+          national_id: editForm.national_id.trim(),
+          job_title: editForm.job_title.trim(),
+          department: editForm.department,
+          hire_date: editForm.hire_date || null,
+          address: editForm.address.trim(),
+          emergency_contact: editForm.emergency_contact.trim(),
+          photo: editForm.photo.trim(),
+        },
       });
       if (res.error) throw res.error;
       if (res.data?.error) throw new Error(res.data.error);
-      toast({ title: "Utilisateur modifié", description: `${editName} est maintenant ${ROLE_LABELS[editRole]}` });
+      toast({ title: "User updated", description: `${editForm.full_name} is now ${ROLE_LABELS[editForm.role]}` });
       setEditOpen(false);
       setEditUser(null);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
     setUpdating(false);
   };
 
   const handleOpenReset = (user: any) => {
     setResetUser(user);
-    const pwd = generatePassword();
-    setResetPassword(pwd);
+    setResetPassword(generatePassword());
     setResetOpen(true);
   };
 
@@ -147,32 +224,113 @@ export default function UserManagement() {
       if (res.error) throw res.error;
       if (res.data?.error) throw new Error(res.data.error);
       setGeneratedCredentials({ email: resetUser.email, password: resetPassword });
-      toast({ title: "Mot de passe réinitialisé", description: `Nouveau mot de passe généré pour ${resetUser.full_name}` });
+      toast({ title: "Password reset", description: `New password generated for ${resetUser.full_name}` });
       setResetOpen(false);
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
     setResetting(false);
   };
 
   const copyCredentials = () => {
     if (!generatedCredentials) return;
-    navigator.clipboard.writeText(`Email: ${generatedCredentials.email}\nMot de passe: ${generatedCredentials.password}`);
-    toast({ title: "Copié !", description: "Coordonnées copiées dans le presse-papier" });
+    navigator.clipboard.writeText(`Email: ${generatedCredentials.email}\nPassword: ${generatedCredentials.password}`);
+    toast({ title: "Copied!", description: "Credentials copied to clipboard" });
   };
 
   const handleDelete = async (userId: string, userName: string) => {
-    if (!confirm(`Supprimer l'utilisateur ${userName} ?`)) return;
+    if (!confirm(`Delete user ${userName}?`)) return;
     try {
       const res = await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
       if (res.error) throw res.error;
       if (res.data?.error) throw new Error(res.data.error);
-      toast({ title: "Utilisateur supprimé" });
+      toast({ title: "User deleted" });
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
+
+  const StaffFields = ({
+    values,
+    onChange,
+    isEdit,
+  }: {
+    values: StaffForm;
+    onChange: <K extends keyof StaffForm>(k: K, v: StaffForm[K]) => void;
+    isEdit: boolean;
+  }) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="space-y-2 sm:col-span-2">
+        <Label>Full name *</Label>
+        <Input value={values.full_name} onChange={(e) => onChange("full_name", e.target.value)} required />
+      </div>
+      <div className="space-y-2">
+        <Label>Email *</Label>
+        <Input type="email" value={values.email} onChange={(e) => onChange("email", e.target.value)} required disabled={isEdit} className={isEdit ? "opacity-60" : ""} />
+      </div>
+      <div className="space-y-2">
+        <Label>Phone *</Label>
+        <Input value={values.phone} onChange={(e) => onChange("phone", e.target.value)} placeholder="+257 …" required />
+      </div>
+      {!isEdit && (
+        <div className="space-y-2 sm:col-span-2">
+          <Label>Password *</Label>
+          <div className="flex gap-2">
+            <Input type="text" value={values.password} onChange={(e) => onChange("password", e.target.value)} required minLength={6} />
+            <Button type="button" variant="outline" size="sm" onClick={() => onChange("password", generatePassword())} className="shrink-0">
+              Generate
+            </Button>
+          </div>
+        </div>
+      )}
+      <div className="space-y-2">
+        <Label>Role *</Label>
+        <Select value={values.role} onValueChange={(v) => onChange("role", v as AppRole)}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="national_coordinator">National Coordinator</SelectItem>
+            <SelectItem value="admin">Administrator</SelectItem>
+            <SelectItem value="director">Director</SelectItem>
+            <SelectItem value="reception">Reception Agent</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label>Job title *</Label>
+        <Input value={values.job_title} onChange={(e) => onChange("job_title", e.target.value)} placeholder="e.g. Program Coordinator" required />
+      </div>
+      <div className="space-y-2">
+        <Label>Department *</Label>
+        <Select value={values.department} onValueChange={(v) => onChange("department", v)}>
+          <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
+          <SelectContent>
+            {DEPARTMENTS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label>Hire date *</Label>
+        <Input type="date" value={values.hire_date} onChange={(e) => onChange("hire_date", e.target.value)} required />
+      </div>
+      <div className="space-y-2">
+        <Label>National ID *</Label>
+        <Input value={values.national_id} onChange={(e) => onChange("national_id", e.target.value)} required />
+      </div>
+      <div className="space-y-2 sm:col-span-2">
+        <Label>Address *</Label>
+        <Input value={values.address} onChange={(e) => onChange("address", e.target.value)} placeholder="Street, city, country" required />
+      </div>
+      <div className="space-y-2 sm:col-span-2">
+        <Label>Emergency contact *</Label>
+        <Input value={values.emergency_contact} onChange={(e) => onChange("emergency_contact", e.target.value)} placeholder="Name + phone" required />
+      </div>
+      <div className="space-y-2 sm:col-span-2">
+        <Label>Photo URL (optional)</Label>
+        <Input value={values.photo} onChange={(e) => onChange("photo", e.target.value)} placeholder="https://…" />
+      </div>
+    </div>
+  );
 
   return (
     <div>
@@ -181,90 +339,44 @@ export default function UserManagement() {
           <div className="icon-box h-9 w-9">
             <Shield className="h-4.5 w-4.5 text-primary-foreground" />
           </div>
-          Gestion des utilisateurs
+          User Management
         </h1>
-        <p className="page-subtitle">Créez et gérez les comptes utilisateurs et leurs rôles</p>
+        <p className="page-subtitle">Create and manage staff accounts and their roles</p>
       </div>
 
       <div className="mb-6">
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <Dialog open={createOpen} onOpenChange={(v) => { setCreateOpen(v); if (!v) setCreateForm(emptyForm()); }}>
           <DialogTrigger asChild>
             <Button>
               <UserPlus className="h-4 w-4 mr-2" />
-              Nouvel utilisateur
+              New staff member
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Créer un utilisateur</DialogTitle>
+              <DialogTitle>Create a staff account</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nom complet</Label>
-                <Input value={newName} onChange={e => setNewName(e.target.value)} required />
-              </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} required />
-              </div>
-              <div className="space-y-2">
-                <Label>Mot de passe</Label>
-                <div className="flex gap-2">
-                  <Input type="text" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} />
-                  <Button type="button" variant="outline" size="sm" onClick={() => setNewPassword(generatePassword())} className="shrink-0">
-                    Générer
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Rôle</Label>
-                <Select value={newRole} onValueChange={v => setNewRole(v as AppRole)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Administrateur</SelectItem>
-                    <SelectItem value="director">Directeur</SelectItem>
-                    <SelectItem value="reception">Agent de réception</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <StaffFields values={createForm} onChange={setCreate} isEdit={false} />
               <Button type="submit" className="w-full" disabled={creating}>
                 {creating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Créer
+                Create
               </Button>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Modifier l'utilisateur</DialogTitle>
+            <DialogTitle>Edit staff member</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input value={editUser?.email || ""} disabled className="opacity-60" />
-            </div>
-            <div className="space-y-2">
-              <Label>Nom complet</Label>
-              <Input value={editName} onChange={e => setEditName(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label>Rôle</Label>
-              <Select value={editRole} onValueChange={v => setEditRole(v as AppRole)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Administrateur</SelectItem>
-                  <SelectItem value="director">Directeur</SelectItem>
-                  <SelectItem value="reception">Agent de réception</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <StaffFields values={editForm} onChange={setEdit} isEdit={true} />
             <Button type="submit" className="w-full" disabled={updating}>
               {updating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Enregistrer
+              Save changes
             </Button>
           </form>
         </DialogContent>
@@ -279,9 +391,12 @@ export default function UserManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nom</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Rôle</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Job title</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead>Phone</TableHead>
                 <TableHead className="w-[160px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -296,25 +411,18 @@ export default function UserManagement() {
                         {ROLE_LABELS[u.role as AppRole]}
                       </Badge>
                     ) : (
-                      <Badge variant="outline">Aucun rôle</Badge>
+                      <Badge variant="outline">No role</Badge>
                     )}
                   </TableCell>
+                  <TableCell>{u.job_title || "—"}</TableCell>
+                  <TableCell>{u.department || "—"}</TableCell>
+                  <TableCell>{u.phone || "—"}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(u)}
-                        title="Modifier"
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(u)} title="Edit">
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenReset(u)}
-                        title="Réinitialiser le mot de passe"
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleOpenReset(u)} title="Reset password">
                         <KeyRound className="h-4 w-4" />
                       </Button>
                       <Button
@@ -323,7 +431,7 @@ export default function UserManagement() {
                         className="text-destructive hover:text-destructive"
                         onClick={() => handleDelete(u.id, u.full_name)}
                         disabled={u.id === currentUser?.id}
-                        title={u.id === currentUser?.id ? "Vous ne pouvez pas vous supprimer" : "Supprimer"}
+                        title={u.id === currentUser?.id ? "You cannot delete yourself" : "Delete"}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -333,8 +441,8 @@ export default function UserManagement() {
               ))}
               {users.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                    Aucun utilisateur trouvé
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                    No users found
                   </TableCell>
                 </TableRow>
               )}
@@ -343,49 +451,47 @@ export default function UserManagement() {
         )}
       </Card>
 
-      {/* Reset password dialog */}
-      <Dialog open={resetOpen} onOpenChange={v => { if (!v) { setResetOpen(false); setResetUser(null); setResetPassword(""); } }}>
+      <Dialog open={resetOpen} onOpenChange={(v) => { if (!v) { setResetOpen(false); setResetUser(null); setResetPassword(""); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Réinitialiser le mot de passe</DialogTitle>
+            <DialogTitle>Reset password</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-2">
-              <Label>Utilisateur</Label>
+              <Label>User</Label>
               <Input value={resetUser?.full_name || ""} disabled className="opacity-60" />
             </div>
             <div className="space-y-2">
-              <Label>Nouveau mot de passe</Label>
+              <Label>New password</Label>
               <div className="flex gap-2">
-                <Input type="text" value={resetPassword} onChange={e => setResetPassword(e.target.value)} required minLength={6} />
+                <Input type="text" value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} required minLength={6} />
                 <Button type="button" variant="outline" size="sm" onClick={() => setResetPassword(generatePassword())} className="shrink-0">
-                  Générer
+                  Generate
                 </Button>
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={resetting}>
               {resetting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Réinitialiser
+              Reset
             </Button>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Credentials display dialog */}
-      <Dialog open={!!generatedCredentials} onOpenChange={v => { if (!v) setGeneratedCredentials(null); }}>
+      <Dialog open={!!generatedCredentials} onOpenChange={(v) => { if (!v) setGeneratedCredentials(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Coordonnées de connexion</DialogTitle>
+            <DialogTitle>Login credentials</DialogTitle>
           </DialogHeader>
           {generatedCredentials && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Communiquez ces informations à l'utilisateur :</p>
+              <p className="text-sm text-muted-foreground">Share these credentials with the user:</p>
               <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-2 font-mono text-sm">
-                <p><span className="text-muted-foreground">Email :</span> {generatedCredentials.email}</p>
-                <p><span className="text-muted-foreground">Mot de passe :</span> {generatedCredentials.password}</p>
+                <p><span className="text-muted-foreground">Email:</span> {generatedCredentials.email}</p>
+                <p><span className="text-muted-foreground">Password:</span> {generatedCredentials.password}</p>
               </div>
               <Button onClick={copyCredentials} className="w-full gap-2">
-                <Copy className="h-4 w-4" /> Copier les coordonnées
+                <Copy className="h-4 w-4" /> Copy credentials
               </Button>
             </div>
           )}

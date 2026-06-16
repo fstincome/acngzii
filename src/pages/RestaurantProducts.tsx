@@ -35,29 +35,29 @@ export default function RestaurantProducts() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) { toast.error("Nom requis"); return; }
+    if (!form.name.trim()) { toast.error("Nom required"); return; }
     try {
       const data = { ...form, image_url: form.image_url || null };
       if (editId) {
         await updateProduct.mutateAsync({ id: editId, updates: data });
-        toast.success("Produit mis à jour");
+        toast.success("Product updated");
       } else {
         await addProduct.mutateAsync(data);
-        toast.success("Produit ajouté");
+        toast.success("Product added");
       }
       setShowForm(false);
     } catch {
-      toast.error("Erreur");
+      toast.error("Error");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Supprimer ce produit ?")) return;
+    if (!confirm("Delete ce produit ?")) return;
     try {
       await deleteProduct.mutateAsync(id);
-      toast.success("Produit supprimé");
+      toast.success("Product deleted");
     } catch {
-      toast.error("Erreur");
+      toast.error("Error");
     }
   };
 
@@ -68,10 +68,10 @@ export default function RestaurantProducts() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Produits</h1>
-          <p className="text-muted-foreground">Gérer le menu du restaurant</p>
+          <p className="text-muted-foreground">Manage the restaurant menu</p>
         </div>
         {canEdit && (
-          <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
+          <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Add</Button>
         )}
       </div>
 
@@ -104,7 +104,7 @@ export default function RestaurantProducts() {
                   <span className="text-muted-foreground flex items-center gap-1"><Package className="h-3 w-3" /> Stock: {p.stock}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Coût: {p.cost_price.toLocaleString()} BIF • Profit: {(p.price - p.cost_price).toLocaleString()} BIF
+                  Cost: {p.cost_price.toLocaleString()} BIF • Profit: {(p.price - p.cost_price).toLocaleString()} BIF
                 </div>
                 {!p.is_available && <Badge variant="destructive">Indisponible</Badge>}
               </CardContent>
@@ -117,7 +117,7 @@ export default function RestaurantProducts() {
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editId ? "Modifier le produit" : "Nouveau produit"}</DialogTitle>
+            <DialogTitle>{editId ? "Edit le produit" : "Nouveau produit"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
@@ -125,7 +125,7 @@ export default function RestaurantProducts() {
               <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
             </div>
             <div>
-              <label className="text-sm font-medium">Catégorie</label>
+              <label className="text-sm font-medium">Category</label>
               <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -159,7 +159,7 @@ export default function RestaurantProducts() {
           </div>
           <DialogFooter>
             <Button className="w-full" onClick={handleSave} disabled={addProduct.isPending || updateProduct.isPending}>
-              {editId ? "Mettre à jour" : "Ajouter"}
+              {editId ? "Update" : "Add"}
             </Button>
           </DialogFooter>
         </DialogContent>

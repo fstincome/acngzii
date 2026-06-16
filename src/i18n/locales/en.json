@@ -11,6 +11,7 @@
   },
   "roles": {
     "admin": "Administrator",
+    "national_coordinator": "National Coordinator",
     "director": "Director",
     "reception": "Reception",
     "user": "User"

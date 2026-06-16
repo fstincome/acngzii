@@ -83,15 +83,15 @@ function buildFormPDF(): jsPDF {
   doc.text("GITEGA STUDY SPACE", W / 2, y + 7.5, { align: "center" });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text("Formulaire d'Accès aux Machines  |  Free Tech Institute", W / 2, y + 12.5, { align: "center" });
+  doc.text("Computer Access Form  |  American Corner", W / 2, y + 12.5, { align: "center" });
   doc.setFontSize(8);
   doc.text("Valable 1 mois  |  Renouvelable  |  Lun-Sam 8h-17h  |  15 machines", W / 2, y + 16.5, { align: "center" });
   y += 22;
 
-  // ===== N° formulaire + Date début + Photo =====
+  // ===== Form No. + Start date + Photo =====
   const photoW = 30;
   const topRowW = CW - photoW - 3;
-  // N° formulaire
+  // Form No.
   setFill(doc, C_FIELD_BG);
   doc.rect(M, y, topRowW / 2 - 1, 12, "F");
   setText(doc, C_BLUE_DARK);
@@ -102,11 +102,11 @@ function buildFormPDF(): jsPDF {
   doc.setLineWidth(0.3);
   doc.line(M + 25, y + 9, M + topRowW / 2 - 3, y + 9);
 
-  // Date début
+  // Start date
   const dx = M + topRowW / 2 + 1;
   setFill(doc, C_FIELD_BG);
   doc.rect(dx, y, topRowW / 2 - 1, 12, "F");
-  doc.text("Date début :", dx + 2, y + 4);
+  doc.text("Start date :", dx + 2, y + 4);
   doc.line(dx + 22, y + 9, dx + topRowW / 2 - 3, y + 9);
 
   // Photo box
@@ -124,7 +124,7 @@ function buildFormPDF(): jsPDF {
   y = sectionHeader(doc, M, y, sectionW, "1. INFORMATIONS PERSONNELLES");
   y += 1;
 
-  // Nom et Prénom (full width)
+  // First and last name (full width)
   const labelW = 38;
   const drawField = (x: number, yy: number, w: number, label: string) => {
     setFill(doc, C_FIELD_BG);
@@ -137,26 +137,26 @@ function buildFormPDF(): jsPDF {
     doc.setLineWidth(0.3);
     doc.line(x + labelW, yy + 6.5, x + w - 2, yy + 6.5);
   };
-  drawField(M, y, sectionW, "Nom et Prénom :");
+  drawField(M, y, sectionW, "First and last name :");
   y += 9;
   const halfW = sectionW / 2 - 1;
   drawField(M, y, halfW, "Age (max 23 ans) :");
-  drawField(M + halfW + 2, y, halfW, "Tél / WhatsApp :");
+  drawField(M + halfW + 2, y, halfW, "Phone / WhatsApp :");
   y += 9;
   drawField(M, y, halfW, "Province / Quartier :");
-  drawField(M + halfW + 2, y, halfW, "École / Institution :");
+  drawField(M + halfW + 2, y, halfW, "School / Institution :");
   y += 11;
 
   // ===== 2. PROJET / RECHERCHE =====
   y = sectionHeader(doc, M, y, CW, "2. PROJET / RECHERCHE");
   y += 1;
   drawField(M, y, CW, "Titre du Projet :"); y += 9;
-  drawField(M, y, CW, "Domaine (Dev web, Design, IA, Vidéo...) :"); y += 9;
-  drawField(M, y, CW, "Logiciels / Sites / Outils nécessaires :"); y += 11;
+  drawField(M, y, CW, "Field (Web dev, Design, AI, Video...) :"); y += 9;
+  drawField(M, y, CW, "Software / Sites / Tools needed :"); y += 11;
 
-  // Info: Objectifs spécifiques
-  y = infoBox(doc, M, y, CW, "Objectifs Spécifiques :",
-    "Actions précises et réalisables. Ex: \"Apprendre HTML\", \"Créer une page web\", \"Finir un module Coursera\". Soyez concret et réaliste.");
+  // Info: Specific goals
+  y = infoBox(doc, M, y, CW, "Specific Goals :",
+    "Precise, achievable actions. e.g. \"Learn HTML\", \"Build a web page\", \"Finish a Coursera module\". Be concrete and realistic.");
   y += 1;
   for (let i = 1; i <= 3; i++) {
     setFill(doc, C_FIELD_BG);
@@ -173,16 +173,16 @@ function buildFormPDF(): jsPDF {
   y += 3;
 
   // ===== 3. DISPONIBILITE =====
-  y = sectionHeader(doc, M, y, CW, "3. DISPONIBILITÉ");
+  y = sectionHeader(doc, M, y, CW, "3. AVAILABILITY");
   y += 1;
-  // Jours de présence (checkboxes)
+  // Days of attendance (checkboxes)
   setFill(doc, C_FIELD_BG);
   doc.rect(M, y, CW, 8, "F");
   setText(doc, C_BLUE_DARK);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.text("Jours de présence :", M + 2, y + 5);
-  const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+  doc.text("Days of attendance :", M + 2, y + 5);
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   let cx = M + labelW + 2;
   setStroke(doc, C_BLUE_DARK);
   doc.setLineWidth(0.3);
@@ -194,15 +194,15 @@ function buildFormPDF(): jsPDF {
     cx += 22;
   });
   y += 9;
-  drawField(M, y, halfW, "Nb jours / semaine :");
+  drawField(M, y, halfW, "Days / week :");
   y += 11;
 
   // ===== 4. PERFORMANCE & SUIVI =====
-  y = sectionHeader(doc, M, y, CW, "4. PERFORMANCE & SUIVI");
+  y = sectionHeader(doc, M, y, CW, "4. PERFORMANCE & TRACKING");
   y += 1;
 
-  y = infoBox(doc, M, y, CW, "Résultats Attendus :",
-    "Ce que tu auras PRODUIT à la fin du mois, quelque chose de visible : site publié, certificat, vidéo postée, appli fonctionnelle... Ce que tu pourras MONTRER au responsable.");
+  y = infoBox(doc, M, y, CW, "Expected Results :",
+    "What you will have PRODUCED by month-end, something visible: published site, certificate, posted video, working app... Something you can SHOW the supervisor.");
   y += 1;
   for (let i = 1; i <= 2; i++) {
     setFill(doc, C_FIELD_BG);
@@ -217,8 +217,8 @@ function buildFormPDF(): jsPDF {
   }
   y += 2;
 
-  y = infoBox(doc, M, y, CW, "Indicateurs de Performance :",
-    "Preuves CHIFFRABLES de ta progression. Ex: \"3 modules terminés\", \"site en ligne avec 3 pages\", \"10 abonnés YouTube\". Ces chiffres déterminent le renouvellement de ton accès.");
+  y = infoBox(doc, M, y, CW, "Performance Indicators :",
+    "MEASURABLE evidence of your progress. e.g. \"3 modules completed\", \"site online with 3 pages\", \"10 YouTube subscribers\". These numbers determine whether your access is renewed.");
   y += 1;
   for (let i = 1; i <= 2; i++) {
     setFill(doc, C_FIELD_BG);
@@ -238,10 +238,10 @@ function buildFormPDF(): jsPDF {
 
   // Engagement
   y = infoBox(doc, M, y, CW, "Engagement :",
-    "Je m'engage à utiliser les ressources responsablement, respecter mes jours de présence, partager mes avancées en ligne et prendre soin du matériel. Ce formulaire est valable 1 mois, renouvelable selon mes résultats.");
+    "I commit to using the resources responsibly, respecting my attendance days, sharing my progress online, and taking care of the equipment. This form is valid for 1 month, renewable based on my results.");
   y += 3;
 
-  // ===== Signatures + Évaluation =====
+  // ===== Signatures + Evaluation =====
   const sigW = (CW - 4) / 3;
   const sigH = 22;
   // Signature candidat
@@ -255,14 +255,14 @@ function buildFormPDF(): jsPDF {
   setText(doc, C_MUTED);
   doc.setFont("helvetica", "italic");
   doc.setFontSize(7);
-  doc.text("Lu et approuvé + signature", M + sigW / 2, y + 5 + sigH - 2, { align: "center" });
+  doc.text("Read and approved + signature", M + sigW / 2, y + 5 + sigH - 2, { align: "center" });
 
-  // Validé par le responsable
+  // Approved by the supervisor
   const vx = M + sigW + 2;
   setText(doc, C_BLUE_DARK);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.text("Validé par le Responsable", vx + sigW / 2, y + 3, { align: "center" });
+  doc.text("Approved by the Supervisor", vx + sigW / 2, y + 3, { align: "center" });
   setStroke(doc, C_BORDER);
   doc.rect(vx, y + 5, sigW, sigH);
   setText(doc, C_MUTED);
@@ -270,12 +270,12 @@ function buildFormPDF(): jsPDF {
   doc.setFontSize(7);
   doc.text("Signature", vx + sigW / 2, y + 5 + sigH - 2, { align: "center" });
 
-  // Évaluation fin de mois
+  // End-of-month evaluation
   const ex = M + (sigW + 2) * 2;
   setText(doc, C_BLUE_DARK);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.text("Évaluation fin de mois", ex + sigW / 2, y + 3, { align: "center" });
+  doc.text("End-of-month evaluation", ex + sigW / 2, y + 3, { align: "center" });
   setFill(doc, C_FIELD_BG);
   doc.rect(ex, y + 5, sigW, sigH, "F");
   setStroke(doc, C_BORDER);
@@ -287,8 +287,8 @@ function buildFormPDF(): jsPDF {
   setText(doc, C_TEXT);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
-  doc.text("Renouvelé(e)", ex + 8, y + 11.5);
-  doc.text("Non renouvelé(e)", ex + 8, y + 16.5);
+  doc.text("Renewed", ex + 8, y + 11.5);
+  doc.text("Not renewed", ex + 8, y + 16.5);
   doc.setFont("helvetica", "bold");
   doc.text("Note :", ex + 3, y + 22);
   doc.line(ex + 12, y + 22, ex + sigW - 2, y + 22);
@@ -325,7 +325,7 @@ function buildVisitorFormPDF(): jsPDF {
   y += 6;
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Formulaire d'inscription — Visiteur", w / 2, y, { align: "center" });
+  doc.text("Formulaire d'inscription — Visitor", w / 2, y, { align: "center" });
   y += 4;
   doc.setDrawColor(80, 80, 80);
   doc.setLineWidth(0.4);
@@ -336,11 +336,11 @@ function buildVisitorFormPDF(): jsPDF {
     "Nom complet *",
     "Genre (Homme / Femme / Autre)",
     "Date de naissance (JJ/MM/AAAA)",
-    "Téléphone",
+    "Phone",
     "Email",
     "Quartier / Commune",
     "Profession",
-    "Institution (école, université...)",
+    "Institution (school, university...)",
   ];
   const fieldH = 8;
   for (const label of fields) {

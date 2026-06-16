@@ -105,9 +105,9 @@ export default function RestaurantMenu() {
       setOrderConfirmed(orderCode);
       setCart([]);
       setShowCheckout(false);
-      toast.success("Commande passée avec succès !");
+      toast.success("Order placed successfully!");
     } catch {
-      toast.error("Erreur lors de la commande");
+      toast.error("Error lors de la commande");
     }
   };
 
@@ -119,7 +119,7 @@ export default function RestaurantMenu() {
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
               <Check className="h-8 w-8 text-success" />
             </div>
-            <h2 className="text-xl font-bold">Commande confirmée !</h2>
+            <h2 className="text-xl font-bold">Order confirmed!</h2>
             <p className="font-mono text-lg text-primary">{orderConfirmed}</p>
             <p className="text-sm text-muted-foreground">Table {confirmedInvoice.tableNumber}</p>
 
@@ -203,7 +203,7 @@ export default function RestaurantMenu() {
         {isLoading ? (
           <p className="text-center text-muted-foreground py-8">Chargement...</p>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">Aucun produit disponible</p>
+          <p className="text-center text-muted-foreground py-8">None produit disponible</p>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {filtered.map(product => {
@@ -232,7 +232,7 @@ export default function RestaurantMenu() {
                       </div>
                     ) : (
                       <Button size="sm" className="w-full h-8" onClick={() => addToCart(product)}>
-                        <Plus className="h-3 w-3 mr-1" /> Ajouter
+                        <Plus className="h-3 w-3 mr-1" /> Add
                       </Button>
                     )}
                   </CardContent>
@@ -310,7 +310,7 @@ export default function RestaurantMenu() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">Numéro de table</label>
+              <label className="text-sm font-medium mb-1 block">Table number</label>
               <Select value={tableNumber} onValueChange={setTableNumber}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choisir une table" />

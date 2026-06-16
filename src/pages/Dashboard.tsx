@@ -488,7 +488,7 @@ export default function Dashboard() {
 }
 
 function formatTimeRemaining(ms: number): string {
-  if (ms <= 0) return "Expiré";
+  if (ms <= 0) return "Expired";
   const totalMin = Math.floor(ms / 60000);
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;

@@ -44,9 +44,9 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       const qrDataUrl = await getQRDataUrl();
       const doc = await generateMembershipCardPDF(fullName, visitorId, qrDataUrl);
       downloadCardPDF(doc, visitorId);
-      toast.success("Carte PDF téléchargée !");
+      toast.success("Carte PDF downloadede !");
     } catch (err) {
-      toast.error("Erreur lors de la génération");
+      toast.error("Error during generation");
       console.error(err);
     } finally {
       setGenerating(false);
@@ -106,7 +106,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.fillText("GITEGA STUDY SPACE", 68, 32);
       ctx.font = "10px Inter, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.fillText(programName || "Carte de Membre", 68, 46);
+      ctx.fillText(programName || "Carte de Member", 68, 46);
 
       // Photo (top-right, same size as logo)
       if (photo) {
@@ -195,7 +195,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       // Footer text
       ctx.font = "9px Inter, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.3)";
-      ctx.fillText("Présentez cette carte à chaque visite", 20, rect.height - 14);
+      ctx.fillText("Show this card on every visit", 20, rect.height - 14);
       ctx.textAlign = "right";
       ctx.fillText("+257 61 154 065", rect.width - 20, rect.height - 14);
       ctx.textAlign = "left";
@@ -205,9 +205,9 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       link.download = `carte-membre-${visitorId}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
-      toast.success("Carte PNG téléchargée !");
+      toast.success("Carte PNG downloadede !");
     } catch (err) {
-      toast.error("Erreur lors de la génération PNG");
+      toast.error("Error during PNG generation");
       console.error(err);
     } finally {
       setGenerating(false);
@@ -221,9 +221,9 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       const doc = await generateMembershipCardPDF(fullName, visitorId, qrDataUrl);
       // Download and let user print manually
       downloadCardPDF(doc, visitorId);
-      toast.success("PDF téléchargé — ouvrez-le pour imprimer");
+      toast.success("PDF downloaded — ouvrez-le pour imprimer");
     } catch (err) {
-      toast.error("Erreur lors de l'impression");
+      toast.error("Error lors de l'impression");
       console.error(err);
     } finally {
       setGenerating(false);
@@ -237,7 +237,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       `👤 Nom: ${fullName}\n` +
       `🆔 ID: ${visitorId}\n\n` +
       `📱 Voir ma carte: ${cardUrl}\n\n` +
-      `Présentez votre QR code à chaque visite.`;
+      `Show your QR code on every visit.`;
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   };
 
@@ -250,7 +250,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       `Voici vos informations de membre :\n` +
       `- Identifiant : ${visitorId}\n` +
       `- Carte digitale : ${cardUrl}\n\n` +
-      `Présentez votre QR code à chaque visite.\n\n` +
+      `Show your QR code on every visit.\n\n` +
       `Cordialement,\nAmerican Corner`;
     return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
@@ -277,7 +277,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
             )}
             <div className="flex-1">
               <p className="text-xs font-bold text-white tracking-widest">{programName ? programName.toUpperCase() : "GITEGA STUDY SPACE"}</p>
-              <p className="text-[10px] text-white/50">{institution || (programName ? "American Corner" : "Carte de Membre")}</p>
+              <p className="text-[10px] text-white/50">{institution || (programName ? "American Corner" : "Carte de Member")}</p>
             </div>
             {photo && (
               <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />
@@ -303,7 +303,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
 
           {/* Footer */}
           <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-            <p className="text-[9px] text-white/30">Présentez cette carte à chaque visite</p>
+            <p className="text-[9px] text-white/30">Show this card on every visit</p>
             <p className="text-[9px] text-white/30">+257 61 154 065</p>
           </div>
         </div>
@@ -326,7 +326,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
               variant="default"
             >
               <FileText className="h-4 w-4" />
-              Télécharger PDF
+              Download PDF
             </Button>
             <Button
               onClick={handleDownloadPNG}
@@ -335,7 +335,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
               variant="secondary"
             >
               <ImageIcon className="h-4 w-4" />
-              Télécharger PNG
+              Download PNG
             </Button>
           </div>
 

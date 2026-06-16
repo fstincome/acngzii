@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useAuth, AppRole } from "@/hooks/useAuth";
+import { useAuth, AppRole, isAdminLike } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
@@ -29,8 +29,8 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     );
   }
 
-  // Admin has access to everything
-  if (role === "admin") return <>{children}</>;
+  // Admin & National Coordinator have access to everything
+  if (isAdminLike(role)) return <>{children}</>;
 
   // Check allowed roles
   if (allowedRoles && !allowedRoles.includes(role)) {

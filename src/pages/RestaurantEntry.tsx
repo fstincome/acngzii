@@ -25,7 +25,7 @@ export default function RestaurantEntry() {
     const { data: visitor } = await supabase.from("visitors").select("visitor_id").eq("visitor_id", trimmed).maybeSingle();
     if (!visitor) {
       setLoading(false);
-      toast.error("Visiteur introuvable. Vérifiez votre identifiant.");
+      toast.error("Visitor not found. Check your ID.");
       return;
     }
     setLoading(false);
@@ -50,7 +50,7 @@ export default function RestaurantEntry() {
         }
       }, 100);
     } catch {
-      toast.error("Impossible d'accéder à la caméra.");
+      toast.error("Cannot access camera.");
       setCameraActive(false);
     }
   };
@@ -117,7 +117,7 @@ export default function RestaurantEntry() {
             onClick={cameraActive ? stopCamera : startCamera}
           >
             <Camera className="h-4 w-4" />
-            {cameraActive ? "Fermer la caméra" : "Scanner ma carte QR"}
+            {cameraActive ? "Close camera" : "Scan my QR card"}
           </Button>
 
           <div className="relative flex items-center gap-2">
@@ -134,7 +134,7 @@ export default function RestaurantEntry() {
               className="text-center text-lg font-mono tracking-widest"
             />
             <Button type="submit" className="w-full" disabled={loading || !visitorId.trim()}>
-              {loading ? "Vérification..." : "Accéder au menu"}
+              {loading ? "Checking..." : "Open menu"}
             </Button>
           </form>
         </CardContent>

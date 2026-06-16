@@ -34,9 +34,9 @@ export default function Login() {
     const { error } = await signIn(email, password);
     if (error) {
       toast({
-        title: "Erreur de connexion",
+        title: "Sign-in error",
         description: error.message === "Invalid login credentials"
-          ? "Email ou mot de passe incorrect"
+          ? "Incorrect email or password"
           : error.message,
         variant: "destructive",
       });
@@ -50,7 +50,7 @@ export default function Login() {
         <div className="text-center space-y-2">
           <img src={logoGss} alt="American Corner" className="h-20 w-20 mx-auto rounded-xl object-contain" />
           <h1 className="text-2xl font-bold text-foreground">American Corner</h1>
-          <p className="text-sm text-muted-foreground">Connectez-vous pour accéder au système</p>
+          <p className="text-sm text-muted-foreground">Sign in to access the system</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -59,14 +59,14 @@ export default function Login() {
             <Input
               id="email"
               type="email"
-              placeholder="votre@email.com"
+              placeholder="you@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Mot de passe</Label>
+            <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -92,7 +92,7 @@ export default function Login() {
             ) : (
               <LogIn className="h-4 w-4 mr-2" />
             )}
-            Se connecter
+            Sign in
           </Button>
         </form>
       </Card>

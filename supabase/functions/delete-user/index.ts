@@ -17,19 +17,19 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Verify caller is admin
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data: { user: caller } } = await supabaseAdmin.auth.getUser(token);
-    if (!caller) throw new Error("Non authentifié");
+    if (!caller) throw new Error("Not authenticated");
 
-    const { data: callerRole } = await supabaseAdmin.rpc("get_user_role", { _user_id: caller.id });
-    if (callerRole !== "admin") throw new Error("Non autorisé");
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+      _user_id: caller.id,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Not authorized");
 
     const { user_id } = await req.json();
-
-    // Prevent self-delete
-    if (user_id === caller.id) throw new Error("Impossible de supprimer votre propre compte");
+    if (user_id === caller.id) throw new Error("You cannot delete your own account");
 
     const { error } = await supabaseAdmin.auth.admin.deleteUser(user_id);
     if (error) throw error;
