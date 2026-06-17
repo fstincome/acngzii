@@ -41,7 +41,7 @@ export default function RestaurantManualOrder() {
       setVisitorQuery(data.visitor_id);
       toast.success(`Visitor found : ${data.full_name}`);
     } else {
-      toast.error("Visitor introuvable");
+      toast.error("Visitor not found");
     }
   };
 
@@ -238,7 +238,7 @@ export default function RestaurantManualOrder() {
         <CardHeader><CardTitle className="text-base">2. Table</CardTitle></CardHeader>
         <CardContent>
           <Select value={tableNumber} onValueChange={setTableNumber}>
-            <SelectTrigger><SelectValue placeholder="Choisir une table" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="Choose a table" /></SelectTrigger>
             <SelectContent>
               {Array.from({ length: TABLE_COUNT }, (_, i) => (
                 <SelectItem key={i + 1} value={String(i + 1)}>Table {i + 1}</SelectItem>
@@ -252,7 +252,7 @@ export default function RestaurantManualOrder() {
       <Card>
         <CardHeader><CardTitle className="text-base">3. Select les produits</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <Input placeholder="Rechercher un produit..." value={searchProduct} onChange={e => setSearchProduct(e.target.value)} />
+          <Input placeholder="Search a product..." value={searchProduct} onChange={e => setSearchProduct(e.target.value)} />
           <div className="max-h-60 overflow-y-auto space-y-2">
             {available.map(p => {
               const inCart = cart.find(c => c.product.id === p.id);

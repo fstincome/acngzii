@@ -16,7 +16,7 @@ const MEMBER_TYPE_LABELS: Record<string, string> = {
   visitor: "Visitor", member: "Member", student: "Student",
   professional: "Professional", entrepreneur: "Entrepreneur", volunteer: "Volunteer",
 };
-const STATUS_LABELS: Record<string, string> = { active: "Actif", pending: "En attente", inactive: "Inactif" };
+const STATUS_LABELS: Record<string, string> = { active: "Active", pending: "Pending", inactive: "Inactive" };
 const STATUS_DOT: Record<string, string> = { active: "bg-success", pending: "bg-warning", inactive: "bg-muted-foreground" };
 
 
@@ -88,19 +88,19 @@ export default function Visitors() {
   }, [visitors, search, typeFilter, statusFilter, institutionFilter, sortKey, sortDir]);
 
   const handleDeleteVisitor = async (v: Visitor) => {
-    if (!confirm(`Delete le visiteur "${v.full_name}" et tout son historique ?`)) return;
+    if (!confirm(`Delete visitor "${v.full_name}" and all their history?`)) return;
     try {
       await deleteVisitor.mutateAsync(v.visitor_id);
       toast.success("Visitor deleted!");
       setSelected(null);
-    } catch { toast.error("Error lors de la suppression"); }
+    } catch { toast.error("Error during deletion"); }
   };
 
   if (selected) {
     const visits = allVisits
       .filter((v) => v.visitor_id === selected.visitor_id)
       .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-    const genderLabel = selected.gender === "male" ? "Homme" : selected.gender === "female" ? "Femme" : "Autre";
+    const genderLabel = selected.gender === "male" ? "Male" : selected.gender === "female" ? "Female" : "Other";
 
     const startEdit = () => {
       setEditForm({
@@ -165,7 +165,7 @@ export default function Visitors() {
       <div className="mx-auto max-w-2xl space-y-6 animate-fade-in">
         <div className="flex items-center gap-2">
           <Button variant="ghost" className="gap-2 rounded-xl" onClick={() => { setSelected(null); setEditing(false); }}>
-            <ArrowLeft className="h-4 w-4" /> Retour
+            <ArrowLeft className="h-4 w-4" /> Back
           </Button>
           <div className="ml-auto flex gap-2">
             {editing ? (
@@ -174,7 +174,7 @@ export default function Visitors() {
                   <X className="h-4 w-4" /> Cancel
                 </Button>
                 <Button className="gap-2 rounded-xl" onClick={saveEdit} disabled={updateVisitor.isPending}>
-                  <Save className="h-4 w-4" /> {updateVisitor.isPending ? "Enregistrement..." : "Save"}
+                  <Save className="h-4 w-4" /> {updateVisitor.isPending ? "Saving..." : "Save"}
                 </Button>
               </>
             ) : (
@@ -192,11 +192,11 @@ export default function Visitors() {
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="gap-2 rounded-xl">
-                      <CreditCard className="h-4 w-4" /> Carte
+                      <CreditCard className="h-4 w-4" /> Card
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
-                    <DialogHeader><DialogTitle>Carte de membre</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle>Membership card</DialogTitle></DialogHeader>
                     <MembershipCard fullName={selected.full_name} visitorId={selected.visitor_id} photo={selected.photo} />
                   </DialogContent>
                 </Dialog>
@@ -206,21 +206,21 @@ export default function Visitors() {
         </div>
         {editing ? (
           <div className="rounded-2xl border border-border/50 bg-card p-7 shadow-sm space-y-5">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Edit les informations</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4">Edit information</h3>
             <p className="text-xs text-muted-foreground -mt-3 mb-2">The ID ({selected.visitor_id}) and QR code cannot be changed.</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2 space-y-1.5">
-                <Label className="text-foreground text-xs">Nom complet <span className="text-destructive">*</span></Label>
+                <Label className="text-foreground text-xs">Full name <span className="text-destructive">*</span></Label>
                 <Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} className="rounded-xl h-10" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-foreground text-xs">Genre</Label>
+                <Label className="text-foreground text-xs">Gender</Label>
                 <Select value={editForm.gender} onValueChange={(v) => setEditForm({ ...editForm, gender: v })}>
                   <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Homme</SelectItem>
-                    <SelectItem value="female">Femme</SelectItem>
-                    <SelectItem value="other">Autre</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -314,20 +314,20 @@ export default function Visitors() {
             <div className="mt-6 grid grid-cols-2 gap-2.5">
               <Detail icon={Phone} label="Phone" value={selected.phone} />
               <Detail icon={Briefcase} label="Profession" value={selected.occupation} />
-              <Detail icon={MapPin} label="Quartier" value={selected.neighborhood} />
-              <Detail icon={Calendar} label="Genre" value={genderLabel} />
-              <Detail icon={Calendar} label="Date de naissance" value={selected.date_of_birth || "—"} />
-              <Detail icon={Calendar} label="Inscrit le" value={selected.registration_date} />
+              <Detail icon={MapPin} label="Neighborhood" value={selected.neighborhood} />
+              <Detail icon={Calendar} label="Gender" value={genderLabel} />
+              <Detail icon={Calendar} label="Date of birth" value={selected.date_of_birth || "—"} />
+              <Detail icon={Calendar} label="Registered on" value={selected.registration_date} />
               <Detail icon={Briefcase} label="Institution" value={selected.institution || "—"} />
-              <Detail icon={User} label="Type de membre" value={MEMBER_TYPE_LABELS[selected.member_type] || selected.member_type} />
-              <Detail icon={User} label="Statut" value={STATUS_LABELS[selected.membership_status] || selected.membership_status} />
+              <Detail icon={User} label="Member type" value={MEMBER_TYPE_LABELS[selected.member_type] || selected.member_type} />
+              <Detail icon={User} label="Status" value={STATUS_LABELS[selected.membership_status] || selected.membership_status} />
               {selected.age_group && <Detail icon={Calendar} label="Age range" value={selected.age_group} />}
               {selected.photo && (
                 <div className="col-span-2 flex items-start gap-3 rounded-xl bg-muted/40 px-4 py-3">
                   <Image className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Photo</p>
-                    <a href={selected.photo} target="_blank" rel="noopener" className="text-sm font-medium text-primary truncate block hover:underline">Voir la photo</a>
+                    <a href={selected.photo} target="_blank" rel="noopener" className="text-sm font-medium text-primary truncate block hover:underline">View photo</a>
                   </div>
                 </div>
               )}
@@ -337,7 +337,7 @@ export default function Visitors() {
 
         <div className="rounded-2xl border border-border/50 bg-card p-7 shadow-sm">
           <h3 className="mb-4 text-sm font-semibold text-foreground">
-            Historique des visites
+            Visit history
             <span className="ml-2 inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
               {visits.length}
             </span>
@@ -356,7 +356,7 @@ export default function Visitors() {
                     </span>
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(v.timestamp).toLocaleDateString("fr-FR")} {new Date(v.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {new Date(v.timestamp).toLocaleDateString("en-US")} {new Date(v.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
               ))}
@@ -372,7 +372,7 @@ export default function Visitors() {
       <div className="flex items-center justify-between">
         <div className="page-header">
           <h1 className="page-title">Members</h1>
-          <p className="page-subtitle">{visitors.length} membres inscrits</p>
+          <p className="page-subtitle">{visitors.length} registered members</p>
         </div>
       </div>
 
@@ -406,12 +406,12 @@ export default function Visitors() {
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Statut" /></SelectTrigger>
+          <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tous les statuts</SelectItem>
-            <SelectItem value="active">Actif</SelectItem>
-            <SelectItem value="pending">En attente</SelectItem>
-            <SelectItem value="inactive">Inactif</SelectItem>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -434,11 +434,11 @@ export default function Visitors() {
           <Table>
             <TableHeader>
               <TableRow>
-                <SortHeader label="Nom" k="full_name" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
+                <SortHeader label="Name" k="full_name" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
                 <SortHeader label="Type" k="member_type" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
                 <SortHeader label="Institution" k="institution" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
-                <SortHeader label="Statut" k="membership_status" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
-                <SortHeader label="Inscrit le" k="registration_date" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} className="hidden md:table-cell" />
+                <SortHeader label="Status" k="membership_status" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} />
+                <SortHeader label="Registered on" k="registration_date" sortKey={sortKey} sortDir={sortDir} onClick={toggleSort} className="hidden md:table-cell" />
               </TableRow>
             </TableHeader>
             <TableBody>

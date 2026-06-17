@@ -35,7 +35,7 @@ export default function RestaurantProducts() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) { toast.error("Nom required"); return; }
+    if (!form.name.trim()) { toast.error("Name required"); return; }
     try {
       const data = { ...form, image_url: form.image_url || null };
       if (editId) {
@@ -52,7 +52,7 @@ export default function RestaurantProducts() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete ce produit ?")) return;
+    if (!confirm("Delete this product?")) return;
     try {
       await deleteProduct.mutateAsync(id);
       toast.success("Product deleted");
@@ -117,7 +117,7 @@ export default function RestaurantProducts() {
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editId ? "Edit le produit" : "Nouveau produit"}</DialogTitle>
+            <DialogTitle>{editId ? "Edit product" : "New product"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>

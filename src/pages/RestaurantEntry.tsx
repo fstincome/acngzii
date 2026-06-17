@@ -95,7 +95,7 @@ export default function RestaurantEntry() {
           </div>
           <CardTitle className="text-xl">American Corner Restaurant</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Scannez votre carte ou entrez votre identifiant
+            Scan your card or enter your ID
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -122,7 +122,7 @@ export default function RestaurantEntry() {
 
           <div className="relative flex items-center gap-2">
             <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground">ou</span>
+            <span className="text-xs text-muted-foreground">or</span>
             <div className="flex-1 h-px bg-border" />
           </div>
 

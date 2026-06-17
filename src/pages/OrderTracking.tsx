@@ -107,7 +107,7 @@ export default function OrderTracking() {
               <XCircle className="h-8 w-8 text-muted-foreground" />
             </div>
             <h2 className="text-xl font-bold">Link expired</h2>
-            <p className="text-muted-foreground">Ce lien de suivi n'est plus disponible.</p>
+            <p className="text-muted-foreground">This tracking link is no longer available.</p>
           </CardContent>
         </Card>
       </div>
@@ -117,7 +117,7 @@ export default function OrderTracking() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <p className="text-muted-foreground">Chargement...</p>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -127,7 +127,7 @@ export default function OrderTracking() {
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-sm text-center">
           <CardContent className="pt-8 space-y-4">
-            <h2 className="text-xl font-bold">Commande introuvable</h2>
+            <h2 className="text-xl font-bold">Order not found</h2>
             <p className="text-muted-foreground">Check your order code.</p>
           </CardContent>
         </Card>
@@ -148,7 +148,7 @@ export default function OrderTracking() {
             <UtensilsCrossed className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold">American Corner Restaurant</h1>
-          <p className="text-white/80 text-sm">Suivi de commande</p>
+          <p className="text-white/80 text-sm">Order tracking</p>
         </div>
 
         {/* Status Card */}
@@ -204,7 +204,7 @@ export default function OrderTracking() {
                 <p className="font-bold text-lg">{order.table_number}</p>
               </div>
               <div className="bg-muted/50 rounded-lg p-3">
-                <p className="text-muted-foreground text-xs">Paiement</p>
+                <p className="text-muted-foreground text-xs">Payment</p>
                 <p className="font-bold">{PAYMENT_LABELS[order.payment_status] || order.payment_status}</p>
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function OrderTracking() {
               <p className="font-medium text-sm">Items ordered</p>
               {items.map(item => (
                 <div key={item.id} className="flex justify-between text-sm">
-                  <span>{productMap.get(item.product_id) || "Produit"} ×{item.quantity}</span>
+                  <span>{productMap.get(item.product_id) || "Product"} ×{item.quantity}</span>
                   <span className="font-medium">{(item.unit_price * item.quantity).toLocaleString()} BIF</span>
                 </div>
               ))}
