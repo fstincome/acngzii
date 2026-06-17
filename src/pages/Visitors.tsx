@@ -174,7 +174,7 @@ export default function Visitors() {
                   <X className="h-4 w-4" /> Cancel
                 </Button>
                 <Button className="gap-2 rounded-xl" onClick={saveEdit} disabled={updateVisitor.isPending}>
-                  <Save className="h-4 w-4" /> {updateVisitor.isPending ? "Enregistrement..." : "Save"}
+                  <Save className="h-4 w-4" /> {updateVisitor.isPending ? "Saving..." : "Save"}
                 </Button>
               </>
             ) : (
@@ -192,11 +192,11 @@ export default function Visitors() {
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="gap-2 rounded-xl">
-                      <CreditCard className="h-4 w-4" /> Carte
+                      <CreditCard className="h-4 w-4" /> Card
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
-                    <DialogHeader><DialogTitle>Carte de membre</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle>Membership card</DialogTitle></DialogHeader>
                     <MembershipCard fullName={selected.full_name} visitorId={selected.visitor_id} photo={selected.photo} />
                   </DialogContent>
                 </Dialog>
@@ -206,21 +206,21 @@ export default function Visitors() {
         </div>
         {editing ? (
           <div className="rounded-2xl border border-border/50 bg-card p-7 shadow-sm space-y-5">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Edit les informations</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4">Edit information</h3>
             <p className="text-xs text-muted-foreground -mt-3 mb-2">The ID ({selected.visitor_id}) and QR code cannot be changed.</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2 space-y-1.5">
-                <Label className="text-foreground text-xs">Nom complet <span className="text-destructive">*</span></Label>
+                <Label className="text-foreground text-xs">Full name <span className="text-destructive">*</span></Label>
                 <Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} className="rounded-xl h-10" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-foreground text-xs">Genre</Label>
+                <Label className="text-foreground text-xs">Gender</Label>
                 <Select value={editForm.gender} onValueChange={(v) => setEditForm({ ...editForm, gender: v })}>
                   <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Homme</SelectItem>
-                    <SelectItem value="female">Femme</SelectItem>
-                    <SelectItem value="other">Autre</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -314,20 +314,20 @@ export default function Visitors() {
             <div className="mt-6 grid grid-cols-2 gap-2.5">
               <Detail icon={Phone} label="Phone" value={selected.phone} />
               <Detail icon={Briefcase} label="Profession" value={selected.occupation} />
-              <Detail icon={MapPin} label="Quartier" value={selected.neighborhood} />
-              <Detail icon={Calendar} label="Genre" value={genderLabel} />
-              <Detail icon={Calendar} label="Date de naissance" value={selected.date_of_birth || "—"} />
-              <Detail icon={Calendar} label="Inscrit le" value={selected.registration_date} />
+              <Detail icon={MapPin} label="Neighborhood" value={selected.neighborhood} />
+              <Detail icon={Calendar} label="Gender" value={genderLabel} />
+              <Detail icon={Calendar} label="Date of birth" value={selected.date_of_birth || "—"} />
+              <Detail icon={Calendar} label="Registered on" value={selected.registration_date} />
               <Detail icon={Briefcase} label="Institution" value={selected.institution || "—"} />
-              <Detail icon={User} label="Type de membre" value={MEMBER_TYPE_LABELS[selected.member_type] || selected.member_type} />
-              <Detail icon={User} label="Statut" value={STATUS_LABELS[selected.membership_status] || selected.membership_status} />
+              <Detail icon={User} label="Member type" value={MEMBER_TYPE_LABELS[selected.member_type] || selected.member_type} />
+              <Detail icon={User} label="Status" value={STATUS_LABELS[selected.membership_status] || selected.membership_status} />
               {selected.age_group && <Detail icon={Calendar} label="Age range" value={selected.age_group} />}
               {selected.photo && (
                 <div className="col-span-2 flex items-start gap-3 rounded-xl bg-muted/40 px-4 py-3">
                   <Image className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Photo</p>
-                    <a href={selected.photo} target="_blank" rel="noopener" className="text-sm font-medium text-primary truncate block hover:underline">Voir la photo</a>
+                    <a href={selected.photo} target="_blank" rel="noopener" className="text-sm font-medium text-primary truncate block hover:underline">View photo</a>
                   </div>
                 </div>
               )}
@@ -356,7 +356,7 @@ export default function Visitors() {
                     </span>
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(v.timestamp).toLocaleDateString("fr-FR")} {new Date(v.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {new Date(v.timestamp).toLocaleDateString("en-US")} {new Date(v.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
               ))}

@@ -140,20 +140,20 @@ export default function RestaurantMenu() {
             {/* WhatsApp confirmation CTA */}
             <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 space-y-2">
               <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
-                📲 Pour confirmer votre commande, envoyez-la sur WhatsApp au serveur :
+                📲 To confirm your order, send it to the server on WhatsApp:
               </p>
               <Button
                 className="w-full bg-[#25D366] hover:bg-[#20BD5A] text-white gap-2"
                 onClick={() => openClientWhatsApp(confirmedInvoice!)}
               >
-                <Send className="h-4 w-4" /> Envoyer sur WhatsApp
+                <Send className="h-4 w-4" /> Send on WhatsApp
               </Button>
             </div>
 
             <InvoiceActions data={confirmedInvoice} />
 
             <Button variant="outline" className="w-full" onClick={() => { setOrderConfirmed(null); setConfirmedInvoice(null); setTableNumber(""); }}>
-              Nouvelle commande
+              New order
             </Button>
           </CardContent>
         </Card>
@@ -201,7 +201,7 @@ export default function RestaurantMenu() {
 
         {/* Products grid */}
         {isLoading ? (
-          <p className="text-center text-muted-foreground py-8">Chargement...</p>
+          <p className="text-center text-muted-foreground py-8">Loading...</p>
         ) : filtered.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">None produit disponible</p>
         ) : (
@@ -251,7 +251,7 @@ export default function RestaurantMenu() {
               <p className="font-bold">{total.toLocaleString()} BIF</p>
               <p className="text-xs text-muted-foreground">{cartCount} article(s)</p>
             </div>
-            <Button onClick={() => setShowCart(true)}>
+              <Button onClick={() => setShowCart(true)}>
               <ShoppingCart className="h-4 w-4 mr-2" /> Voir le panier
             </Button>
           </div>
