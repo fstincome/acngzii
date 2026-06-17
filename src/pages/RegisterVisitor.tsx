@@ -60,7 +60,7 @@ function buildFormPDF(): jsPDF {
   y += 2;
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text("Photo passeport (coller ici)", margin, y);
+  doc.text("Passport photo (paste here)", margin, y);
   y += 4;
   doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.25);
@@ -72,13 +72,13 @@ function buildFormPDF(): jsPDF {
   const sigY = y + 48;
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text("Signature du visiteur :", margin, sigY);
+  doc.text("Visitor signature:", margin, sigY);
   doc.setLineWidth(0.3);
   doc.setDrawColor(120, 120, 120);
   doc.line(margin + 40, sigY, w - margin, sigY);
 
   const dateY = sigY + 10;
-  doc.text("Date :", margin, dateY);
+  doc.text("Date:", margin, dateY);
   doc.line(margin + 16, dateY, margin + 70, dateY);
 
   return doc;
@@ -90,7 +90,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
 
   const handleDownload = () => {
     const doc = buildFormPDF();
-    doc.save("formulaire-inscription-visiteur.pdf");
+    doc.save("visitor-registration-form.pdf");
     toast.success("PDF form downloaded!");
   };
 
@@ -118,34 +118,34 @@ function FormPreview({ onBack }: { onBack: () => void }) {
   const getWhatsAppUrl = () => {
     const formUrl = `${window.location.origin}/formulaire`;
     const message =
-      `📋 *Formulaire d'inscription - American Corner*\n\n` +
-      `Bonjour ! Veuillez remplir le formulaire d'inscription en suivant ce lien :\n\n` +
+      `📋 *Registration Form - American Corner*\n\n` +
+      `Hello! Please fill in the registration form by following this link:\n\n` +
       `👉 ${formUrl}\n\n` +
       `You can also download the PDF from this page to fill it in by hand.\n\n` +
-      `Merci !\n— American Corner`;
+      `Thank you!\n— American Corner`;
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   };
 
   const getEmailUrl = () => {
     const formUrl = `${window.location.origin}/formulaire`;
-    const subject = "Formulaire d'inscription - American Corner";
+    const subject = "Registration Form - American Corner";
     const body =
-      `Bonjour,\n\n` +
-      `Veuillez remplir votre formulaire d'inscription au American Corner en suivant ce lien :\n\n` +
+      `Hello,\n\n` +
+      `Please fill in your registration form for American Corner by following this link:\n\n` +
       `${formUrl}\n\n` +
       `You can also download the PDF from this page to fill it in by hand.\n\n` +
-      `Merci !\n\nCordialement,\nAmerican Corner`;
+      `Thank you!\n\nBest regards,\nAmerican Corner`;
     return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   const fields = [
-    "Nom complet *",
-    "Genre (Homme / Femme / Autre)",
-    "Date de naissance (JJ/MM/AAAA)",
+    "Full name *",
+    "Gender (Male / Female / Other)",
+    "Date of birth (DD/MM/YYYY)",
     "Phone",
     "Email",
-    "Quartier / Commune",
-    "Profession",
+    "Neighborhood / Commune",
+    "Occupation",
     "Institution (school, university...)",
   ];
 
@@ -157,7 +157,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-lg font-bold text-foreground">Formulaire d'inscription</h2>
+          <h2 className="text-lg font-bold text-foreground">Registration Form</h2>
           <p className="text-sm text-muted-foreground">Paper form preview</p>
         </div>
       </div>
@@ -170,7 +170,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
             <img src="/gss-logo.png" alt="American Spaces" className="h-8 w-8 rounded-lg object-contain" />
             <h3 className="text-sm font-bold tracking-widest text-foreground uppercase">American Corner</h3>
           </div>
-          <p className="text-xs text-muted-foreground">Formulaire d'inscription — Visitor</p>
+          <p className="text-xs text-muted-foreground">Registration Form — Visitor</p>
           <div className="mt-3 h-px bg-border/50" />
         </div>
 
@@ -185,7 +185,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
 
           {/* Photo area */}
           <div className="pt-2 space-y-1">
-            <p className="text-[11px] font-semibold text-foreground/80">Photo passeport (coller ici)</p>
+            <p className="text-[11px] font-semibold text-foreground/80">Passport photo (paste here)</p>
             <div className="h-24 w-20 rounded-lg border border-dashed border-border/60 bg-muted/30 flex items-center justify-center">
               <span className="text-[9px] text-muted-foreground">3.5 × 4.5 cm</span>
             </div>
@@ -193,7 +193,7 @@ function FormPreview({ onBack }: { onBack: () => void }) {
 
           {/* Signature */}
           <div className="pt-3 flex items-end gap-2">
-            <p className="text-[11px] font-semibold text-foreground/80 shrink-0">Signature :</p>
+            <p className="text-[11px] font-semibold text-foreground/80 shrink-0">Signature:</p>
             <div className="flex-1 border-b border-dashed border-border/60 mb-0.5" />
           </div>
           <div className="flex items-end gap-2">
@@ -219,12 +219,12 @@ function FormPreview({ onBack }: { onBack: () => void }) {
           </Button>
           <Button onClick={handlePrint} disabled={generating} className="gap-2 rounded-xl h-11" variant="secondary">
             <Printer className="h-4 w-4" />
-            Imprimer
+            Print
           </Button>
         </div>
 
         <div className="flex items-center gap-2 px-1">
-          <span className="text-xs text-muted-foreground">Partager :</span>
+          <span className="text-xs text-muted-foreground">Share:</span>
           <div className="flex gap-2">
             <a
               href={getWhatsAppUrl()}
@@ -342,7 +342,7 @@ export default function RegisterVisitor() {
       toast.success("Member registered successfully!");
     } catch (err) {
       console.error(err);
-      toast.error("Error lors de l'inscription");
+      toast.error("Error during registration");
     }
   };
 
@@ -369,10 +369,10 @@ export default function RegisterVisitor() {
             setForm({ fullName: "", gender: "", dateOfBirth: "", phone: "", email: "", neighborhood: "", occupation: "", institution: "", photo: "", memberType: "visitor", membershipStatus: "active" });
           }}>
             <UserPlus className="h-4 w-4" />
-            Inscrire un autre
+            Register another
           </Button>
           <Button className="flex-1 gap-2 rounded-xl h-11" variant="outline" onClick={() => navigate("/visitors")}>
-            Voir les visiteurs
+            View visitors
           </Button>
         </div>
       </div>
@@ -438,13 +438,13 @@ export default function RegisterVisitor() {
           )}
 
           <div className="space-y-2">
-            <Label className="text-foreground">Genre</Label>
+            <Label className="text-foreground">Gender</Label>
             <Select value={form.gender} onValueChange={(v) => update("gender", v)}>
               <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="male">Homme</SelectItem>
-                <SelectItem value="female">Femme</SelectItem>
-                <SelectItem value="other">Autre</SelectItem>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
