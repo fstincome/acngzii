@@ -86,83 +86,6 @@ export default function Dashboard() {
   const programTotalToday = todayProgramAttendance.length;
 
 
-  // Restaurant accounting (today)
-  const { data: todayOrders = [] } = useQuery({
-    queryKey: ["dashboard_today_orders", today],
-    queryFn: async () => {
-      const start = `${today}T00:00:00`;
-      const end = `${today}T23:59:59.999`;
-      const { data, error } = await supabase
-        .from("orders")
-        .select("id, total_amount, status, payment_status, created_at")
-        .gte("created_at", start)
-        .lte("created_at", end);
-      if (error) throw error;
-      return (data ?? []) as { id: string; total_amount: number; status: string; payment_status: string }[];
-    },
-  });
-
-  const todayOrderIds = useMemo(() => todayOrders.map(o => o.id), [todayOrders]);
-
-  const { data: todayOrderItems = [] } = useQuery({
-    queryKey: ["dashboard_today_order_items", todayOrderIds],
-    queryFn: async () => {
-      if (todayOrderIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from("order_items")
-        .select("order_id, product_id, quantity, unit_price")
-        .in("order_id", todayOrderIds);
-      if (error) throw error;
-      return (data ?? []) as { order_id: string; product_id: string; quantity: number; unit_price: number }[];
-    },
-    enabled: todayOrderIds.length > 0,
-  });
-
-  const { data: allProducts = [] } = useQuery({
-    queryKey: ["dashboard_products_for_accounting"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("products").select("id, price, cost_price");
-      if (error) throw error;
-      return (data ?? []) as { id: string; price: number; cost_price: number }[];
-    },
-  });
-
-  const accounting = useMemo(() => {
-    const paid = todayOrders.filter(o => o.payment_status !== "unpaid" && o.status !== "cancelled");
-    const unpaid = todayOrders.filter(o => o.payment_status === "unpaid" && o.status !== "cancelled");
-    const revenue = paid.reduce((s, o) => s + o.total_amount, 0);
-    const pendingAmount = unpaid.reduce((s, o) => s + o.total_amount, 0);
-
-    const productMap: Record<string, { price: number; cost_price: number }> = {};
-    allProducts.forEach(p => { productMap[p.id] = p; });
-
-    const paidIds = new Set(paid.map(o => o.id));
-    const itemsForPaid = todayOrderItems.filter(i => paidIds.has(i.order_id));
-
-    let profit = 0;
-    itemsForPaid.forEach(i => {
-      const p = productMap[i.product_id];
-      if (p) profit += (p.price - p.cost_price) * i.quantity;
-    });
-    const ordersWithItems = new Set(itemsForPaid.map(i => i.order_id));
-    const revenueWithoutItems = paid
-      .filter(o => !ordersWithItems.has(o.id))
-      .reduce((s, o) => s + o.total_amount, 0);
-    if (revenueWithoutItems > 0 && allProducts.length > 0) {
-      const avgMargin = allProducts.reduce((s, p) => s + (p.price > 0 ? (p.price - p.cost_price) / p.price : 0), 0) / allProducts.length;
-      profit += Math.round(revenueWithoutItems * avgMargin);
-    }
-
-    return {
-      revenue,
-      profit,
-      pendingAmount,
-      paidCount: paid.length,
-      unpaidCount: unpaid.length,
-      totalCount: todayOrders.length,
-    };
-  }, [todayOrders, todayOrderItems, allProducts]);
-
   // Program room breakdown today
   const programPresentByRoom = useMemo(() => {
     const present = todayProgramAttendance.filter(a => a.status === "present");
@@ -172,6 +95,7 @@ export default function Dashboard() {
       garden: present.filter(a => a.room === "garden"),
     };
   }, [todayProgramAttendance]);
+
 
   const labOccupancy = computeOccupancy(visits, "computer_lab");
   const multiOccupancy = computeOccupancy(visits, "multipurpose_room");
