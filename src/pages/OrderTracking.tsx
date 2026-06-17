@@ -214,7 +214,7 @@ export default function OrderTracking() {
               <p className="font-medium text-sm">Items ordered</p>
               {items.map(item => (
                 <div key={item.id} className="flex justify-between text-sm">
-                  <span>{productMap.get(item.product_id) || "Produit"} ×{item.quantity}</span>
+                  <span>{productMap.get(item.product_id) || "Product"} ×{item.quantity}</span>
                   <span className="font-medium">{(item.unit_price * item.quantity).toLocaleString()} BIF</span>
                 </div>
               ))}

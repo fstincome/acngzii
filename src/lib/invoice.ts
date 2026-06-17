@@ -88,7 +88,7 @@ export function generateInvoicePDF(data: InvoiceData): jsPDF {
   doc.setTextColor(60, 60, 60);
   doc.setFontSize(6.5);
   doc.setFont("helvetica", "bold");
-  doc.text("ARTICLE", mx + 2, y);
+  doc.text("ITEM", mx + 2, y);
   doc.text("QTY", 48, y, { align: "center" });
   doc.text("TOTAL", w - mx - 1, y, { align: "right" });
   y += 5;
@@ -142,7 +142,7 @@ export function generateInvoicePDF(data: InvoiceData): jsPDF {
   doc.roundedRect(mx, y - 3, w - mx * 2, 7, 1.5, 1.5, "F");
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  doc.text(`Paiement: ${payLabel}`, w / 2, y + 1, { align: "center" });
+  doc.text(`Payment: ${payLabel}`, w / 2, y + 1, { align: "center" });
   y += 10;
 
   // ── Footer ──
@@ -154,7 +154,7 @@ export function generateInvoicePDF(data: InvoiceData): jsPDF {
   doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(140, 140, 140);
-  doc.text("Merci pour votre visite !", w / 2, y, { align: "center" });
+  doc.text("Thank you for your visit!", w / 2, y, { align: "center" });
   y += 3;
   doc.text("American Corner — Multipurpose Room", w / 2, y, { align: "center" });
 
@@ -164,7 +164,7 @@ export function generateInvoicePDF(data: InvoiceData): jsPDF {
 // ── PDF Download ────────────────────────────────────────────────
 
 export function downloadInvoice(doc: jsPDF, orderCode: string) {
-  doc.save(`facture-${orderCode}.pdf`);
+  doc.save(`invoice-${orderCode}.pdf`);
 }
 
 // ── PNG Generation via Canvas ───────────────────────────────────
@@ -253,7 +253,7 @@ export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
   ctx.fillStyle = "#475569";
   ctx.font = "600 10px Helvetica, Arial, sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText("ARTICLE", px + 8, y + 15);
+  ctx.fillText("ITEM", px + 8, y + 15);
   ctx.textAlign = "center";
   ctx.fillText("QTY", W / 2 + 30, y + 15);
   ctx.textAlign = "right";
@@ -311,7 +311,7 @@ export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
   ctx.fillStyle = payFg;
   ctx.font = "600 11px Helvetica, Arial, sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText(`Paiement: ${payLabel}`, W / 2, y + 17);
+  ctx.fillText(`Payment: ${payLabel}`, W / 2, y + 17);
   y += payH + 16;
 
   // ── Footer ──
@@ -320,7 +320,7 @@ export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
   ctx.fillStyle = "#9ca3af";
   ctx.font = "400 10px Helvetica, Arial, sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("Merci pour votre visite !", W / 2, y);
+  ctx.fillText("Thank you for your visit!", W / 2, y);
   y += 14;
   ctx.font = "400 9px Helvetica, Arial, sans-serif";
   ctx.fillText("American Corner — Multipurpose Room", W / 2, y);
@@ -340,7 +340,7 @@ export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `facture-${data.orderCode}.png`;
+        a.download = `invoice-${data.orderCode}.png`;
         a.click();
         URL.revokeObjectURL(url);
       }
@@ -411,13 +411,13 @@ export function printInvoice(doc: jsPDF) {
 export function shareInvoiceWhatsApp(data: InvoiceData) {
   const items = data.items.map(i => `• ${i.name} x${i.quantity} = ${(i.unitPrice * i.quantity).toLocaleString()} BIF`).join("\n");
   const msg = encodeURIComponent(
-    `🧾 *Facture — American Corner*\n\n` +
-    `Commande: *${data.orderCode}*\n` +
+    `🧾 *Invoice — American Corner*\n\n` +
+    `Order: *${data.orderCode}*\n` +
     `Table: ${data.tableNumber}\n` +
-    `Date: ${new Date(data.createdAt).toLocaleString("fr")}\n\n` +
+    `Date: ${new Date(data.createdAt).toLocaleString("en")}\n\n` +
     `${items}\n\n` +
     `*Total: ${data.totalAmount.toLocaleString()} BIF*\n\n` +
-    `Merci pour votre visite !`
+    `Thank you for your visit!`
   );
   window.open(`https://wa.me/?text=${msg}`, "_blank");
 }
@@ -426,15 +426,15 @@ export function shareInvoiceWhatsApp(data: InvoiceData) {
 
 export function shareInvoiceEmail(data: InvoiceData, recipientEmail?: string) {
   const items = data.items.map(i => `- ${i.name} x${i.quantity} = ${(i.unitPrice * i.quantity).toLocaleString()} BIF`).join("\n");
-  const subject = encodeURIComponent(`Facture ${data.orderCode} — American Corner`);
+  const subject = encodeURIComponent(`Invoice ${data.orderCode} — American Corner`);
   const body = encodeURIComponent(
-    `Facture — American Corner\n\n` +
-    `Commande: ${data.orderCode}\n` +
+    `Invoice — American Corner\n\n` +
+    `Order: ${data.orderCode}\n` +
     `Table: ${data.tableNumber}\n` +
-    `Date: ${new Date(data.createdAt).toLocaleString("fr")}\n\n` +
+    `Date: ${new Date(data.createdAt).toLocaleString("en")}\n\n` +
     `${items}\n\n` +
     `Total: ${data.totalAmount.toLocaleString()} BIF\n\n` +
-    `Merci pour votre visite !`
+    `Thank you for your visit!`
   );
   const to = recipientEmail ? encodeURIComponent(recipientEmail) : "";
   window.open(`mailto:${to}?subject=${subject}&body=${body}`, "_self");

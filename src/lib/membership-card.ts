@@ -141,7 +141,7 @@ export function printCardPDF(doc: jsPDF) {
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
-        <head><title>Carte de membre</title></head>
+        <head><title>Membership Card</title></head>
         <body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f0f0f0;">
           <embed src="${pdfDataUri}" type="application/pdf" width="400" height="260" />
           <script>
@@ -161,10 +161,10 @@ export function getCardPDFBlob(doc: jsPDF): Blob {
 export function shareViaWhatsApp(visitorId: string, fullName: string) {
   const cardUrl = `${window.location.origin}/card/${visitorId}`;
   const message = 
-    `🎓 *Carte de membre - American Corner*\n\n` +
-    `👤 Nom: ${fullName}\n` +
+    `🎓 *Membership Card - American Corner*\n\n` +
+    `👤 Name: ${fullName}\n` +
     `🆔 ID: ${visitorId}\n\n` +
-    `📱 Voir ma carte: ${cardUrl}\n\n` +
+    `📱 View my card: ${cardUrl}\n\n` +
     `Show your QR code on every visit.`;
   
   // Use api.whatsapp.com which works on both mobile and desktop
@@ -174,15 +174,15 @@ export function shareViaWhatsApp(visitorId: string, fullName: string) {
 
 export function shareViaEmail(visitorId: string, fullName: string, recipientEmail?: string) {
   const cardUrl = `${window.location.origin}/card/${visitorId}`;
-  const subject = "Votre carte de membre - American Corner";
+  const subject = "Your membership card - American Corner";
   const body = 
-    `Bonjour ${fullName},\n\n` +
-    `Bienvenue au American Corner !\n\n` +
-    `Voici vos informations de membre :\n` +
-    `- Identifiant : ${visitorId}\n` +
-    `- Carte digitale : ${cardUrl}\n\n` +
+    `Hello ${fullName},\n\n` +
+    `Welcome to American Corner!\n\n` +
+    `Here is your member information:\n` +
+    `- ID : ${visitorId}\n` +
+    `- Digital card : ${cardUrl}\n\n` +
     `Show your QR code on every visit.\n\n` +
-    `Cordialement,\nAmerican Corner`;
+    `Best regards,\nAmerican Corner`;
 
   const mailto = `mailto:${recipientEmail || ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = mailto;

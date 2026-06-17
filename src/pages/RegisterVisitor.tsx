@@ -315,7 +315,7 @@ export default function RegisterVisitor() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.fullName) {
-      toast.error("Veuillez remplir le nom complet");
+      toast.error("Please enter the full name");
       return;
     }
 

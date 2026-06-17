@@ -44,7 +44,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       const qrDataUrl = await getQRDataUrl();
       const doc = await generateMembershipCardPDF(fullName, visitorId, qrDataUrl);
       downloadCardPDF(doc, visitorId);
-      toast.success("Carte PDF downloadede !");
+      toast.success("Membership card PDF downloaded!");
     } catch (err) {
       toast.error("Error during generation");
       console.error(err);
@@ -221,9 +221,9 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       const doc = await generateMembershipCardPDF(fullName, visitorId, qrDataUrl);
       // Download and let user print manually
       downloadCardPDF(doc, visitorId);
-      toast.success("PDF downloaded — ouvrez-le pour imprimer");
+      toast.success("PDF downloaded — open it to print");
     } catch (err) {
-      toast.error("Error lors de l'impression");
+      toast.error("Error during printing");
       console.error(err);
     } finally {
       setGenerating(false);
@@ -233,25 +233,25 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
   const getWhatsAppUrl = () => {
     const cardUrl = `${window.location.origin}/card/${visitorId}`;
     const message =
-      `🎓 *Carte de membre - American Corner*\n\n` +
-      `👤 Nom: ${fullName}\n` +
+      `🎓 *Membership card - American Corner*\n\n` +
+      `👤 Name: ${fullName}\n` +
       `🆔 ID: ${visitorId}\n\n` +
-      `📱 Voir ma carte: ${cardUrl}\n\n` +
+      `📱 View my card: ${cardUrl}\n\n` +
       `Show your QR code on every visit.`;
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   };
 
   const getEmailUrl = () => {
     const cardUrl = `${window.location.origin}/card/${visitorId}`;
-    const subject = "Votre carte de membre - American Corner";
+    const subject = "Your membership card - American Corner";
     const body =
-      `Bonjour ${fullName},\n\n` +
-      `Bienvenue au American Corner !\n\n` +
-      `Voici vos informations de membre :\n` +
-      `- Identifiant : ${visitorId}\n` +
-      `- Carte digitale : ${cardUrl}\n\n` +
+      `Hello ${fullName},\n\n` +
+      `Welcome to American Corner!\n\n` +
+      `Here is your member information:\n` +
+      `- ID : ${visitorId}\n` +
+      `- Digital card : ${cardUrl}\n\n` +
       `Show your QR code on every visit.\n\n` +
-      `Cordialement,\nAmerican Corner`;
+      `Best regards,\nAmerican Corner`;
     return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
@@ -347,12 +347,12 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
             variant="outline"
           >
             <Printer className="h-4 w-4" />
-            Imprimer la carte
+            Print card
           </Button>
 
           {/* Share */}
           <div className="flex items-center gap-2 px-1">
-            <span className="text-xs text-muted-foreground">Partager :</span>
+            <span className="text-xs text-muted-foreground">Share:</span>
             <div className="flex gap-2">
               <a
                 href={getWhatsAppUrl()}
