@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RoomType, ROOM_LABELS, DEFAULT_DURATION_HOURS } from "@/lib/supabase-store";
 import { format, isToday } from "date-fns";
-import { fr } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
 export default function ProgramAttendance() {
   useProgramAttendanceRealtime();
@@ -77,7 +77,7 @@ export default function ProgramAttendance() {
         if (error) throw error;
         toast.success(`${participant.full_name} — Present ✓ (${roomLabel})`);
       } catch {
-        toast.error("Error lors du pointage");
+        toast.error("Check-in error");
       }
       return;
     }
@@ -97,7 +97,7 @@ export default function ProgramAttendance() {
       if (error) throw error;
       toast.success(`${participant.full_name} — Present ✓ (${roomLabel})`);
     } catch {
-      toast.error("Error lors du pointage");
+      toast.error("Check-in error");
     }
   }, [participants, attendance, selectedSessionId, selectedRoom]);
 
@@ -179,13 +179,13 @@ export default function ProgramAttendance() {
           </div>
           Program Attendance
         </h1>
-        <p className="page-subtitle">Pointez les participants pour chaque session</p>
+        <p className="page-subtitle">Check in participants for each session</p>
       </div>
 
       {/* Program & Session selection */}
       <div className="grid gap-3 sm:grid-cols-2 mb-6">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Programme</label>
+          <label className="text-xs font-medium text-muted-foreground">Program</label>
           <Select value={selectedProgramId} onValueChange={v => { setSelectedProgramId(v); setSelectedSessionId(""); }}>
             <SelectTrigger className="h-11"><SelectValue placeholder="Select a program" /></SelectTrigger>
             <SelectContent>
@@ -198,12 +198,12 @@ export default function ProgramAttendance() {
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Session</label>
           <Select value={selectedSessionId} onValueChange={setSelectedSessionId} disabled={!selectedProgramId}>
-            <SelectTrigger className="h-11"><SelectValue placeholder="Select une session" /></SelectTrigger>
+            <SelectTrigger className="h-11"><SelectValue placeholder="Select a session" /></SelectTrigger>
             <SelectContent>
               {sessions.map(s => (
                 <SelectItem key={s.id} value={s.id}>
-                  {format(new Date(s.session_date), "EEEE dd MMMM yyyy", { locale: fr })}
-                  {isToday(new Date(s.session_date)) && " (Aujourd'hui)"}
+                  {format(new Date(s.session_date), "EEEE dd MMMM yyyy", { locale: enUS })}
+                  {isToday(new Date(s.session_date)) && " (Today)"}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -217,7 +217,7 @@ export default function ProgramAttendance() {
             <ScanLine className="h-6 w-6 text-primary-foreground" />
           </div>
           <h3 className="font-semibold text-foreground mb-1">Ready for check-in</h3>
-          <p className="text-sm text-muted-foreground">Select un programme et une session pour commencer.</p>
+          <p className="text-sm text-muted-foreground">Select a program and session to get started.</p>
         </Card>
       ) : (
         <div className="space-y-6">
@@ -228,9 +228,9 @@ export default function ProgramAttendance() {
                 <div>
                   <p className="font-semibold text-lg">{selectedProgram.name}</p>
                   <p className="text-sm opacity-90 capitalize">
-                    {format(new Date(selectedSession.session_date), "EEEE dd MMMM yyyy", { locale: fr })}
+                    {format(new Date(selectedSession.session_date), "EEEE dd MMMM yyyy", { locale: enUS })}
                     {isToday(new Date(selectedSession.session_date)) && (
-                      <Badge className="ml-2 bg-white/20 text-white border-white/30 text-xs">Aujourd'hui</Badge>
+                      <Badge className="ml-2 bg-white/20 text-white border-white/30 text-xs">Today</Badge>
                     )}
                   </p>
                 </div>
@@ -249,8 +249,8 @@ export default function ProgramAttendance() {
                 <ScanLine className="h-4 w-4 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground text-sm">Scanner le QR code</h3>
-                <p className="text-xs text-muted-foreground">Scannez ou entrez le code participant</p>
+                <h3 className="font-semibold text-foreground text-sm">Scan QR code</h3>
+                <p className="text-xs text-muted-foreground">Scan or enter the participant code</p>
               </div>
             </div>
 
@@ -277,7 +277,7 @@ export default function ProgramAttendance() {
               </Button>
               <div className="flex-1 relative">
                 <Input
-                  placeholder="Entrer le code participant..."
+                  placeholder="Enter participant code..."
                   value={scanCode}
                   onChange={e => setScanCode(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && handleManualScan()}
@@ -292,7 +292,7 @@ export default function ProgramAttendance() {
             {/* Room selector */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5" /> Placer en room
+                <MapPin className="h-3.5 w-3.5" /> Assign to room
               </label>
               <Select value={selectedRoom} onValueChange={v => setSelectedRoom(v as RoomType)}>
                 <SelectTrigger className="h-10">
@@ -314,21 +314,21 @@ export default function ProgramAttendance() {
                 <CheckCircle2 className="h-5 w-5 text-success" />
                 <span className="text-2xl font-bold text-foreground">{presentList.length}</span>
               </div>
-              <p className="text-xs text-muted-foreground font-medium">Presents</p>
+              <p className="text-xs text-muted-foreground font-medium">Present</p>
             </Card>
             <Card className="p-4 text-center border-l-4 border-l-warning">
               <div className="flex items-center justify-center gap-1.5 mb-1">
                 <Clock className="h-5 w-5 text-warning" />
                 <span className="text-2xl font-bold text-foreground">{waitingList.length}</span>
               </div>
-              <p className="text-xs text-muted-foreground font-medium">En attente</p>
+              <p className="text-xs text-muted-foreground font-medium">Waiting</p>
             </Card>
             <Card className="p-4 text-center border-l-4 border-l-destructive">
               <div className="flex items-center justify-center gap-1.5 mb-1">
                 <XCircle className="h-5 w-5 text-destructive" />
                 <span className="text-2xl font-bold text-foreground">{absentList.length}</span>
               </div>
-              <p className="text-xs text-muted-foreground font-medium">Absents</p>
+              <p className="text-xs text-muted-foreground font-medium">Absent</p>
             </Card>
           </div>
 
@@ -336,7 +336,7 @@ export default function ProgramAttendance() {
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher un participant..."
+              placeholder="Search a participant..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -347,19 +347,19 @@ export default function ProgramAttendance() {
           <Tabs defaultValue="waiting">
             <TabsList className="bg-muted/60 p-1 rounded-xl">
               <TabsTrigger value="waiting" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
-                <Clock className="h-3.5 w-3.5" /> En attente ({waitingList.length})
+                <Clock className="h-3.5 w-3.5" /> Waiting ({waitingList.length})
               </TabsTrigger>
               <TabsTrigger value="present" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Presents ({presentList.length})
+                <CheckCircle2 className="h-3.5 w-3.5" /> Present ({presentList.length})
               </TabsTrigger>
               <TabsTrigger value="absent" className="gap-1.5 rounded-lg data-[state=active]:shadow-sm">
-                <XCircle className="h-3.5 w-3.5" /> Absents ({absentList.length})
+                <XCircle className="h-3.5 w-3.5" /> Absent ({absentList.length})
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="waiting" className="space-y-2 mt-4">
               {filteredParticipants(waitingList).length === 0 ? (
-                <p className="text-sm text-muted-foreground p-6 text-center">No participant en attente</p>
+                <p className="text-sm text-muted-foreground p-6 text-center">No participant waiting</p>
               ) : (
                  filteredParticipants(waitingList).map(p => (
                   <ParticipantRow key={p.id} participant={p} status="en_attente" onMark={async () => {
@@ -371,13 +371,13 @@ export default function ProgramAttendance() {
                         .update({ status: "present", marked_at: new Date().toISOString(), room: selectedRoom })
                         .eq("id", att.id);
                       if (!error) toast.success(`${p.full_name} — Present ✓ (${roomLabel})`);
-                      else toast.error("Error lors du pointage");
+                      else toast.error("Check-in error");
                     } else if (selectedSessionId) {
                       const { error } = await supabase
                         .from("program_attendance")
                         .insert({ participant_id: p.id, session_id: selectedSessionId, status: "present", marked_at: new Date().toISOString(), room: selectedRoom });
                       if (!error) toast.success(`${p.full_name} — Present ✓ (${roomLabel})`);
-                      else toast.error("Error lors du pointage");
+                      else toast.error("Check-in error");
                     }
                   }} />
                 ))
@@ -448,7 +448,7 @@ function ParticipantRow({ participant, status, room, onMark }: {
       </Badge>
       {status === "en_attente" && onMark && (
         <Button size="sm" className="gap-1.5 rounded-xl shadow-sm shrink-0" onClick={onMark} style={{ background: "var(--gradient-primary)" }}>
-          <CheckCircle2 className="h-3.5 w-3.5" /> Pointer
+          <CheckCircle2 className="h-3.5 w-3.5" /> Check in
         </Button>
       )}
       {status === "present" && (
