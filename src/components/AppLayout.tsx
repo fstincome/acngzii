@@ -114,11 +114,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         style={{ background: "var(--gradient-sidebar)" }}
       >
         {/* Logo */}
-        <div className="flex h-[72px] items-center gap-3 px-6">
-          <img src="/logo-gss.png" alt="American Spaces" className="h-10 w-10 rounded-lg object-contain shrink-0 bg-white p-0.5" />
+        <div className="relative flex h-[72px] items-center gap-3 px-6 border-b border-sidebar-border/60">
+          <div className="absolute left-0 right-0 top-0 h-[3px]" style={{ background: "var(--gradient-flag)" }} />
+          <img src="/logo-gss.png" alt="American Spaces" className="h-10 w-10 rounded object-contain shrink-0 bg-white p-0.5" />
           <div className="min-w-0">
-            <h1 className="text-[15px] font-bold tracking-tight text-sidebar-foreground">{t("app.name")}</h1>
-            <p className="text-[11px] text-sidebar-foreground/50 truncate">{t("app.tagline")}</p>
+            <h1 className="font-serif text-[18px] font-normal leading-tight tracking-tight text-sidebar-foreground">{t("app.name")}</h1>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-sidebar-foreground/50 truncate">{t("app.tagline")}</p>
           </div>
           <button
             className="ml-auto rounded-lg p-1.5 text-sidebar-foreground/60 hover:bg-sidebar-accent lg:hidden"
@@ -127,6 +128,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <X className="h-5 w-5" />
           </button>
         </div>
+
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 px-3 pt-4 overflow-y-auto">
@@ -220,16 +222,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Mayn content */}
+      {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 items-center gap-4 border-b border-border/60 bg-card/80 backdrop-blur-md px-4 lg:px-8">
+        <header className="relative flex h-16 items-center gap-4 border-b border-border/60 bg-card/90 backdrop-blur-md px-4 lg:px-8">
+          <div className="absolute left-0 right-0 top-0 h-[3px]" style={{ background: "var(--gradient-flag)" }} />
           <button
-            className="rounded-xl p-2 hover:bg-muted transition-colors lg:hidden"
+            className="rounded-lg p-2 hover:bg-muted transition-colors lg:hidden"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-5 w-5 text-foreground" />
           </button>
+          <div className="hidden lg:flex items-center gap-2">
+            <span className="label-eyebrow">American Corner</span>
+            <span className="h-3 w-px bg-border" />
+            <span className="font-serif text-base text-foreground">Gitega</span>
+          </div>
           <div className="flex-1" />
+          <div className="hidden md:flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1">
+            <div className="h-1.5 w-1.5 rounded-full bg-success animate-pulse-slow" />
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Live</span>
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-5 lg:p-8">{children}</main>
@@ -237,3 +249,4 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+

@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth, AppRole, isAdminLike } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import NoAccess from "./NoAccess";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -20,7 +21,6 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // If no role yet (still loading), show spinner
   if (!role) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -32,10 +32,10 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   // Admin & National Coordinator have access to everything
   if (isAdminLike(role)) return <>{children}</>;
 
-  // Check allowed roles
   if (allowedRoles && !allowedRoles.includes(role)) {
-    return <Navigate to="/" replace />;
+    return <NoAccess allowedRoles={allowedRoles} />;
   }
 
   return <>{children}</>;
 }
+
