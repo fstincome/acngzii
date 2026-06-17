@@ -218,50 +218,7 @@ export default function Dashboard() {
       )}
 
 
-      {/* Accounting — Restaurant (today) */}
-      {accounting.totalCount > 0 && (
-        <div className="stat-card">
-          <div className="mb-3 flex items-center gap-2">
-            <Wallet className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">{t("dashboard.restaurantAccounting")}</h3>
-            <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-              {t("dashboard.ordersCount", { count: accounting.totalCount })}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div className="rounded-xl bg-primary/5 px-3 py-3">
-              <div className="flex items-center gap-2 mb-1">
-                <DollarSign className="h-4 w-4 text-primary" />
-                <span className="text-xs text-muted-foreground">{t("dashboard.revenue")}</span>
-              </div>
-              <p className="text-lg font-bold text-foreground">{accounting.revenue.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
-            </div>
-            <div className="rounded-xl bg-green-500/5 px-3 py-3">
-              <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <span className="text-xs text-muted-foreground">{t("dashboard.estimatedProfit")}</span>
-              </div>
-              <p className="text-lg font-bold text-green-600">{accounting.profit.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
-            </div>
-            <div className="rounded-xl bg-yellow-500/5 px-3 py-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Clock className="h-4 w-4 text-yellow-600" />
-                <span className="text-xs text-muted-foreground">{t("dashboard.unpaid")}</span>
-              </div>
-              <p className="text-lg font-bold text-yellow-600">{accounting.pendingAmount.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">BIF</span></p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{t("dashboard.unpaidOrders", { count: accounting.unpaidCount })}</p>
-            </div>
-            <div className="rounded-xl bg-accent/5 px-3 py-3">
-              <div className="flex items-center gap-2 mb-1">
-                <ShoppingCart className="h-4 w-4 text-accent" />
-                <span className="text-xs text-muted-foreground">{t("dashboard.paid")}</span>
-              </div>
-              <p className="text-lg font-bold text-foreground">{accounting.paidCount}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{t("dashboard.ofOrders", { count: accounting.totalCount })}</p>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {labFull && (
         <div className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 animate-fade-in">
