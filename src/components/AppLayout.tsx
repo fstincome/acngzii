@@ -143,7 +143,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-3 pt-4 overflow-y-auto">
+        <nav className="relative z-10 flex-1 space-y-1 px-3 pt-4 overflow-y-auto">
           {/* Normal Attendance group */}
           <button
             onClick={() => setNormalOpen(!normalOpen)}
