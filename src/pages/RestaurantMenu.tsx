@@ -49,7 +49,7 @@ export default function RestaurantMenu() {
       const existing = prev.find(c => c.product.id === product.id);
       if (existing) {
         if (existing.quantity >= product.stock) {
-          toast.error("Stock insuffisant");
+          toast.error("Insufficient stock");
           return prev;
         }
         return prev.map(c => c.product.id === product.id ? { ...c, quantity: c.quantity + 1 } : c);
@@ -63,7 +63,7 @@ export default function RestaurantMenu() {
       if (c.product.id !== productId) return c;
       const newQty = c.quantity + delta;
       if (newQty <= 0) return c;
-      if (newQty > c.product.stock) { toast.error("Stock insuffisant"); return c; }
+      if (newQty > c.product.stock) { toast.error("Insufficient stock"); return c; }
       return { ...c, quantity: newQty };
     }));
   };
@@ -107,7 +107,7 @@ export default function RestaurantMenu() {
       setShowCheckout(false);
       toast.success("Order placed successfully!");
     } catch {
-      toast.error("Error lors de la commande");
+      toast.error("Error during order");
     }
   };
 
@@ -313,7 +313,7 @@ export default function RestaurantMenu() {
               <label className="text-sm font-medium mb-1 block">Table number</label>
               <Select value={tableNumber} onValueChange={setTableNumber}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choisir une table" />
+                  <SelectValue placeholder="Choose a table" />
                 </SelectTrigger>
                 <SelectContent>
                   {Array.from({ length: TABLE_COUNT }, (_, i) => (
@@ -337,7 +337,7 @@ export default function RestaurantMenu() {
           </div>
           <DialogFooter>
             <Button className="w-full" disabled={!tableNumber || createOrder.isPending} onClick={handleCheckout}>
-              {createOrder.isPending ? "Envoi..." : "Confirmer la commande"}
+              {createOrder.isPending ? "Sending..." : "Confirm order"}
             </Button>
           </DialogFooter>
         </DialogContent>
