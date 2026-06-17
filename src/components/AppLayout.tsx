@@ -126,7 +126,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full border border-sidebar-foreground/[0.03]" />
 
         {/* Logo */}
-        <div className="relative flex h-[72px] items-center gap-3 px-6 border-b border-sidebar-border/60">
+        <div className="relative z-10 flex h-[72px] items-center gap-3 px-6 border-b border-sidebar-border/60">
           <div className="absolute left-0 right-0 top-0 h-[3px]" style={{ background: "var(--gradient-flag)" }} />
           <img src="/logo-gss.png" alt="American Spaces" className="h-10 w-10 rounded object-contain shrink-0 bg-white p-0.5" />
           <div className="min-w-0">
