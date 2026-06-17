@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck, DollarSign, ShoppingCart, Wallet } from "lucide-react";
+import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck } from "lucide-react";
 import { useVisitors, useVisits, computeOccupancy, COMPUTER_LAB_CAPACITY, useVisitsRealtime, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visitor, Visit, RoomType } from "@/lib/supabase-store";
 import {
