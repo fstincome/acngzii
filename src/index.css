@@ -45,15 +45,15 @@
 
     --radius: 0.5rem;
 
-    /* Editorial dark sidebar — deep navy, not pure black */
-    --sidebar-background: 218 60% 9%;
+    /* Diplomatic Heritage sidebar — deep institutional navy #0A1628 */
+    --sidebar-background: 215 60% 10%;
     --sidebar-foreground: 0 0% 94%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 218 100% 21%;
-    --sidebar-accent: 218 50% 14%;
+    --sidebar-primary-foreground: 215 60% 10%;
+    --sidebar-accent: 215 45% 16%;
     --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 218 40% 18%;
-    --sidebar-ring: 350 90% 50%;
+    --sidebar-border: 215 35% 20%;
+    --sidebar-ring: 350 75% 45%;
 
     --gradient-primary: linear-gradient(135deg, hsl(218 100% 21%), hsl(218 90% 32%));
     --gradient-accent: linear-gradient(135deg, hsl(350 90% 40%), hsl(350 85% 50%));
