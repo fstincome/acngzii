@@ -250,7 +250,7 @@ export default function Statistics() {
     return Object.entries(dayMap)
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([date, data]) => ({
-        date: new Date(date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }),
+        date: new Date(date).toLocaleDateString("en-US", { day: "2-digit", month: "short" }),
         ...data,
       }));
   }, [checkIns]);
@@ -286,7 +286,7 @@ export default function Statistics() {
   // Gender distribution for period
   const genderCount: Record<string, number> = {};
   visitors.filter((v) => relevantVisitorIds.has(v.visitor_id)).forEach((v) => {
-    const g = v.gender === "male" ? "Homme" : v.gender === "female" ? "Femme" : "Autre";
+    const g = v.gender === "male" ? "Male" : v.gender === "female" ? "Female" : "Other";
     genderCount[g] = (genderCount[g] || 0) + 1;
   });
   const genderData = Object.entries(genderCount).map(([name, value]) => ({ name, value }));
@@ -331,22 +331,22 @@ export default function Statistics() {
   }, [visits]);
 
   const tooltipStyle = { borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgb(0 0 0 / 0.1)" };
-  const periodLabel = period === "today" ? "aujourd'hui" : period === "week" ? "cette semaine" : period === "month" ? "ce mois" : "tout";
+  const periodLabel = period === "today" ? "today" : period === "week" ? "this week" : period === "month" ? "this month" : "all time";
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="page-header">
-          <h1 className="page-title">Statistiques</h1>
+          <h1 className="page-title">Statistics</h1>
           <p className="page-subtitle">Analytics and attendance trends</p>
         </div>
         <div className="flex items-center gap-3">
           <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
             <TabsList className="rounded-xl">
-              <TabsTrigger value="today" className="rounded-lg text-xs">Aujourd'hui</TabsTrigger>
-              <TabsTrigger value="week" className="rounded-lg text-xs">Semaine</TabsTrigger>
-              <TabsTrigger value="month" className="rounded-lg text-xs">Mois</TabsTrigger>
-              <TabsTrigger value="all" className="rounded-lg text-xs">Tout</TabsTrigger>
+              <TabsTrigger value="today" className="rounded-lg text-xs">Today</TabsTrigger>
+              <TabsTrigger value="week" className="rounded-lg text-xs">Week</TabsTrigger>
+              <TabsTrigger value="month" className="rounded-lg text-xs">Month</TabsTrigger>
+              <TabsTrigger value="all" className="rounded-lg text-xs">All</TabsTrigger>
             </TabsList>
           </Tabs>
           {period === "month" && (
@@ -357,7 +357,7 @@ export default function Statistics() {
               <SelectContent>
                 {monthOptions.map((m) => (
                   <SelectItem key={m} value={m}>
-                    {new Date(m + "-01").toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
+                    {new Date(m + "-01").toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -368,9 +368,9 @@ export default function Statistics() {
 
       {/* KPI cards with comparison */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard icon={Users} label="Visitors uniques" value={uniqueVisitors} change={visitorChange} period={period} />
+        <KpiCard icon={Users} label="Unique visitors" value={uniqueVisitors} change={visitorChange} period={period} />
         <KpiCard icon={TrendingUp} label="Total check-ins" value={checkIns.length} change={totalChange} period={period} />
-        <KpiCard icon={Clock} label="Moy. / jour" value={avgDaily} />
+        <KpiCard icon={Clock} label="Avg / day" value={avgDaily} />
         <KpiCard icon={Calendar} label="Peak hour" value={peakHour.hour} subtitle={`${peakHour.total} check-ins`} />
       </div>
 
@@ -383,9 +383,9 @@ export default function Statistics() {
 
       {/* Restaurant Revenue */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        <KpiCard icon={DollarSign} label="Revenus restaurant" value={`${totalRevenue.toLocaleString()} BIF`} />
+        <KpiCard icon={DollarSign} label="Restaurant revenue" value={`${totalRevenue.toLocaleString()} BIF`} />
         <KpiCard icon={TrendingUp} label="Estimated profit" value={`${totalProfit.toLocaleString()} BIF`} />
-        <KpiCard icon={ShoppingCart} label="Commandes" value={totalOrdersCount} />
+        <KpiCard icon={ShoppingCart} label="Orders" value={totalOrdersCount} />
       </div>
 
       {/* Program Attendance */}
@@ -399,9 +399,9 @@ export default function Statistics() {
           </div>
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <KpiCard icon={ClipboardCheck} label="Attendance rate" value={`${progRate}%`} />
-            <KpiCard icon={GraduationCap} label="Presents" value={progPresent} />
-            <KpiCard icon={Users} label="Absents" value={progAbsent} />
-            <KpiCard icon={Calendar} label="Total pointages" value={progTotal} />
+            <KpiCard icon={GraduationCap} label="Present" value={progPresent} />
+            <KpiCard icon={Users} label="Absent" value={progAbsent} />
+            <KpiCard icon={Calendar} label="Total check-ins" value={progTotal} />
           </div>
           <div className="grid grid-cols-3 gap-4">
             <RoomStat icon={Monitor} label="Computer Lab (Prog)" value={progLabCount} color="primary" />
@@ -447,7 +447,7 @@ export default function Statistics() {
       {/* Charts row 2 */}
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Utilisation horaire</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Hourly usage</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={hourlyDist}>
               <XAxis dataKey="hour" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -513,7 +513,7 @@ export default function Statistics() {
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Par profession</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">By occupation</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={occupationData} layout="vertical">
               <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -528,7 +528,7 @@ export default function Statistics() {
       {/* Neighborhood + Age */}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Provenance des visiteurs (quartiers)</h3>
+          <h3 className="mb-5 text-sm font-semibold text-foreground">Visitor origin (neighborhoods)</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={neighborhoodData}>
               <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
