@@ -1,11 +1,9 @@
 import { useState, useMemo } from "react";
 import { useVisitors, useVisits, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visit, RoomType } from "@/lib/supabase-store";
-import { useOrders, useProducts } from "@/lib/restaurant-store";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import type { OrderItem } from "@/lib/restaurant-store";
-import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, DollarSign, ShoppingCart, GraduationCap, ClipboardCheck } from "lucide-react";
+import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, GraduationCap, ClipboardCheck } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -60,16 +58,7 @@ function getPreviousPeriodStart(period: Period): [Date, Date] | null {
 export default function Statistics() {
   const { data: visitors = [] } = useVisitors();
   const { data: visits = [] } = useVisits();
-  const { data: orders = [] } = useOrders();
-  const { data: products = [] } = useProducts();
-  const { data: allOrderItems = [] } = useQuery({
-    queryKey: ["all-order-items"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("order_items").select("*");
-      if (error) throw error;
-      return (data ?? []) as OrderItem[];
-    },
-  });
+
   const [period, setPeriod] = useState<Period>("week");
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -132,47 +121,8 @@ export default function Statistics() {
   const rawMultiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length;
   const rawGardenCheckIns = checkIns.filter((v) => v.room === "garden").length;
 
-  // Restaurant revenue & profit
-  const filteredOrders = useMemo(() => {
-    if (period === "month" && selectedMonth) {
-      return orders.filter((o) => o.created_at.startsWith(selectedMonth));
-    }
-    const start = getStartDate(period);
-    if (!start) return orders;
-    return orders.filter((o) => new Date(o.created_at) >= start);
-  }, [orders, period, selectedMonth]);
 
-  const productMap = useMemo(() => {
-    const map: Record<string, { price: number; cost_price: number }> = {};
-    products.forEach(p => { map[p.id] = { price: p.price, cost_price: p.cost_price }; });
-    return map;
-  }, [products]);
 
-  const paidOrders = filteredOrders.filter(o => o.payment_status !== "unpaid" && o.status !== "cancelled");
-  const totalRevenue = paidOrders.reduce((sum, o) => sum + o.total_amount, 0);
-  const totalProfit = useMemo(() => {
-    const paidIds = new Set(paidOrders.map(o => o.id));
-    const itemsForPaid = allOrderItems.filter(i => paidIds.has(i.order_id));
-
-    let preciseProfit = 0;
-    itemsForPaid.forEach(i => {
-      const p = productMap[i.product_id];
-      if (p) preciseProfit += (p.price - p.cost_price) * i.quantity;
-    });
-
-    const ordersWithItems = new Set(itemsForPaid.map(i => i.order_id));
-    const revenueWithoutItems = paidOrders
-      .filter(o => !ordersWithItems.has(o.id))
-      .reduce((s, o) => s + o.total_amount, 0);
-
-    if (revenueWithoutItems > 0 && products.length > 0) {
-      const avgMargin = products.reduce((s, p) => s + (p.price > 0 ? (p.price - p.cost_price) / p.price : 0), 0) / products.length;
-      preciseProfit += Math.round(revenueWithoutItems * avgMargin);
-    }
-
-    return preciseProfit;
-  }, [paidOrders, allOrderItems, productMap, products]);
-  const totalOrdersCount = filteredOrders.length;
 
   // Program attendance filtered by period
   const filteredSessionIds = useMemo(() => {
@@ -381,12 +331,8 @@ export default function Statistics() {
         <RoomStat icon={TreePine} label="Reading Lounge" value={gardenCheckIns} color="garden" />
       </div>
 
-      {/* Restaurant Revenue */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        <KpiCard icon={DollarSign} label="Restaurant revenue" value={`${totalRevenue.toLocaleString()} BIF`} />
-        <KpiCard icon={TrendingUp} label="Estimated profit" value={`${totalProfit.toLocaleString()} BIF`} />
-        <KpiCard icon={ShoppingCart} label="Orders" value={totalOrdersCount} />
-      </div>
+
+
 
       {/* Program Attendance */}
       {progTotal > 0 && (
