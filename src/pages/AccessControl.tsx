@@ -84,6 +84,8 @@ export default function AccessControl() {
 
 // ---------- Role panel ----------
 function RolePermissionsPanel({ toast, qc }: any) {
+  const [selectedRole, setSelectedRole] = useState<AppRole>("director");
+
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["role-permissions"],
     queryFn: async () => {
@@ -101,6 +103,9 @@ function RolePermissionsPanel({ toast, qc }: any) {
     return m;
   }, [rows]);
 
+  const roleDef = ROLES.find(r => r.key === selectedRole)!;
+  const locked = !!roleDef.systemFull;
+
   const persist = async (role: AppRole, module: AppModule, patch: Partial<PermRow>) => {
     const key = `${role}:${module}`;
     setSavingKey(key);
@@ -117,65 +122,99 @@ function RolePermissionsPanel({ toast, qc }: any) {
     qc.invalidateQueries({ queryKey: ["role-permissions"] });
   };
 
+  const applyAllToRole = async (value: boolean) => {
+    for (const mod of MODULES) {
+      await persist(selectedRole, mod.key, {
+        can_view: value, can_create: value, can_update: value, can_delete: value,
+      });
+    }
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   }
 
   return (
-    <Card className="p-0 overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[200px]">Role</TableHead>
-            <TableHead className="w-[200px]">Module</TableHead>
-            {ACTIONS.map(a => <TableHead key={a} className="text-center w-[90px]">{ACTION_LABELS[a]}</TableHead>)}
-            <TableHead className="text-right w-[140px]">Quick</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {ROLES.map(roleDef => MODULES.map(mod => {
-            const row = lookup.get(`${roleDef.key}:${mod.key}`) || emptyPerm(mod.key);
-            const locked = !!roleDef.systemFull;
-            const key = `${roleDef.key}:${mod.key}`;
-            const saving = savingKey === key;
-            return (
-              <TableRow key={key}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{roleDef.label}</span>
-                    {locked && <Badge variant="secondary" className="gap-1"><Shield className="h-3 w-3" />System</Badge>}
-                  </div>
-                </TableCell>
-                <TableCell className="text-muted-foreground">{mod.label}</TableCell>
-                {ACTIONS.map(a => (
-                  <TableCell key={a} className="text-center">
-                    <Checkbox
-                      checked={locked ? true : Boolean((row as any)[a])}
-                      disabled={locked || saving}
-                      onCheckedChange={(v) => persist(roleDef.key, mod.key, { [a]: Boolean(v) } as any)}
-                    />
-                  </TableCell>
+    <div className="space-y-4">
+      <Card className="p-4">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+          <div className="flex-1 max-w-sm">
+            <label className="text-sm font-medium mb-1.5 block">Role</label>
+            <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as AppRole)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {ROLES.map(r => (
+                  <SelectItem key={r.key} value={r.key}>
+                    {r.label}{r.systemFull ? " (System — full access)" : ""}
+                  </SelectItem>
                 ))}
-                <TableCell className="text-right">
-                  {!locked && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={saving}
-                      onClick={() => persist(roleDef.key, mod.key, {
-                        can_view: true, can_create: true, can_update: true, can_delete: true,
-                      })}
-                    >
-                      <CheckCheck className="h-3 w-3 mr-1" /> Full CRUD
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          }))}
-        </TableBody>
-      </Table>
-    </Card>
+              </SelectContent>
+            </Select>
+          </div>
+          {!locked ? (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => applyAllToRole(true)}>
+                <CheckCheck className="h-3 w-3 mr-1" /> Grant all
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => applyAllToRole(false)}>
+                Revoke all
+              </Button>
+            </div>
+          ) : (
+            <Badge variant="secondary" className="gap-1">
+              <Shield className="h-3 w-3" />System role — always full access
+            </Badge>
+          )}
+        </div>
+      </Card>
+
+      <Card className="p-0 overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[260px]">Module</TableHead>
+              {ACTIONS.map(a => <TableHead key={a} className="text-center w-[100px]">{ACTION_LABELS[a]}</TableHead>)}
+              <TableHead className="text-right w-[140px]">Quick</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {MODULES.map(mod => {
+              const row = lookup.get(`${selectedRole}:${mod.key}`) || emptyPerm(mod.key);
+              const key = `${selectedRole}:${mod.key}`;
+              const saving = savingKey === key;
+              return (
+                <TableRow key={key}>
+                  <TableCell className="font-medium">{mod.label}</TableCell>
+                  {ACTIONS.map(a => (
+                    <TableCell key={a} className="text-center">
+                      <Checkbox
+                        checked={locked ? true : Boolean((row as any)[a])}
+                        disabled={locked || saving}
+                        onCheckedChange={(v) => persist(selectedRole, mod.key, { [a]: Boolean(v) } as any)}
+                      />
+                    </TableCell>
+                  ))}
+                  <TableCell className="text-right">
+                    {!locked && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={saving}
+                        onClick={() => persist(selectedRole, mod.key, {
+                          can_view: true, can_create: true, can_update: true, can_delete: true,
+                        })}
+                      >
+                        <CheckCheck className="h-3 w-3 mr-1" /> Full
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Card>
+    </div>
   );
 }
 
