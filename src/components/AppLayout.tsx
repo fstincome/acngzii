@@ -108,11 +108,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col overflow-hidden transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-        style={{ background: "var(--gradient-sidebar)" }}
+        style={{
+          background: "var(--gradient-sidebar)",
+          boxShadow: "24px 0 80px -20px hsl(215 60% 4% / 0.45)",
+        }}
       >
+        {/* Subtle linen paper texture overlay */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.04] mix-blend-overlay"
+          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/linen-paper.png')" }}
+        />
+        {/* Decorative institutional rings — bottom-left */}
+        <div className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full border border-sidebar-foreground/[0.05]" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full border border-sidebar-foreground/[0.03]" />
+
         {/* Logo */}
         <div className="relative flex h-[72px] items-center gap-3 px-6 border-b border-sidebar-border/60">
           <div className="absolute left-0 right-0 top-0 h-[3px]" style={{ background: "var(--gradient-flag)" }} />
