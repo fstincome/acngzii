@@ -450,7 +450,7 @@ export default function RegisterVisitor() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dob" className="text-foreground">Date de naissance</Label>
+            <Label htmlFor="dob" className="text-foreground">Date of birth</Label>
             <Input id="dob" type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} className="rounded-xl h-11" />
           </div>
 
@@ -465,12 +465,12 @@ export default function RegisterVisitor() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="neighborhood" className="text-foreground">Quartier / Commune</Label>
+            <Label htmlFor="neighborhood" className="text-foreground">Neighborhood / Commune</Label>
             <Input id="neighborhood" value={form.neighborhood} onChange={(e) => update("neighborhood", e.target.value)} placeholder="ex: Mushasha" className="rounded-xl h-11" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="occupation" className="text-foreground">Profession</Label>
+            <Label htmlFor="occupation" className="text-foreground">Occupation</Label>
             <Input id="occupation" value={form.occupation} onChange={(e) => update("occupation", e.target.value)} placeholder="e.g. Student, Entrepreneur" className="rounded-xl h-11" />
           </div>
 
@@ -483,7 +483,7 @@ export default function RegisterVisitor() {
 
           <div className="space-y-2">
             <Label className="text-foreground flex items-center gap-1.5">
-              <GraduationCap className="h-3.5 w-3.5" /> Type de membre
+              <GraduationCap className="h-3.5 w-3.5" /> Member type
             </Label>
             <Select value={form.memberType} onValueChange={(v) => update("memberType", v)}>
               <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select" /></SelectTrigger>
@@ -503,9 +503,9 @@ export default function RegisterVisitor() {
             <Select value={form.membershipStatus} onValueChange={(v) => update("membershipStatus", v)}>
               <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Actif</SelectItem>
-                <SelectItem value="pending">En attente</SelectItem>
-                <SelectItem value="inactive">Inactif</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
