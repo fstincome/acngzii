@@ -18,6 +18,7 @@ import ProgramReport from "@/pages/ProgramReport";
 import RegistrationForm from "@/pages/RegistrationForm";
 import Login from "@/pages/Login";
 import UserManagement from "@/pages/UserManagement";
+import AccessControl from "@/pages/AccessControl";
 import RestaurantEntry from "@/pages/RestaurantEntry";
 import RestaurantMenu from "@/pages/RestaurantMenu";
 import RestaurantOrders from "@/pages/RestaurantOrders";
@@ -59,6 +60,7 @@ const App = () => (
 
             {/* Admin only */}
             <Route path="/users" element={<ProtectedRoute allowedRoles={["admin"]}><AppLayout><UserManagement /></AppLayout></ProtectedRoute>} />
+            <Route path="/access-control" element={<ProtectedRoute allowedRoles={["admin"]}><AppLayout><AccessControl /></AppLayout></ProtectedRoute>} />
 
             {/* Restaurant - public entry */}
             <Route path="/restaurant" element={<RestaurantEntry />} />

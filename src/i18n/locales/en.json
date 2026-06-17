@@ -39,7 +39,8 @@
     "manualOrder": "Manual Order",
     "products": "Products",
     "analytics": "Analytics",
-    "users": "Users"
+    "users": "Users",
+    "accessControl": "Access Control"
   },
   "app": {
     "name": "American Corner",
