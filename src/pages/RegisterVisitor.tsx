@@ -22,11 +22,11 @@ function buildFormPDF(): jsPDF {
 
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("GITEGA STUDY SPACE", w / 2, y, { align: "center" });
+  doc.text("AMERICAN CORNER GITEGA", w / 2, y, { align: "center" });
   y += 6;
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Formulaire d'inscription — Visitor", w / 2, y, { align: "center" });
+  doc.text("Registration Form — Visitor", w / 2, y, { align: "center" });
   y += 4;
   doc.setDrawColor(80, 80, 80);
   doc.setLineWidth(0.4);
@@ -34,13 +34,13 @@ function buildFormPDF(): jsPDF {
   y += 8;
 
   const fields = [
-    "Nom complet *",
-    "Genre (Homme / Femme / Autre)",
-    "Date de naissance (JJ/MM/AAAA)",
+    "Full name *",
+    "Gender (Male / Female / Other)",
+    "Date of birth (DD/MM/YYYY)",
     "Phone",
     "Email",
-    "Quartier / Commune",
-    "Profession",
+    "Neighborhood / Commune",
+    "Occupation",
     "Institution (school, university...)",
   ];
 
