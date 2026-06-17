@@ -108,13 +108,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col overflow-hidden transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-        style={{ background: "var(--gradient-sidebar)" }}
+        style={{
+          background: "var(--gradient-sidebar)",
+          boxShadow: "24px 0 80px -20px hsl(215 60% 4% / 0.45)",
+        }}
       >
+        {/* Subtle linen paper texture overlay */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.04] mix-blend-overlay"
+          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/linen-paper.png')" }}
+        />
+        {/* Decorative institutional rings — bottom-left */}
+        <div className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full border border-sidebar-foreground/[0.05]" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full border border-sidebar-foreground/[0.03]" />
+
         {/* Logo */}
-        <div className="relative flex h-[72px] items-center gap-3 px-6 border-b border-sidebar-border/60">
+        <div className="relative z-10 flex h-[72px] items-center gap-3 px-6 border-b border-sidebar-border/60">
           <div className="absolute left-0 right-0 top-0 h-[3px]" style={{ background: "var(--gradient-flag)" }} />
           <img src="/logo-gss.png" alt="American Spaces" className="h-10 w-10 rounded object-contain shrink-0 bg-white p-0.5" />
           <div className="min-w-0">
@@ -131,7 +143,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-3 pt-4 overflow-y-auto">
+        <nav className="relative z-10 flex-1 space-y-1 px-3 pt-4 overflow-y-auto">
           {/* Normal Attendance group */}
           <button
             onClick={() => setNormalOpen(!normalOpen)}
@@ -202,7 +214,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* User profile */}
-        <div className="border-t border-sidebar-border/50 p-4">
+        <div className="relative z-10 border-t border-sidebar-border/50 bg-black/20 p-4">
           <div className="flex items-center gap-3 rounded-xl bg-sidebar-accent/40 px-3 py-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full font-semibold text-xs text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
               {initial}
