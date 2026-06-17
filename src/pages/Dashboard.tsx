@@ -131,7 +131,7 @@ export default function Dashboard() {
       visitor_id: vid,
       name: visitor?.full_name || vid,
       visitor,
-      time: lastCheckIn ? new Date(lastCheckIn.timestamp).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "",
+      time: lastCheckIn ? new Date(lastCheckIn.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "",
       room,
       isInLab: labOccupancy.has(vid),
       isInMulti: multiOccupancy.has(vid),
