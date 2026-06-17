@@ -103,10 +103,10 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.font = "bold 11px Inter, sans-serif";
       ctx.fillStyle = "#ffffff";
       ctx.letterSpacing = "2px";
-      ctx.fillText("GITEGA STUDY SPACE", 68, 32);
+      ctx.fillText("AMERICAN CORNER GITEGA", 68, 32);
       ctx.font = "10px Inter, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.fillText(programName || "Carte de Member", 68, 46);
+      ctx.fillText(programName || "Membership Card", 68, 46);
 
       // Photo (top-right, same size as logo)
       if (photo) {
@@ -146,7 +146,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       // Member name label
       ctx.font = "500 8px Inter, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.4)";
-      ctx.fillText("NOM DU MEMBRE", 20, 84);
+      ctx.fillText("MEMBER NAME", 20, 84);
 
       // Member name
       ctx.font = "bold 16px Inter, sans-serif";
@@ -156,7 +156,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       // ID label
       ctx.font = "500 8px Inter, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.4)";
-      ctx.fillText("IDENTIFIANT", 20, 122);
+      ctx.fillText("ID", 20, 122);
 
       // ID
       ctx.font = "bold 14px 'JetBrains Mono', monospace";
@@ -197,15 +197,15 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.fillStyle = "rgba(255,255,255,0.3)";
       ctx.fillText("Show this card on every visit", 20, rect.height - 14);
       ctx.textAlign = "right";
-      ctx.fillText("+257 61 154 065", rect.width - 20, rect.height - 14);
+      ctx.fillText("+257 61 07 35 94", rect.width - 20, rect.height - 14);
       ctx.textAlign = "left";
 
       // Download
       const link = document.createElement("a");
-      link.download = `carte-membre-${visitorId}.png`;
+      link.download = `membership-card-${visitorId}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
-      toast.success("Carte PNG downloadede !");
+      toast.success("Membership card PNG downloaded!");
     } catch (err) {
       toast.error("Error during PNG generation");
       console.error(err);
@@ -276,8 +276,8 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
               <img src="/gss-logo.png" alt="American Spaces" className="h-10 w-10 rounded-lg object-contain shrink-0" />
             )}
             <div className="flex-1">
-              <p className="text-xs font-bold text-white tracking-widest">{programName ? programName.toUpperCase() : "GITEGA STUDY SPACE"}</p>
-              <p className="text-[10px] text-white/50">{institution || (programName ? "American Corner" : "Carte de Member")}</p>
+              <p className="text-xs font-bold text-white tracking-widest">{programName ? programName.toUpperCase() : "AMERICAN CORNER GITEGA"}</p>
+              <p className="text-[10px] text-white/50">{institution || (programName ? "American Corner" : "Membership Card")}</p>
             </div>
             {photo && (
               <img src={photo} alt={fullName} className="h-10 w-10 rounded-lg object-cover shrink-0 border border-white/20" />
@@ -288,11 +288,11 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
           <div className="flex items-start justify-between gap-4 pt-5">
             <div className="flex-1 min-w-0 space-y-3">
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-white/40 font-medium">Nom du membre</p>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 font-medium">Member name</p>
                 <p className="text-base font-bold text-white truncate">{fullName}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-white/40 font-medium">Identifiant</p>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 font-medium">ID</p>
                 <p className="font-mono text-sm font-bold text-accent">{visitorId}</p>
               </div>
             </div>
@@ -304,7 +304,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
           {/* Footer */}
           <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
             <p className="text-[9px] text-white/30">Show this card on every visit</p>
-            <p className="text-[9px] text-white/30">+257 61 154 065</p>
+            <p className="text-[9px] text-white/30">+257 61 07 35 94</p>
           </div>
         </div>
       </div>

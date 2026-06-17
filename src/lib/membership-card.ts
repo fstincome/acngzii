@@ -66,12 +66,12 @@ export async function generateMembershipCardPDF(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...LIGHT_TEXT);
-  doc.text("GITEGA STUDY SPACE", 18, 9);
+  doc.text("AMERICAN CORNER GITEGA", 18, 9);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(4.5);
   doc.setTextColor(...MUTED_TEXT);
-  doc.text("Carte de Member", 18, 12.5);
+  doc.text("Membership Card", 18, 12.5);
 
   // Divider line
   doc.setDrawColor(80, 80, 120);
@@ -94,7 +94,7 @@ export async function generateMembershipCardPDF(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(4);
   doc.setTextColor(...MUTED_TEXT);
-  doc.text("IDENTIFIANT MEMBRE", 5, 36);
+  doc.text("MEMBER ID", 5, 36);
 
   // QR Code
   try {
@@ -125,13 +125,13 @@ export async function generateMembershipCardPDF(
   doc.setFontSize(3.5);
   doc.setTextColor(...MUTED_TEXT);
   doc.text("Show this card on every visit", 5, CARD_HEIGHT - 4);
-  doc.text("+257 61 154 065", CARD_WIDTH - 5, CARD_HEIGHT - 4, { align: "right" });
+  doc.text("+257 61 07 35 94", CARD_WIDTH - 5, CARD_HEIGHT - 4, { align: "right" });
 
   return doc;
 }
 
 export function downloadCardPDF(doc: jsPDF, visitorId: string) {
-  doc.save(`carte-membre-${visitorId}.pdf`);
+  doc.save(`membership-card-${visitorId}.pdf`);
 }
 
 export function printCardPDF(doc: jsPDF) {

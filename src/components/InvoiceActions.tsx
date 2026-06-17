@@ -32,7 +32,7 @@ export default function InvoiceActions({ data, compact }: InvoiceActionsProps) {
           <Image className="h-3.5 w-3.5 mr-1" /> PNG
         </Button>
         <Button size="sm" variant="outline" onClick={handlePrint}>
-          <Printer className="h-3.5 w-3.5 mr-1" /> Imprimer
+          <Printer className="h-3.5 w-3.5 mr-1" /> Print
         </Button>
         <Button size="sm" variant="outline" onClick={() => shareInvoiceWhatsApp(data)}>
           <Send className="h-3.5 w-3.5 mr-1" /> WhatsApp
@@ -55,10 +55,10 @@ export default function InvoiceActions({ data, compact }: InvoiceActionsProps) {
         </Button>
       </div>
       <Button variant="outline" className="gap-2 w-full" onClick={handlePrint}>
-        <Printer className="h-4 w-4" /> Imprimer la facture
+        <Printer className="h-4 w-4" /> Print invoice
       </Button>
       <div className="flex items-center gap-4 pt-1">
-        <span className="text-sm text-muted-foreground">Partager :</span>
+        <span className="text-sm text-muted-foreground">Share:</span>
         <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => shareInvoiceWhatsApp(data)}>
           <Send className="h-4 w-4" /> WhatsApp
         </Button>

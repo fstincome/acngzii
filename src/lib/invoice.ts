@@ -35,12 +35,12 @@ export function generateInvoicePDF(data: InvoiceData): jsPDF {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.text("GITEGA STUDY SPACE", w / 2, y + 6, { align: "center" });
+  doc.text("AMERICAN CORNER GITEGA", w / 2, y + 6, { align: "center" });
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("Restaurant — Facture", w / 2, y + 11, { align: "center" });
+  doc.text("Restaurant — Invoice", w / 2, y + 11, { align: "center" });
   doc.setFontSize(6);
-  doc.text("Tel: +257 61 154 065", w / 2, y + 15, { align: "center" });
+  doc.text("Tel: +257 61 07 35 94", w / 2, y + 15, { align: "center" });
 
   y = 30;
 
@@ -206,14 +206,14 @@ export async function downloadInvoicePNG(data: InvoiceData): Promise<void> {
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.font = "bold 20px Helvetica, Arial, sans-serif";
-  ctx.fillText("GITEGA STUDY SPACE", W / 2, y);
+  ctx.fillText("AMERICAN CORNER GITEGA", W / 2, y);
   y += 18;
   ctx.font = "300 13px Helvetica, Arial, sans-serif";
-  ctx.fillText("Restaurant — Facture", W / 2, y);
+  ctx.fillText("Restaurant — Invoice", W / 2, y);
   y += 14;
   ctx.font = "300 11px Helvetica, Arial, sans-serif";
   ctx.fillStyle = "rgba(255,255,255,0.8)";
-  ctx.fillText("Tel: +257 61 154 065", W / 2, y);
+  ctx.fillText("Tel: +257 61 07 35 94", W / 2, y);
 
   y = headerH + 16;
 
