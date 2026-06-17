@@ -169,7 +169,7 @@ export default function Dashboard() {
       <div className="page-header flex items-center justify-between">
         <div>
           <h1 className="page-title">{t("dashboard.title")}</h1>
-          <p className="page-subtitle">{t("dashboard.subtitle", { date: new Date().toLocaleDateString(i18n.language === "fr" ? "fr-FR" : "en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) })}</p>
+          <p className="page-subtitle">{t("dashboard.subtitle", { date: new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) })}</p>
         </div>
         {role === "admin" && (
           <Button variant="outline" onClick={handleBackup} disabled={backingUp}>
