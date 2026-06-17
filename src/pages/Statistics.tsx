@@ -121,47 +121,8 @@ export default function Statistics() {
   const rawMultiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length;
   const rawGardenCheckIns = checkIns.filter((v) => v.room === "garden").length;
 
-  // Restaurant revenue & profit
-  const filteredOrders = useMemo(() => {
-    if (period === "month" && selectedMonth) {
-      return orders.filter((o) => o.created_at.startsWith(selectedMonth));
-    }
-    const start = getStartDate(period);
-    if (!start) return orders;
-    return orders.filter((o) => new Date(o.created_at) >= start);
-  }, [orders, period, selectedMonth]);
 
-  const productMap = useMemo(() => {
-    const map: Record<string, { price: number; cost_price: number }> = {};
-    products.forEach(p => { map[p.id] = { price: p.price, cost_price: p.cost_price }; });
-    return map;
-  }, [products]);
 
-  const paidOrders = filteredOrders.filter(o => o.payment_status !== "unpaid" && o.status !== "cancelled");
-  const totalRevenue = paidOrders.reduce((sum, o) => sum + o.total_amount, 0);
-  const totalProfit = useMemo(() => {
-    const paidIds = new Set(paidOrders.map(o => o.id));
-    const itemsForPaid = allOrderItems.filter(i => paidIds.has(i.order_id));
-
-    let preciseProfit = 0;
-    itemsForPaid.forEach(i => {
-      const p = productMap[i.product_id];
-      if (p) preciseProfit += (p.price - p.cost_price) * i.quantity;
-    });
-
-    const ordersWithItems = new Set(itemsForPaid.map(i => i.order_id));
-    const revenueWithoutItems = paidOrders
-      .filter(o => !ordersWithItems.has(o.id))
-      .reduce((s, o) => s + o.total_amount, 0);
-
-    if (revenueWithoutItems > 0 && products.length > 0) {
-      const avgMargin = products.reduce((s, p) => s + (p.price > 0 ? (p.price - p.cost_price) / p.price : 0), 0) / products.length;
-      preciseProfit += Math.round(revenueWithoutItems * avgMargin);
-    }
-
-    return preciseProfit;
-  }, [paidOrders, allOrderItems, productMap, products]);
-  const totalOrdersCount = filteredOrders.length;
 
   // Program attendance filtered by period
   const filteredSessionIds = useMemo(() => {
