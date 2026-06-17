@@ -17,6 +17,7 @@ import {
   ChevronDown,
   Shield,
   UtensilsCrossed,
+  Lock,
 } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -63,6 +64,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const adminNavItems = [
     { to: "/users", icon: Shield, label: t("nav.users") },
+    { to: "/access-control", icon: Lock, label: t("nav.accessControl") },
   ];
 
   const renderNavItem = (item: { to: string; icon: any; label: string }) => {
