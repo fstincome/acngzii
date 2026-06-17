@@ -331,12 +331,8 @@ export default function Statistics() {
         <RoomStat icon={TreePine} label="Reading Lounge" value={gardenCheckIns} color="garden" />
       </div>
 
-      {/* Restaurant Revenue */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        <KpiCard icon={DollarSign} label="Restaurant revenue" value={`${totalRevenue.toLocaleString()} BIF`} />
-        <KpiCard icon={TrendingUp} label="Estimated profit" value={`${totalProfit.toLocaleString()} BIF`} />
-        <KpiCard icon={ShoppingCart} label="Orders" value={totalOrdersCount} />
-      </div>
+
+
 
       {/* Program Attendance */}
       {progTotal > 0 && (
