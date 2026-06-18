@@ -29,7 +29,7 @@ export default function Programs() {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === "fr" ? fr : undefined;
   const { role } = useAuth();
-  const canEdit = role === "admin" || role === "director";
+  const canEdit = role === "admin" || role === "coordinator" || role === "american_corner_gitega";
   const canDelete = role === "admin";
 
   const { data: programs = [], isLoading } = usePrograms();

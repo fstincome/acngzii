@@ -704,7 +704,12 @@ export type Database = {
     }
     Enums: {
       app_module: "visitors" | "programs" | "statistics" | "scanner"
-      app_role: "admin" | "director" | "reception" | "national_coordinator"
+      app_role:
+        | "admin"
+        | "american_center"
+        | "american_corner_gitega"
+        | "coordinator"
+        | "program_manager"
       member_type:
         | "student"
         | "professional"
@@ -841,7 +846,13 @@ export const Constants = {
   public: {
     Enums: {
       app_module: ["visitors", "programs", "statistics", "scanner"],
-      app_role: ["admin", "director", "reception", "national_coordinator"],
+      app_role: [
+        "admin",
+        "american_center",
+        "american_corner_gitega",
+        "coordinator",
+        "program_manager",
+      ],
       member_type: [
         "student",
         "professional",

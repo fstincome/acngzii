@@ -25,7 +25,7 @@ export default function RestaurantProducts() {
   const [form, setForm] = useState(emptyProduct);
 
   const canDelete = role === "admin";
-  const canEdit = role === "admin" || role === "director";
+  const canEdit = role === "admin" || role === "coordinator" || role === "american_corner_gitega";
 
   const openNew = () => { setEditId(null); setForm(emptyProduct); setShowForm(true); };
   const openEdit = (p: Product) => {

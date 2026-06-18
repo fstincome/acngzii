@@ -29,19 +29,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { role, user, signOut } = useAuth();
   const { t } = useTranslation();
 
-  // Role-based nav filtering — National Coordinator inherits Admin permissions
+  // Role-based nav filtering — American Center inherits Admin permissions
   const isAdmin = isAdminLike(role);
-  const isDirector = role === "director";
-  const isReception = role === "reception";
 
-  const adminLikeRoles = ["admin", "national_coordinator"];
+  const allNonAdminRoles = ["american_corner_gitega", "coordinator", "program_manager"];
+  const adminLikeRoles = ["admin", "american_center"];
+  const allRoles = [...adminLikeRoles, ...allNonAdminRoles];
 
   const normalNavItems = [
-    { to: "/", icon: LayoutDashboard, label: t("nav.dashboard"), roles: [...adminLikeRoles, "director", "reception"] },
-    { to: "/register", icon: UserPlus, label: t("nav.register"), roles: [...adminLikeRoles, "director"] },
-    { to: "/scanner", icon: ScanLine, label: t("nav.scanner"), roles: [...adminLikeRoles, "director", "reception"] },
-    { to: "/visitors", icon: Users, label: t("nav.visitors"), roles: [...adminLikeRoles, "director", "reception"] },
-    { to: "/statistics", icon: BarChart3, label: t("nav.statistics"), roles: [...adminLikeRoles, "director"] },
+    { to: "/", icon: LayoutDashboard, label: t("nav.dashboard"), roles: allRoles },
+    { to: "/register", icon: UserPlus, label: t("nav.register"), roles: allRoles },
+    { to: "/scanner", icon: ScanLine, label: t("nav.scanner"), roles: allRoles },
+    { to: "/visitors", icon: Users, label: t("nav.visitors"), roles: allRoles },
+    { to: "/statistics", icon: BarChart3, label: t("nav.statistics"), roles: allRoles },
   ].filter(item => role && item.roles.includes(role));
 
   const programNavItems = [
@@ -50,7 +50,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { to: "/program-report", icon: BarChart3, label: t("nav.report") },
   ];
 
-  const showPrograms = isAdmin || isDirector || isReception;
+  const showPrograms = !!role;
 
   const restaurantNavItems = [
     { to: "/restaurant/orders", icon: UtensilsCrossed, label: t("nav.orders") },

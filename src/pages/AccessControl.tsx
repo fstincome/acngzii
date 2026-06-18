@@ -23,9 +23,10 @@ const MODULES: { key: AppModule; label: string }[] = [
 
 const ROLES: { key: AppRole; label: string; systemFull?: boolean }[] = [
   { key: "admin", label: "Administrator", systemFull: true },
-  { key: "national_coordinator", label: "National Coordinator", systemFull: true },
-  { key: "director", label: "Director" },
-  { key: "reception", label: "Reception" },
+  { key: "american_center", label: "American Center", systemFull: true },
+  { key: "american_corner_gitega", label: "American Corner Gitega" },
+  { key: "coordinator", label: "Coordinator" },
+  { key: "program_manager", label: "Program Manager" },
 ];
 
 const ACTIONS = ["can_view", "can_create", "can_update", "can_delete"] as const;
@@ -84,7 +85,7 @@ export default function AccessControl() {
 
 // ---------- Role panel ----------
 function RolePermissionsPanel({ toast, qc }: any) {
-  const [selectedRole, setSelectedRole] = useState<AppRole>("director");
+  const [selectedRole, setSelectedRole] = useState<AppRole>("coordinator");
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["role-permissions"],
@@ -260,7 +261,7 @@ function UserPermissionsPanel({ toast, qc }: any) {
     },
   });
 
-  const adminLike = selectedUser && (selectedUser.role === "admin" || selectedUser.role === "national_coordinator");
+  const adminLike = selectedUser && (selectedUser.role === "admin" || selectedUser.role === "american_center");
 
   const resolve = (module: AppModule): { row: PermRow; isOverride: boolean } => {
     const override = overrides.find((o: any) => o.module === module);

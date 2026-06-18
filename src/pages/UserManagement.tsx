@@ -15,16 +15,18 @@ import { useToast } from "@/hooks/use-toast";
 
 const ROLE_LABELS: Record<AppRole, string> = {
   admin: "Administrator",
-  national_coordinator: "National Coordinator",
-  director: "Director",
-  reception: "Reception Agent",
+  american_center: "American Center",
+  american_corner_gitega: "American Corner Gitega",
+  coordinator: "Coordinator",
+  program_manager: "Program Manager",
 };
 
 const ROLE_COLORS: Record<AppRole, string> = {
   admin: "destructive",
-  national_coordinator: "destructive",
-  director: "default",
-  reception: "secondary",
+  american_center: "destructive",
+  american_corner_gitega: "default",
+  coordinator: "default",
+  program_manager: "secondary",
 };
 
 const DEPARTMENTS = [
@@ -57,7 +59,7 @@ const emptyForm = (): StaffForm => ({
   full_name: "",
   email: "",
   password: "",
-  role: "reception",
+  role: "program_manager",
   phone: "",
   national_id: "",
   job_title: "",
@@ -162,7 +164,7 @@ export default function UserManagement() {
       full_name: user.full_name || "",
       email: user.email || "",
       password: "",
-      role: (user.role as AppRole) || "reception",
+      role: (user.role as AppRole) || "program_manager",
       phone: user.phone || "",
       national_id: user.national_id || "",
       job_title: user.job_title || "",
@@ -289,10 +291,11 @@ export default function UserManagement() {
         <Select value={values.role} onValueChange={(v) => onChange("role", v as AppRole)}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="national_coordinator">National Coordinator</SelectItem>
             <SelectItem value="admin">Administrator</SelectItem>
-            <SelectItem value="director">Director</SelectItem>
-            <SelectItem value="reception">Reception Agent</SelectItem>
+            <SelectItem value="american_center">American Center</SelectItem>
+            <SelectItem value="american_corner_gitega">American Corner Gitega</SelectItem>
+            <SelectItem value="coordinator">Coordinator</SelectItem>
+            <SelectItem value="program_manager">Program Manager</SelectItem>
           </SelectContent>
         </Select>
       </div>

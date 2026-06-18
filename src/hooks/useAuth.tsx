@@ -2,9 +2,14 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-export type AppRole = "admin" | "national_coordinator" | "director" | "reception";
+export type AppRole =
+  | "admin"
+  | "american_center"
+  | "american_corner_gitega"
+  | "coordinator"
+  | "program_manager";
 
-export const ADMIN_LIKE_ROLES: AppRole[] = ["admin", "national_coordinator"];
+export const ADMIN_LIKE_ROLES: AppRole[] = ["admin", "american_center"];
 export const isAdminLike = (role: AppRole | null | undefined) =>
   !!role && ADMIN_LIKE_ROLES.includes(role);
 

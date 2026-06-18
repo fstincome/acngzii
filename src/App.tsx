@@ -47,9 +47,9 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
 
             {/* Admin + Director */}
-            <Route path="/register" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RegisterVisitor /></AppLayout></ProtectedRoute>} />
+            <Route path="/register" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RegisterVisitor /></AppLayout></ProtectedRoute>} />
             <Route path="/visitors" element={<ProtectedRoute><AppLayout><Visitors /></AppLayout></ProtectedRoute>} />
-            <Route path="/statistics" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><Statistics /></AppLayout></ProtectedRoute>} />
+            <Route path="/statistics" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><Statistics /></AppLayout></ProtectedRoute>} />
             {/* All authenticated: Scanner */}
             <Route path="/scanner" element={<ProtectedRoute><AppLayout><Scanner /></AppLayout></ProtectedRoute>} />
 
@@ -68,10 +68,10 @@ const App = () => (
             <Route path="/track/:orderCode" element={<OrderTracking />} />
 
             {/* Restaurant - staff */}
-            <Route path="/restaurant/orders" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantOrders /></AppLayout></ProtectedRoute>} />
-            <Route path="/restaurant/products" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantProducts /></AppLayout></ProtectedRoute>} />
-            <Route path="/restaurant/analytics" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantAnalytics /></AppLayout></ProtectedRoute>} />
-            <Route path="/restaurant/manual-order" element={<ProtectedRoute allowedRoles={["admin", "director"]}><AppLayout><RestaurantManualOrder /></AppLayout></ProtectedRoute>} />
+            <Route path="/restaurant/orders" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantOrders /></AppLayout></ProtectedRoute>} />
+            <Route path="/restaurant/products" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantProducts /></AppLayout></ProtectedRoute>} />
+            <Route path="/restaurant/analytics" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantAnalytics /></AppLayout></ProtectedRoute>} />
+            <Route path="/restaurant/manual-order" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantManualOrder /></AppLayout></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

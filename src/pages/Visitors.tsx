@@ -34,7 +34,7 @@ function Detail({ icon: Icon, label, value }: { icon: React.ElementType; label: 
 
 export default function Visitors() {
   const { role } = useAuth();
-  const canEdit = role === "admin" || role === "director";
+  const canEdit = role === "admin" || role === "coordinator" || role === "american_corner_gitega";
   const canDelete = role === "admin";
 
   const { data: visitors = [], isLoading } = useVisitors();
