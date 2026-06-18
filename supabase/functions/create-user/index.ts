@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ALLOWED_ROLES = ["admin", "american_center", "american_corner_gitega", "coordinator", "program_manager"];
+const ALLOWED_ROLES = ["admin", "american_center", "american_corner_gitega", "coordinator", "program_manager", "public_relations"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
