@@ -261,7 +261,7 @@ function UserPermissionsPanel({ toast, qc }: any) {
     },
   });
 
-  const adminLike = selectedUser && (selectedUser.role === "admin" || selectedUser.role === "national_coordinator");
+  const adminLike = selectedUser && (selectedUser.role === "admin" || selectedUser.role === "american_center");
 
   const resolve = (module: AppModule): { row: PermRow; isOverride: boolean } => {
     const override = overrides.find((o: any) => o.module === module);
