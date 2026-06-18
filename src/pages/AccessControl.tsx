@@ -23,9 +23,10 @@ const MODULES: { key: AppModule; label: string }[] = [
 
 const ROLES: { key: AppRole; label: string; systemFull?: boolean }[] = [
   { key: "admin", label: "Administrator", systemFull: true },
-  { key: "national_coordinator", label: "National Coordinator", systemFull: true },
-  { key: "director", label: "Director" },
-  { key: "reception", label: "Reception" },
+  { key: "american_center", label: "American Center", systemFull: true },
+  { key: "american_corner_gitega", label: "American Corner Gitega" },
+  { key: "coordinator", label: "Coordinator" },
+  { key: "program_manager", label: "Program Manager" },
 ];
 
 const ACTIONS = ["can_view", "can_create", "can_update", "can_delete"] as const;
