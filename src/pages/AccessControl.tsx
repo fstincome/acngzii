@@ -85,7 +85,7 @@ export default function AccessControl() {
 
 // ---------- Role panel ----------
 function RolePermissionsPanel({ toast, qc }: any) {
-  const [selectedRole, setSelectedRole] = useState<AppRole>("director");
+  const [selectedRole, setSelectedRole] = useState<AppRole>("coordinator");
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["role-permissions"],
