@@ -27,6 +27,7 @@ const ROLES: { key: AppRole; label: string; systemFull?: boolean }[] = [
   { key: "american_corner_gitega", label: "American Corner Gitega" },
   { key: "coordinator", label: "Coordinator" },
   { key: "program_manager", label: "Program Manager" },
+  { key: "public_relations", label: "Public Relations" },
 ];
 
 const ACTIONS = ["can_view", "can_create", "can_update", "can_delete"] as const;

@@ -151,7 +151,7 @@ export default function Scanner() {
     <div className="mx-auto max-w-lg space-y-6 animate-fade-in">
       <div className="page-header">
         <h1 className="page-title">Scanner QR</h1>
-        <p className="page-subtitle">Scannez ou entrez l'ID du visiteur</p>
+        <p className="page-subtitle">Scan or enter the visitor ID</p>
       </div>
 
       {cameraOpen && (

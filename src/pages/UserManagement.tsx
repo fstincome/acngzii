@@ -19,6 +19,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
   american_corner_gitega: "American Corner Gitega",
   coordinator: "Coordinator",
   program_manager: "Program Manager",
+  public_relations: "Public Relations",
 };
 
 const ROLE_COLORS: Record<AppRole, string> = {
@@ -27,6 +28,7 @@ const ROLE_COLORS: Record<AppRole, string> = {
   american_corner_gitega: "default",
   coordinator: "default",
   program_manager: "secondary",
+  public_relations: "secondary",
 };
 
 const DEPARTMENTS = [
@@ -296,6 +298,7 @@ export default function UserManagement() {
             <SelectItem value="american_corner_gitega">American Corner Gitega</SelectItem>
             <SelectItem value="coordinator">Coordinator</SelectItem>
             <SelectItem value="program_manager">Program Manager</SelectItem>
+            <SelectItem value="public_relations">Public Relations</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -329,8 +332,41 @@ export default function UserManagement() {
         <Input value={values.emergency_contact} onChange={(e) => onChange("emergency_contact", e.target.value)} placeholder="Name + phone" required />
       </div>
       <div className="space-y-2 sm:col-span-2">
-        <Label>Photo URL (optional)</Label>
-        <Input value={values.photo} onChange={(e) => onChange("photo", e.target.value)} placeholder="https://…" />
+        <Label>Photo (optional, max 2MB)</Label>
+        <div className="flex items-center gap-3">
+          {values.photo && (
+            <img
+              src={values.photo}
+              alt="Staff photo preview"
+              className="h-16 w-16 rounded-lg object-cover border border-border"
+            />
+          )}
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              if (file.size > 2 * 1024 * 1024) {
+                toast({
+                  title: "File too large",
+                  description: "Photo must be 2MB or less.",
+                  variant: "destructive",
+                });
+                e.target.value = "";
+                return;
+              }
+              const reader = new FileReader();
+              reader.onload = () => onChange("photo", String(reader.result || ""));
+              reader.readAsDataURL(file);
+            }}
+          />
+          {values.photo && (
+            <Button type="button" variant="outline" size="sm" onClick={() => onChange("photo", "")}>
+              Remove
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

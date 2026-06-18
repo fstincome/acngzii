@@ -32,7 +32,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // Role-based nav filtering — American Center inherits Admin permissions
   const isAdmin = isAdminLike(role);
 
-  const allNonAdminRoles = ["american_corner_gitega", "coordinator", "program_manager"];
+  const allNonAdminRoles = ["american_corner_gitega", "coordinator", "program_manager", "public_relations"];
   const adminLikeRoles = ["admin", "american_center"];
   const allRoles = [...adminLikeRoles, ...allNonAdminRoles];
 

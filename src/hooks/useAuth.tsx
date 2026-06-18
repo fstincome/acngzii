@@ -7,7 +7,8 @@ export type AppRole =
   | "american_center"
   | "american_corner_gitega"
   | "coordinator"
-  | "program_manager";
+  | "program_manager"
+  | "public_relations";
 
 export const ADMIN_LIKE_ROLES: AppRole[] = ["admin", "american_center"];
 export const isAdminLike = (role: AppRole | null | undefined) =>
