@@ -19,6 +19,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
   american_corner_gitega: "American Corner Gitega",
   coordinator: "Coordinator",
   program_manager: "Program Manager",
+  public_relations: "Public Relations",
 };
 
 const ROLE_COLORS: Record<AppRole, string> = {
@@ -27,6 +28,7 @@ const ROLE_COLORS: Record<AppRole, string> = {
   american_corner_gitega: "default",
   coordinator: "default",
   program_manager: "secondary",
+  public_relations: "secondary",
 };
 
 const DEPARTMENTS = [
