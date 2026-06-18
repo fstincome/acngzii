@@ -291,10 +291,11 @@ export default function UserManagement() {
         <Select value={values.role} onValueChange={(v) => onChange("role", v as AppRole)}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="national_coordinator">National Coordinator</SelectItem>
             <SelectItem value="admin">Administrator</SelectItem>
-            <SelectItem value="director">Director</SelectItem>
-            <SelectItem value="reception">Reception Agent</SelectItem>
+            <SelectItem value="american_center">American Center</SelectItem>
+            <SelectItem value="american_corner_gitega">American Corner Gitega</SelectItem>
+            <SelectItem value="coordinator">Coordinator</SelectItem>
+            <SelectItem value="program_manager">Program Manager</SelectItem>
           </SelectContent>
         </Select>
       </div>
