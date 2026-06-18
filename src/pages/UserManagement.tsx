@@ -298,6 +298,7 @@ export default function UserManagement() {
             <SelectItem value="american_corner_gitega">American Corner Gitega</SelectItem>
             <SelectItem value="coordinator">Coordinator</SelectItem>
             <SelectItem value="program_manager">Program Manager</SelectItem>
+            <SelectItem value="public_relations">Public Relations</SelectItem>
           </SelectContent>
         </Select>
       </div>
