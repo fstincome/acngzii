@@ -15,16 +15,18 @@ import { useToast } from "@/hooks/use-toast";
 
 const ROLE_LABELS: Record<AppRole, string> = {
   admin: "Administrator",
-  national_coordinator: "National Coordinator",
-  director: "Director",
-  reception: "Reception Agent",
+  american_center: "American Center",
+  american_corner_gitega: "American Corner Gitega",
+  coordinator: "Coordinator",
+  program_manager: "Program Manager",
 };
 
 const ROLE_COLORS: Record<AppRole, string> = {
   admin: "destructive",
-  national_coordinator: "destructive",
-  director: "default",
-  reception: "secondary",
+  american_center: "destructive",
+  american_corner_gitega: "default",
+  coordinator: "default",
+  program_manager: "secondary",
 };
 
 const DEPARTMENTS = [
