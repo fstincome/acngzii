@@ -710,6 +710,7 @@ export type Database = {
         | "american_corner_gitega"
         | "coordinator"
         | "program_manager"
+        | "public_relations"
       member_type:
         | "student"
         | "professional"
@@ -852,6 +853,7 @@ export const Constants = {
         "american_corner_gitega",
         "coordinator",
         "program_manager",
+        "public_relations",
       ],
       member_type: [
         "student",
