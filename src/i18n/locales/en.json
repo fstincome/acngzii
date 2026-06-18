@@ -11,9 +11,10 @@
   },
   "roles": {
     "admin": "Administrator",
-    "national_coordinator": "National Coordinator",
-    "director": "Director",
-    "reception": "Reception",
+    "american_center": "American Center",
+    "american_corner_gitega": "American Corner Gitega",
+    "coordinator": "Coordinator",
+    "program_manager": "Program Manager",
     "user": "User"
   },
   "nav": {
