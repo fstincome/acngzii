@@ -22,7 +22,7 @@ export interface Visit {
   timestamp: string;
 }
 
-export type UserRole = "admin" | "director" | "reception";
+export type UserRole = "admin" | "american_center" | "american_corner_gitega" | "coordinator" | "program_manager";
 
 export interface AppUser {
   id: string;
