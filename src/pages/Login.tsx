@@ -76,7 +76,7 @@ export default function Login() {
           </h2>
           <p className="text-base text-white/80 max-w-md leading-relaxed">
             A unified workspace for the American Corner Gitega team — visitors,
-            programs, scholarships, library and restaurant, all in one place.
+            programs, scholarships and library, all in one place.
           </p>
           <div className="flex items-center gap-3 pt-4">
             <span className="h-px w-12 bg-white/40" />
