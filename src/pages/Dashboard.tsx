@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck } from "lucide-react";
+import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck, LogIn, LogOut, Activity } from "lucide-react";
 import { useVisitors, useVisits, computeOccupancy, COMPUTER_LAB_CAPACITY, useVisitsRealtime, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visitor, Visit, RoomType } from "@/lib/supabase-store";
 import {
@@ -14,6 +14,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { VisitorListDialog, VisitorListItem } from "@/components/VisitorListDialog";
+
 
 export default function Dashboard() {
   const { role } = useAuth();
@@ -24,6 +26,10 @@ export default function Dashboard() {
   const { data: visitors = [] } = useVisitors();
   const { data: visits = [] } = useVisits();
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
+  const [listDialog, setListDialog] = useState<{ title: string; description?: string; items: VisitorListItem[] } | null>(null);
+
+  const openList = (title: string, items: VisitorListItem[], description?: string) =>
+    setListDialog({ title, items, description });
 
   // Program attendance for today
   const today = new Date().toISOString().split("T")[0];
@@ -103,7 +109,17 @@ export default function Dashboard() {
 
   const todayVisits = visits.filter((v) => v.timestamp.startsWith(today));
   const todayCheckIns = todayVisits.filter((v) => v.action === "check_in");
+  const todayCheckOuts = todayVisits.filter((v) => v.action === "check_out");
   const uniqueTodayIds = [...new Set(todayCheckIns.map((v) => v.visitor_id))];
+
+  // Currently inside (any room) = visitors with active check-in not yet checked out
+  const currentlyInsideIds = useMemo(() => {
+    const all = new Set<string>();
+    (["center", "computer_lab", "multipurpose_room", "garden"] as RoomType[]).forEach((r) => {
+      computeOccupancy(visits, r).forEach((id) => all.add(id));
+    });
+    return all;
+  }, [visits]);
 
   // Merge program present into room counts
   const labCount = labOccupancy.size + programPresentByRoom.computer_lab.length;
@@ -114,6 +130,11 @@ export default function Dashboard() {
   const labPercent = Math.min((labCount / COMPUTER_LAB_CAPACITY) * 100, 100);
 
   const getVisitor = (vid: string) => visitors.find((v) => v.visitor_id === vid);
+
+  const visitorItem = (vid: string, subtitle?: string, badge?: string): VisitorListItem => {
+    const v = getVisitor(vid);
+    return { id: vid, name: v?.full_name || vid, subtitle, badge };
+  };
 
   const hourlyData = Array.from({ length: 12 }, (_, i) => {
     const hour = i + 7;
@@ -180,12 +201,121 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard icon={Monitor} label={t("dashboard.computerLab")} value={`${labCount} / ${COMPUTER_LAB_CAPACITY}`} alert={labFull} color="primary" />
-        <StatCard icon={DoorOpen} label={t("dashboard.multipurposeRoom")} value={multiCount} color="accent" />
-        <StatCard icon={TreePine} label={t("dashboard.garden")} value={gardenCount} color="garden" />
-        <StatCard icon={UserPlus} label={t("dashboard.todayVisitors")} value={uniqueToday} color="primary" />
-        <StatCard icon={Users} label={t("dashboard.registeredMembers")} value={visitors.length} color="accent" />
+        <StatCard
+          icon={Monitor}
+          label={t("dashboard.computerLab")}
+          value={`${labCount} / ${COMPUTER_LAB_CAPACITY}`}
+          alert={labFull}
+          color="primary"
+          onClick={() => openList(
+            t("dashboard.computerLab"),
+            [
+              ...Array.from(labOccupancy).map((id) => visitorItem(id, "Member")),
+              ...programPresentByRoom.computer_lab.map((a) => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant", badge: "Program" })),
+            ],
+            "Currently inside",
+          )}
+        />
+        <StatCard
+          icon={DoorOpen}
+          label={t("dashboard.multipurposeRoom")}
+          value={multiCount}
+          color="accent"
+          onClick={() => openList(
+            t("dashboard.multipurposeRoom"),
+            [
+              ...Array.from(multiOccupancy).map((id) => visitorItem(id, "Member")),
+              ...programPresentByRoom.multipurpose_room.map((a) => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant", badge: "Program" })),
+            ],
+            "Currently inside",
+          )}
+        />
+        <StatCard
+          icon={TreePine}
+          label={t("dashboard.garden")}
+          value={gardenCount}
+          color="garden"
+          onClick={() => openList(
+            t("dashboard.garden"),
+            [
+              ...Array.from(gardenOccupancy).map((id) => visitorItem(id, "Member")),
+              ...programPresentByRoom.garden.map((a) => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant", badge: "Program" })),
+            ],
+            "Currently inside",
+          )}
+        />
+        <StatCard
+          icon={UserPlus}
+          label={t("dashboard.todayVisitors")}
+          value={uniqueToday}
+          color="primary"
+          onClick={() => openList(
+            t("dashboard.todayVisitors"),
+            uniqueTodayIds.map((id) => visitorItem(id)),
+            "Members who checked in today",
+          )}
+        />
+        <StatCard
+          icon={Users}
+          label={t("dashboard.registeredMembers")}
+          value={visitors.length}
+          color="accent"
+          onClick={() => openList(
+            t("dashboard.registeredMembers"),
+            visitors.map((v) => ({ id: v.visitor_id, name: v.full_name, subtitle: v.occupation })),
+          )}
+        />
       </div>
+
+      {/* Check-ins / Check-outs today */}
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard
+          icon={LogIn}
+          label="Check-ins today"
+          value={todayCheckIns.length}
+          color="primary"
+          onClick={() => openList(
+            "Check-ins today",
+            todayCheckIns
+              .slice()
+              .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+              .map((v) => ({
+                id: `${v.id}`,
+                name: getVisitor(v.visitor_id)?.full_name || v.visitor_id,
+                subtitle: `${ROOM_LABELS[v.room as RoomType] || v.room} · ${new Date(v.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`,
+              })),
+          )}
+        />
+        <StatCard
+          icon={LogOut}
+          label="Check-outs today"
+          value={todayCheckOuts.length}
+          color="accent"
+          onClick={() => openList(
+            "Check-outs today",
+            todayCheckOuts
+              .slice()
+              .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+              .map((v) => ({
+                id: `${v.id}`,
+                name: getVisitor(v.visitor_id)?.full_name || v.visitor_id,
+                subtitle: `${ROOM_LABELS[v.room as RoomType] || v.room} · ${new Date(v.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`,
+              })),
+          )}
+        />
+        <StatCard
+          icon={Activity}
+          label="Currently inside"
+          value={currentlyInsideIds.size}
+          color="garden"
+          onClick={() => openList(
+            "Currently inside",
+            Array.from(currentlyInsideIds).map((id) => visitorItem(id)),
+            "Check-ins minus check-outs",
+          )}
+        />
+      </div>
+
 
       {/* Program attendance today */}
       {programTotalToday > 0 && (
@@ -364,6 +494,21 @@ export default function Dashboard() {
           )}
         </DialogContent>
       </Dialog>
+
+      <VisitorListDialog
+        open={!!listDialog}
+        onOpenChange={(open) => !open && setListDialog(null)}
+        title={listDialog?.title || ""}
+        description={listDialog?.description}
+        items={listDialog?.items || []}
+        onItemClick={(it) => {
+          const v = getVisitor(it.id);
+          if (v) {
+            setListDialog(null);
+            setSelectedVisitor(v);
+          }
+        }}
+      />
     </div>
   );
 }
@@ -496,9 +641,9 @@ function DetailRow({ icon: Icon, label, value }: { icon: React.ElementType; labe
   );
 }
 
-function StatCard({ icon: Icon, label, value, alert, color }: { icon: React.ElementType; label: string; value: string | number; alert?: boolean; color?: string }) {
-  return (
-    <div className={`stat-card ${alert ? "border-destructive/30 !bg-destructive/5" : ""}`}>
+function StatCard({ icon: Icon, label, value, alert, color, onClick }: { icon: React.ElementType; label: string; value: string | number; alert?: boolean; color?: string; onClick?: () => void }) {
+  const content = (
+    <>
       <div className="mb-3 flex items-center gap-3">
         <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
           alert ? "bg-destructive/10" : color === "accent" ? "bg-accent/10" : color === "garden" ? "bg-green-500/10" : "bg-primary/10"
@@ -508,6 +653,15 @@ function StatCard({ icon: Icon, label, value, alert, color }: { icon: React.Elem
       </div>
       <p className={`text-2xl font-bold ${alert ? "text-destructive" : "text-foreground"}`}>{value}</p>
       <p className="mt-1 text-xs text-muted-foreground">{label}</p>
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={`stat-card text-left w-full transition-transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer ${alert ? "border-destructive/30 !bg-destructive/5" : ""}`}>
+        {content}
+      </button>
+    );
+  }
+  return <div className={`stat-card ${alert ? "border-destructive/30 !bg-destructive/5" : ""}`}>{content}</div>;
 }
+

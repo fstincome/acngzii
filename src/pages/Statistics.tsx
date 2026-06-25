@@ -1,15 +1,17 @@
 import { useState, useMemo } from "react";
-import { useVisitors, useVisits, ROOM_LABELS } from "@/lib/supabase-store";
+import { useVisitors, useVisits, ROOM_LABELS, computeOccupancy } from "@/lib/supabase-store";
 import type { Visit, RoomType } from "@/lib/supabase-store";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, GraduationCap, ClipboardCheck } from "lucide-react";
+import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, GraduationCap, ClipboardCheck, LogIn, LogOut, Activity } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, AreaChart, Area,
 } from "recharts";
+import { VisitorListDialog, VisitorListItem } from "@/components/VisitorListDialog";
+
 
 type Period = "today" | "week" | "month" | "all";
 
@@ -113,13 +115,41 @@ export default function Statistics() {
   }, [visits, period]);
 
   const checkIns = filteredVisits.filter((v) => v.action === "check_in");
+  const checkOuts = filteredVisits.filter((v) => v.action === "check_out");
   const prevCheckIns = prevPeriodVisits.filter((v) => v.action === "check_in");
-  const uniqueVisitors = new Set(checkIns.map((v) => v.visitor_id)).size;
+  const uniqueVisitorIds = [...new Set(checkIns.map((v) => v.visitor_id))];
+  const uniqueVisitors = uniqueVisitorIds.length;
   const prevUniqueVisitors = new Set(prevCheckIns.map((v) => v.visitor_id)).size;
 
   const rawLabCheckIns = checkIns.filter((v) => v.room === "computer_lab").length;
   const rawMultiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length;
   const rawGardenCheckIns = checkIns.filter((v) => v.room === "garden").length;
+
+  // Currently inside (live, not filtered by period)
+  const currentlyInsideIds = useMemo(() => {
+    const all = new Set<string>();
+    (["center", "computer_lab", "multipurpose_room", "garden"] as RoomType[]).forEach((r) => {
+      computeOccupancy(visits, r).forEach((id) => all.add(id));
+    });
+    return all;
+  }, [visits]);
+
+  const [listDialog, setListDialog] = useState<{ title: string; description?: string; items: VisitorListItem[] } | null>(null);
+  const openList = (title: string, items: VisitorListItem[], description?: string) =>
+    setListDialog({ title, items, description });
+
+  const getVisitorName = (vid: string) => visitors.find((v) => v.visitor_id === vid)?.full_name || vid;
+  const visitsToItems = (vs: Visit[]): VisitorListItem[] =>
+    vs.slice().sort((a, b) => b.timestamp.localeCompare(a.timestamp)).map((v) => ({
+      id: `${v.id}`,
+      name: getVisitorName(v.visitor_id),
+      subtitle: `${ROOM_LABELS[v.room as RoomType] || v.room} · ${new Date(v.timestamp).toLocaleString("en-US", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}`,
+    }));
+  const idsToItems = (ids: string[]): VisitorListItem[] =>
+    ids.map((id) => {
+      const v = visitors.find((vis) => vis.visitor_id === id);
+      return { id, name: v?.full_name || id, subtitle: v?.occupation };
+    });
 
 
 
@@ -318,18 +348,74 @@ export default function Statistics() {
 
       {/* KPI cards with comparison */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard icon={Users} label="Unique visitors" value={uniqueVisitors} change={visitorChange} period={period} />
-        <KpiCard icon={TrendingUp} label="Total check-ins" value={checkIns.length} change={totalChange} period={period} />
+        <KpiCard
+          icon={Users}
+          label="Unique visitors"
+          value={uniqueVisitors}
+          change={visitorChange}
+          period={period}
+          onClick={() => openList("Unique visitors", idsToItems(uniqueVisitorIds), `Distinct members — ${periodLabel}`)}
+        />
+        <KpiCard
+          icon={TrendingUp}
+          label="Total check-ins"
+          value={checkIns.length}
+          change={totalChange}
+          period={period}
+          onClick={() => openList("Total check-ins", visitsToItems(checkIns), periodLabel)}
+        />
         <KpiCard icon={Clock} label="Avg / day" value={avgDaily} />
         <KpiCard icon={Calendar} label="Peak hour" value={peakHour.hour} subtitle={`${peakHour.total} check-ins`} />
       </div>
 
+      {/* Check-ins vs Check-outs */}
+      <div className="grid grid-cols-3 gap-4">
+        <KpiCard
+          icon={LogIn}
+          label="Check-ins"
+          value={checkIns.length}
+          onClick={() => openList("Check-ins", visitsToItems(checkIns), periodLabel)}
+        />
+        <KpiCard
+          icon={LogOut}
+          label="Check-outs"
+          value={checkOuts.length}
+          onClick={() => openList("Check-outs", visitsToItems(checkOuts), periodLabel)}
+        />
+        <KpiCard
+          icon={Activity}
+          label="Currently inside"
+          value={currentlyInsideIds.size}
+          subtitle="Live, all rooms"
+          onClick={() => openList("Currently inside", idsToItems(Array.from(currentlyInsideIds)), "Check-ins minus check-outs")}
+        />
+      </div>
+
       {/* Room breakdown */}
       <div className="grid grid-cols-3 gap-4">
-        <RoomStat icon={Monitor} label="Computer Lab" value={labCheckIns} color="primary" />
-        <RoomStat icon={DoorOpen} label="Discussion Room" value={multiCheckIns} color="accent" />
-        <RoomStat icon={TreePine} label="Reading Lounge" value={gardenCheckIns} color="garden" />
+        <RoomStat
+          icon={Monitor}
+          label="Computer Lab"
+          value={labCheckIns}
+          color="primary"
+          onClick={() => openList("Computer Lab — check-ins", visitsToItems(checkIns.filter((v) => v.room === "computer_lab")), periodLabel)}
+        />
+        <RoomStat
+          icon={DoorOpen}
+          label="Discussion Room"
+          value={multiCheckIns}
+          color="accent"
+          onClick={() => openList("Discussion Room — check-ins", visitsToItems(checkIns.filter((v) => v.room === "multipurpose_room")), periodLabel)}
+        />
+        <RoomStat
+          icon={TreePine}
+          label="Reading Lounge"
+          value={gardenCheckIns}
+          color="garden"
+          onClick={() => openList("Reading Lounge — check-ins", visitsToItems(checkIns.filter((v) => v.room === "garden")), periodLabel)}
+        />
       </div>
+
 
 
 
@@ -501,18 +587,26 @@ export default function Statistics() {
           )}
         </div>
       </div>
+
+      <VisitorListDialog
+        open={!!listDialog}
+        onOpenChange={(open) => !open && setListDialog(null)}
+        title={listDialog?.title || ""}
+        description={listDialog?.description}
+        items={listDialog?.items || []}
+      />
     </div>
   );
 }
 
-function KpiCard({ icon: Icon, label, value, change, period, subtitle }: {
+function KpiCard({ icon: Icon, label, value, change, period, subtitle, onClick }: {
   icon: React.ElementType; label: string; value: string | number;
-  change?: number; period?: Period; subtitle?: string;
+  change?: number; period?: Period; subtitle?: string; onClick?: () => void;
 }) {
   const showChange = change !== undefined && period !== "all";
   const isUp = (change ?? 0) >= 0;
-  return (
-    <div className="stat-card">
+  const inner = (
+    <>
       <div className="mb-3 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
           <Icon className="h-5 w-5 text-primary" />
@@ -529,20 +623,37 @@ function KpiCard({ icon: Icon, label, value, change, period, subtitle }: {
       <p className="text-2xl font-bold text-foreground">{value}</p>
       <p className="mt-1 text-xs text-muted-foreground">{label}</p>
       {subtitle && <p className="text-[10px] text-muted-foreground">{subtitle}</p>}
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className="stat-card text-left w-full transition-transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer">
+        {inner}
+      </button>
+    );
+  }
+  return <div className="stat-card">{inner}</div>;
 }
 
-function RoomStat({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number; color: string }) {
+function RoomStat({ icon: Icon, label, value, color, onClick }: { icon: React.ElementType; label: string; value: number; color: string; onClick?: () => void }) {
   const colorClass = color === "accent" ? "text-accent" : color === "garden" ? "text-green-600" : "text-primary";
   const bgClass = color === "accent" ? "bg-accent/10" : color === "garden" ? "bg-green-500/10" : "bg-primary/10";
-  return (
-    <div className="stat-card text-center">
+  const inner = (
+    <>
       <div className={`mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl ${bgClass}`}>
         <Icon className={`h-5 w-5 ${colorClass}`} />
       </div>
       <p className="text-2xl font-bold text-foreground">{value}</p>
       <p className="text-xs text-muted-foreground">{label}</p>
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className="stat-card text-center w-full transition-transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer">
+        {inner}
+      </button>
+    );
+  }
+  return <div className="stat-card text-center">{inner}</div>;
 }
+
