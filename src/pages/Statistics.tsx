@@ -463,31 +463,62 @@ export default function Statistics() {
       )}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Attendance trend</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={dailyTrend}>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Attendance trend</h3>
+              <p className="text-[11px] text-muted-foreground">Daily check-ins vs check-outs · {periodLabel}</p>
+            </div>
+            <div className="flex gap-3 text-[11px]">
+              <span className="text-muted-foreground">In: <b className="text-primary">{checkIns.length}</b></span>
+              <span className="text-muted-foreground">Out: <b className="text-red-500">{checkOuts.length}</b></span>
+              <span className="text-muted-foreground">Unique: <b className="text-foreground">{uniqueVisitors}</b></span>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={dailyTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <defs>
                 <linearGradient id="gradTotal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(234,85%,60%)" stopOpacity={0.3} />
+                  <stop offset="5%" stopColor="hsl(234,85%,60%)" stopOpacity={0.35} />
                   <stop offset="95%" stopColor="hsl(234,85%,60%)" stopOpacity={0} />
                 </linearGradient>
+                <linearGradient id="gradOut" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(0,72%,55%)" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="hsl(0,72%,55%)" stopOpacity={0} />
+                </linearGradient>
               </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Area type="monotone" dataKey="total" stroke="hsl(234,85%,60%)" strokeWidth={2} fill="url(#gradTotal)" name="Total" />
+              <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
+              <Area type="monotone" dataKey="total" stroke="hsl(234,85%,60%)" strokeWidth={2} fill="url(#gradTotal)" name="Check-ins" />
+              <Area type="monotone" dataKey="checkouts" stroke="hsl(0,72%,55%)" strokeWidth={2} fill="url(#gradOut)" name="Check-outs" />
+              <Line type="monotone" dataKey="unique" stroke="hsl(38,92%,50%)" strokeWidth={2} dot={{ r: 2 }} name="Unique" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Attendance by room</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={dailyTrend}>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Attendance by room</h3>
+              <p className="text-[11px] text-muted-foreground">Stacked daily check-ins per space</p>
+            </div>
+            <div className="flex gap-3 text-[11px]">
+              <span className="text-muted-foreground">Lab: <b>{rawLabCheckIns}</b></span>
+              <span className="text-muted-foreground">Disc: <b>{rawMultiCheckIns}</b></span>
+              <span className="text-muted-foreground">Read: <b>{rawGardenCheckIns}</b></span>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={dailyTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="lab" fill="hsl(234,85%,60%)" radius={[3, 3, 0, 0]} name="Computer Lab" stackId="a" />
+              <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
+              <Bar dataKey="center" fill="hsl(214,88%,40%)" radius={[0, 0, 0, 0]} name="Center" stackId="a" />
+              <Bar dataKey="lab" fill="hsl(234,85%,60%)" radius={[0, 0, 0, 0]} name="Computer Lab" stackId="a" />
               <Bar dataKey="multi" fill="hsl(174,62%,47%)" radius={[0, 0, 0, 0]} name="Discussion Room" stackId="a" />
               <Bar dataKey="garden" fill="hsl(142,64%,43%)" radius={[3, 3, 0, 0]} name="Reading Lounge" stackId="a" />
             </BarChart>
@@ -498,79 +529,141 @@ export default function Statistics() {
       {/* Charts row 2 */}
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Hourly usage</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={hourlyDist}>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Hourly usage</h3>
+              <p className="text-[11px] text-muted-foreground">Peak: <b className="text-primary">{peakHour.hour}</b> · {peakHour.total} check-ins</p>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={hourlyDist} margin={{ top: 15, right: 5, left: -15, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="hour" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="labo" fill="hsl(234,85%,60%)" radius={[3, 3, 0, 0]} name="Computer Lab" />
-              <Bar dataKey="poly" fill="hsl(174,62%,47%)" radius={[3, 3, 0, 0]} name="Discussion Room" />
-              <Bar dataKey="jardin" fill="hsl(142,64%,43%)" radius={[3, 3, 0, 0]} name="Reading Lounge" />
+              <Legend wrapperStyle={{ fontSize: 10 }} iconType="circle" />
+              <Bar dataKey="labo" fill="hsl(234,85%,60%)" radius={[0, 0, 0, 0]} name="Lab" stackId="h" />
+              <Bar dataKey="poly" fill="hsl(174,62%,47%)" radius={[0, 0, 0, 0]} name="Discussion" stackId="h" />
+              <Bar dataKey="jardin" fill="hsl(142,64%,43%)" radius={[0, 0, 0, 0]} name="Reading" stackId="h" />
+              <Bar dataKey="center" fill="hsl(214,88%,40%)" radius={[3, 3, 0, 0]} name="Center" stackId="h" />
+              <Line type="monotone" dataKey="outs" stroke="hsl(0,72%,55%)" strokeWidth={2} dot={{ r: 2 }} name="Check-outs" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Distribution by space</h3>
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-foreground">Distribution by space</h3>
+            <p className="text-[11px] text-muted-foreground">Share of all check-ins</p>
+          </div>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={roomDistribution} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} strokeWidth={0}>
+              <Pie data={roomDistribution} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} strokeWidth={0}>
                 <Cell fill="hsl(234,85%,60%)" />
                 <Cell fill="hsl(174,62%,47%)" />
                 <Cell fill="hsl(142,64%,43%)" />
               </Pie>
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n) => [`${v} check-ins`, n]} />
             </PieChart>
           </ResponsiveContainer>
+          <div className="mt-2 space-y-1 text-[11px]">
+            {roomDistribution.map((r, i) => {
+              const tot = roomDistribution.reduce((s, x) => s + x.value, 0) || 1;
+              return (
+                <div key={r.name} className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full" style={{ background: ["hsl(234,85%,60%)","hsl(174,62%,47%)","hsl(142,64%,43%)"][i] }} />
+                    {r.name}
+                  </span>
+                  <span className="text-muted-foreground"><b className="text-foreground">{r.value}</b> · {Math.round((r.value / tot) * 100)}%</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Distribution by gender</h3>
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-foreground">Distribution by gender</h3>
+            <p className="text-[11px] text-muted-foreground">Of unique visitors · {uniqueVisitors}</p>
+          </div>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={genderData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} strokeWidth={0}>
+              <Pie data={genderData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} strokeWidth={0}>
                 {genderData.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n) => [`${v} members`, n]} />
             </PieChart>
           </ResponsiveContainer>
+          <div className="mt-2 space-y-1 text-[11px]">
+            {genderData.map((g, i) => {
+              const tot = genderData.reduce((s, x) => s + x.value, 0) || 1;
+              return (
+                <div key={g.name} className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+                    {g.name}
+                  </span>
+                  <span className="text-muted-foreground"><b className="text-foreground">{g.value}</b> · {Math.round((g.value / tot) * 100)}%</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Charts row 3 */}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Most frequent visitors</h3>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Most frequent visitors</h3>
+              <p className="text-[11px] text-muted-foreground">Top {topVisitors.length} · click to view their visits</p>
+            </div>
+          </div>
           <div className="space-y-2.5 max-h-72 overflow-y-auto">
-            {topVisitors.map((v, i) => (
-              <div key={v.name} className="flex items-center gap-3">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
-                  {i + 1}
-                </span>
-                <span className="flex-1 text-sm text-foreground font-medium truncate">{v.name}</span>
-                <div className="flex items-center gap-2">
-                  <div className="h-1.5 rounded-full bg-primary/20" style={{ width: `${Math.max(20, (v.count / (topVisitors[0]?.count || 1)) * 80)}px` }}>
-                    <div className="h-full rounded-full bg-primary" style={{ width: "100%" }} />
+            {topVisitors.map((v, i) => {
+              const vid = Object.entries(visitorCount).sort((a, b) => b[1] - a[1])[i]?.[0];
+              return (
+                <button
+                  key={v.name}
+                  type="button"
+                  onClick={() => vid && openList(v.name, visitsToItems(checkIns.filter((c) => c.visitor_id === vid)), `${v.count} check-ins · ${periodLabel}`)}
+                  className="flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors hover:bg-muted/50"
+                >
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
+                    {i + 1}
+                  </span>
+                  <span className="flex-1 text-sm text-foreground font-medium truncate">{v.name}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 rounded-full bg-primary/20" style={{ width: `${Math.max(20, (v.count / (topVisitors[0]?.count || 1)) * 80)}px` }}>
+                      <div className="h-full rounded-full bg-primary" style={{ width: "100%" }} />
+                    </div>
+                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">{v.count}</span>
                   </div>
-                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">{v.count}</span>
-                </div>
-              </div>
-            ))}
+                </button>
+              );
+            })}
             {topVisitors.length === 0 && <p className="text-sm text-muted-foreground">No data available.</p>}
           </div>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">By occupation</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={occupationData} layout="vertical">
-              <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={90} axisLine={false} tickLine={false} />
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-foreground">By occupation</h3>
+            <p className="text-[11px] text-muted-foreground">Top {occupationData.length} occupations · unique members</p>
+          </div>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={occupationData} layout="vertical" margin={{ top: 5, right: 30, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={100} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="value" fill="hsl(234,85%,60%)" radius={[0, 6, 6, 0]} name="Members" />
+              <Bar dataKey="value" fill="hsl(234,85%,60%)" radius={[0, 6, 6, 0]} name="Members">
+                <LabelList dataKey="value" position="right" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -579,26 +672,40 @@ export default function Statistics() {
       {/* Neighborhood + Age */}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Visitor origin (neighborhoods)</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={neighborhoodData}>
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-foreground">Visitor origin (neighborhoods)</h3>
+            <p className="text-[11px] text-muted-foreground">Top {neighborhoodData.length} neighborhoods · unique visitors</p>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={neighborhoodData} margin={{ top: 15, right: 10, left: -15, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="value" fill="hsl(174,62%,47%)" radius={[6, 6, 0, 0]} name="Visitors" />
+              <Bar dataKey="value" fill="hsl(174,62%,47%)" radius={[6, 6, 0, 0]} name="Visitors">
+                <LabelList dataKey="value" position="top" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="stat-card">
-          <h3 className="mb-5 text-sm font-semibold text-foreground">Attendance by age</h3>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Attendance by age</h3>
+              <p className="text-[11px] text-muted-foreground">{ageData.reduce((s, a) => s + a.value, 0)} visitors with DOB</p>
+            </div>
+          </div>
           {ageData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={ageData}>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={ageData} margin={{ top: 15, right: 10, left: -15, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="value" fill="hsl(280,65%,55%)" radius={[6, 6, 0, 0]} name="Visitors" />
+                <Bar dataKey="value" fill="hsl(280,65%,55%)" radius={[6, 6, 0, 0]} name="Visitors">
+                  <LabelList dataKey="value" position="top" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -606,6 +713,7 @@ export default function Statistics() {
           )}
         </div>
       </div>
+
 
       <VisitorListDialog
         open={!!listDialog}
