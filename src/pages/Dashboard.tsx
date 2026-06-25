@@ -109,7 +109,17 @@ export default function Dashboard() {
 
   const todayVisits = visits.filter((v) => v.timestamp.startsWith(today));
   const todayCheckIns = todayVisits.filter((v) => v.action === "check_in");
+  const todayCheckOuts = todayVisits.filter((v) => v.action === "check_out");
   const uniqueTodayIds = [...new Set(todayCheckIns.map((v) => v.visitor_id))];
+
+  // Currently inside (any room) = visitors with active check-in not yet checked out
+  const currentlyInsideIds = useMemo(() => {
+    const all = new Set<string>();
+    (["center", "computer_lab", "multipurpose_room", "garden"] as RoomType[]).forEach((r) => {
+      computeOccupancy(visits, r).forEach((id) => all.add(id));
+    });
+    return all;
+  }, [visits]);
 
   // Merge program present into room counts
   const labCount = labOccupancy.size + programPresentByRoom.computer_lab.length;
@@ -120,6 +130,11 @@ export default function Dashboard() {
   const labPercent = Math.min((labCount / COMPUTER_LAB_CAPACITY) * 100, 100);
 
   const getVisitor = (vid: string) => visitors.find((v) => v.visitor_id === vid);
+
+  const visitorItem = (vid: string, subtitle?: string, badge?: string): VisitorListItem => {
+    const v = getVisitor(vid);
+    return { id: vid, name: v?.full_name || vid, subtitle, badge };
+  };
 
   const hourlyData = Array.from({ length: 12 }, (_, i) => {
     const hour = i + 7;
