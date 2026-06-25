@@ -255,15 +255,11 @@ export default function UserManagement() {
     }
   };
 
-  const StaffFields = ({
-    values,
-    onChange,
-    isEdit,
-  }: {
-    values: StaffForm;
-    onChange: <K extends keyof StaffForm>(k: K, v: StaffForm[K]) => void;
-    isEdit: boolean;
-  }) => (
+  const renderStaffFields = (
+    values: StaffForm,
+    onChange: <K extends keyof StaffForm>(k: K, v: StaffForm[K]) => void,
+    isEdit: boolean,
+  ) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div className="space-y-2 sm:col-span-2">
         <Label>Full name *</Label>
