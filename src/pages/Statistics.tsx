@@ -217,33 +217,51 @@ export default function Statistics() {
 
   const COLORS = ["hsl(234,85%,60%)", "hsl(174,62%,47%)", "hsl(142,64%,43%)", "hsl(38,92%,50%)", "hsl(0,72%,55%)", "hsl(280,65%,55%)"];
 
-  // Daily trend data
+  // Daily trend data (check-ins + check-outs + unique)
   const dailyTrend = useMemo(() => {
-    const dayMap: Record<string, { lab: number; multi: number; garden: number; total: number }> = {};
-    checkIns.forEach((v) => {
+    const dayMap: Record<string, { lab: number; multi: number; garden: number; center: number; total: number; checkouts: number; uniqueSet: Set<string> }> = {};
+    filteredVisits.forEach((v) => {
       const day = v.timestamp.split("T")[0];
-      if (!dayMap[day]) dayMap[day] = { lab: 0, multi: 0, garden: 0, total: 0 };
+      if (!dayMap[day]) dayMap[day] = { lab: 0, multi: 0, garden: 0, center: 0, total: 0, checkouts: 0, uniqueSet: new Set() };
+      if (v.action === "check_out") {
+        dayMap[day].checkouts++;
+        return;
+      }
       dayMap[day].total++;
+      dayMap[day].uniqueSet.add(v.visitor_id);
       if (v.room === "computer_lab") dayMap[day].lab++;
       else if (v.room === "multipurpose_room") dayMap[day].multi++;
       else if (v.room === "garden") dayMap[day].garden++;
+      else if (v.room === "center") dayMap[day].center++;
     });
     return Object.entries(dayMap)
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([date, data]) => ({
         date: new Date(date).toLocaleDateString("en-US", { day: "2-digit", month: "short" }),
-        ...data,
+        rawDate: date,
+        lab: data.lab,
+        multi: data.multi,
+        garden: data.garden,
+        center: data.center,
+        total: data.total,
+        checkouts: data.checkouts,
+        unique: data.uniqueSet.size,
+        inside: Math.max(0, data.total - data.checkouts),
       }));
-  }, [checkIns]);
+  }, [filteredVisits]);
 
   // Hourly distribution
-  const hourlyDist = Array.from({ length: 12 }, (_, i) => {
+  const hourlyDist = Array.from({ length: 13 }, (_, i) => {
     const hour = i + 7;
+    const inHour = (v: Visit) => new Date(v.timestamp).getHours() === hour;
     return {
       hour: `${hour}h`,
-      labo: checkIns.filter((v) => v.room === "computer_lab" && new Date(v.timestamp).getHours() === hour).length,
-      poly: checkIns.filter((v) => v.room === "multipurpose_room" && new Date(v.timestamp).getHours() === hour).length,
-      jardin: checkIns.filter((v) => v.room === "garden" && new Date(v.timestamp).getHours() === hour).length,
+      labo: checkIns.filter((v) => v.room === "computer_lab" && inHour(v)).length,
+      poly: checkIns.filter((v) => v.room === "multipurpose_room" && inHour(v)).length,
+      jardin: checkIns.filter((v) => v.room === "garden" && inHour(v)).length,
+      center: checkIns.filter((v) => v.room === "center" && inHour(v)).length,
+      outs: checkOuts.filter(inHour).length,
+      total: checkIns.filter(inHour).length,
     };
   });
 
