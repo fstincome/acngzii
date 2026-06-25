@@ -18,12 +18,16 @@ import {
   Shield,
   UtensilsCrossed,
   Lock,
+  BookOpen,
+  BookCheck,
+  LogIn,
 } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [normalOpen, setNormalOpen] = useState(true);
   const [programOpen, setProgramOpen] = useState(true);
+  const [libraryOpen, setLibraryOpen] = useState(true);
   const [restaurantOpen, setRestaurantOpen] = useState(true);
   const location = useLocation();
   const { role, user, signOut } = useAuth();
@@ -51,6 +55,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   ];
 
   const showPrograms = !!role;
+
+  const libraryNavItems = [
+    { to: "/library/entry", icon: LogIn, label: t("nav.libraryEntry") },
+    { to: "/library/books", icon: BookOpen, label: t("nav.books") },
+    { to: "/library/loans", icon: BookCheck, label: t("nav.loans") },
+  ];
+  const showLibrary = !!role;
 
   const restaurantNavItems = [
     { to: "/restaurant/orders", icon: UtensilsCrossed, label: t("nav.orders") },
@@ -177,6 +188,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {programOpen && (
                 <div className="space-y-1 mb-4">
                   {programNavItems.map(renderNavItem)}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Library group */}
+          {showLibrary && (
+            <>
+              <button
+                onClick={() => setLibraryOpen(!libraryOpen)}
+                className="flex w-full items-center justify-between px-3 mb-2"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+                  {t("nav.groups.library")}
+                </p>
+                <ChevronDown className={`h-3 w-3 text-sidebar-foreground/30 transition-transform ${libraryOpen ? "" : "-rotate-90"}`} />
+              </button>
+              {libraryOpen && (
+                <div className="space-y-1 mb-4">
+                  {libraryNavItems.map(renderNavItem)}
                 </div>
               )}
             </>

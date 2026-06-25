@@ -14,6 +14,167 @@ export type Database = {
   }
   public: {
     Tables: {
+      library_books: {
+        Row: {
+          authors: string | null
+          category: string | null
+          copies_available: number
+          copies_total: number
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          edition: string | null
+          id: string
+          internal_code: string
+          isbn: string | null
+          language: string | null
+          publication_year: number | null
+          publisher: string | null
+          shelf: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          authors?: string | null
+          category?: string | null
+          copies_available?: number
+          copies_total?: number
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          edition?: string | null
+          id?: string
+          internal_code: string
+          isbn?: string | null
+          language?: string | null
+          publication_year?: number | null
+          publisher?: string | null
+          shelf?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          authors?: string | null
+          category?: string | null
+          copies_available?: number
+          copies_total?: number
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          edition?: string | null
+          id?: string
+          internal_code?: string
+          isbn?: string | null
+          language?: string | null
+          publication_year?: number | null
+          publisher?: string | null
+          shelf?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      library_loans: {
+        Row: {
+          book_id: string
+          created_at: string
+          due_at: string
+          id: string
+          issued_by: string | null
+          loaned_at: string
+          notes: string | null
+          returned_at: string | null
+          returned_by: string | null
+          status: string
+          updated_at: string
+          visitor_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          due_at: string
+          id?: string
+          issued_by?: string | null
+          loaned_at?: string
+          notes?: string | null
+          returned_at?: string | null
+          returned_by?: string | null
+          status?: string
+          updated_at?: string
+          visitor_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          due_at?: string
+          id?: string
+          issued_by?: string | null
+          loaned_at?: string
+          notes?: string | null
+          returned_at?: string | null
+          returned_by?: string | null
+          status?: string
+          updated_at?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "library_loans_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "library_books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "library_loans_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["visitor_id"]
+          },
+        ]
+      }
+      library_visits: {
+        Row: {
+          books_consulted: string[]
+          checked_in_at: string
+          checked_out_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          visitor_id: string
+        }
+        Insert: {
+          books_consulted?: string[]
+          checked_in_at?: string
+          checked_out_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          visitor_id: string
+        }
+        Update: {
+          books_consulted?: string[]
+          checked_in_at?: string
+          checked_out_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "library_visits_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["visitor_id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -703,7 +864,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_module: "visitors" | "programs" | "statistics" | "scanner"
+      app_module: "visitors" | "programs" | "statistics" | "scanner" | "library"
       app_role:
         | "admin"
         | "american_center"
@@ -846,7 +1007,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_module: ["visitors", "programs", "statistics", "scanner"],
+      app_module: ["visitors", "programs", "statistics", "scanner", "library"],
       app_role: [
         "admin",
         "american_center",

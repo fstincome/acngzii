@@ -19,6 +19,7 @@ const MODULES: { key: AppModule; label: string }[] = [
   { key: "programs", label: "Programs & Attendance" },
   { key: "statistics", label: "Statistics" },
   { key: "scanner", label: "QR Scanner" },
+  { key: "library", label: "Library (books & loans)" },
 ];
 
 const ROLES: { key: AppRole; label: string; systemFull?: boolean }[] = [
