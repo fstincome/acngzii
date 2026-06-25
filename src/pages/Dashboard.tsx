@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck } from "lucide-react";
+import { Users, UserPlus, Monitor, DoorOpen, TrendingUp, Clock, Phone, Mail, MapPin, Briefcase, TreePine, Download, Loader2, GraduationCap, ClipboardCheck, LogIn, LogOut, Activity } from "lucide-react";
 import { useVisitors, useVisits, computeOccupancy, COMPUTER_LAB_CAPACITY, useVisitsRealtime, ROOM_LABELS } from "@/lib/supabase-store";
 import type { Visitor, Visit, RoomType } from "@/lib/supabase-store";
 import {
@@ -14,6 +14,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { VisitorListDialog, VisitorListItem } from "@/components/VisitorListDialog";
+
 
 export default function Dashboard() {
   const { role } = useAuth();
