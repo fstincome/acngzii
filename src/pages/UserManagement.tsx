@@ -392,7 +392,7 @@ export default function UserManagement() {
               <DialogTitle>Create a staff account</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
-              <StaffFields values={createForm} onChange={setCreate} isEdit={false} />
+              {renderStaffFields(createForm, setCreate, false)}
               <Button type="submit" className="w-full" disabled={creating}>
                 {creating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 Create
@@ -408,7 +408,7 @@ export default function UserManagement() {
             <DialogTitle>Edit staff member</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-4">
-            <StaffFields values={editForm} onChange={setEdit} isEdit={true} />
+            {renderStaffFields(editForm, setEdit, true)}
             <Button type="submit" className="w-full" disabled={updating}>
               {updating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Save changes
