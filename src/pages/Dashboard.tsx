@@ -26,6 +26,10 @@ export default function Dashboard() {
   const { data: visitors = [] } = useVisitors();
   const { data: visits = [] } = useVisits();
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
+  const [listDialog, setListDialog] = useState<{ title: string; description?: string; items: VisitorListItem[] } | null>(null);
+
+  const openList = (title: string, items: VisitorListItem[], description?: string) =>
+    setListDialog({ title, items, description });
 
   // Program attendance for today
   const today = new Date().toISOString().split("T")[0];
