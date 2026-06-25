@@ -143,6 +143,7 @@ export default function Scanner() {
   };
 
   const roomIcon = (room: string) => {
+    if (room === "center") return <Building2 className="h-3 w-3" />;
     if (room === "computer_lab") return <Monitor className="h-3 w-3" />;
     if (room === "garden") return <TreePine className="h-3 w-3" />;
     return <DoorOpen className="h-3 w-3" />;
