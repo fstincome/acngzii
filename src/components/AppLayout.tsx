@@ -18,6 +18,9 @@ import {
   Shield,
   UtensilsCrossed,
   Lock,
+  BookOpen,
+  BookCheck,
+  LogIn,
 } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

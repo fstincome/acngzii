@@ -26,6 +26,9 @@ import RestaurantProducts from "@/pages/RestaurantProducts";
 import RestaurantAnalytics from "@/pages/RestaurantAnalytics";
 import RestaurantManualOrder from "@/pages/RestaurantManualOrder";
 import OrderTracking from "@/pages/OrderTracking";
+import LibraryBooks from "@/pages/LibraryBooks";
+import LibraryEntry from "@/pages/LibraryEntry";
+import LibraryLoans from "@/pages/LibraryLoans";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +75,11 @@ const App = () => (
             <Route path="/restaurant/products" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantProducts /></AppLayout></ProtectedRoute>} />
             <Route path="/restaurant/analytics" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantAnalytics /></AppLayout></ProtectedRoute>} />
             <Route path="/restaurant/manual-order" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantManualOrder /></AppLayout></ProtectedRoute>} />
+
+            {/* Library */}
+            <Route path="/library/books" element={<ProtectedRoute><AppLayout><LibraryBooks /></AppLayout></ProtectedRoute>} />
+            <Route path="/library/entry" element={<ProtectedRoute><AppLayout><LibraryEntry /></AppLayout></ProtectedRoute>} />
+            <Route path="/library/loans" element={<ProtectedRoute><AppLayout><LibraryLoans /></AppLayout></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

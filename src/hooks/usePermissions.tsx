@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, isAdminLike } from "@/hooks/useAuth";
 
-export type AppModule = "visitors" | "programs" | "statistics" | "scanner";
+export type AppModule = "visitors" | "programs" | "statistics" | "scanner" | "library";
 export type PermissionAction = "view" | "create" | "update" | "delete";
 
 export interface PermissionRow {
