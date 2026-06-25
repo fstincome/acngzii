@@ -214,6 +214,11 @@ export default function Scanner() {
           </div>
 
           <div className="flex flex-wrap gap-2">
+            {inCenter && (
+              <span className="occupancy-badge bg-primary/15 text-primary border border-primary/20">
+                <Building2 className="h-3 w-3" /> In Center
+              </span>
+            )}
             {inLab && (
               <span className="occupancy-badge bg-primary/10 text-primary border border-primary/15">
                 <Monitor className="h-3 w-3" /> In Computer Lab
@@ -229,7 +234,7 @@ export default function Scanner() {
                 <TreePine className="h-3 w-3" /> In Reading Lounge
               </span>
             )}
-            {!inLab && !inMulti && !inGarden && (
+            {!inCenter && !inLab && !inMulti && !inGarden && (
               <span className="occupancy-badge bg-muted text-muted-foreground">Not in any space</span>
             )}
           </div>
@@ -255,7 +260,24 @@ export default function Scanner() {
           )}
 
           <div className="space-y-3">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Actions</p>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Center entry / exit</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {!inCenter ? (
+                <Button onClick={() => handleAction("center", "check_in")} className="gap-2 rounded-xl h-11 sm:col-span-2" disabled={addVisit.isPending}>
+                  <Building2 className="h-4 w-4" />
+                  Check-in Center
+                </Button>
+              ) : (
+                <Button onClick={() => handleAction("center", "check_out")} variant="outline" className="gap-2 rounded-xl h-11 sm:col-span-2 border-primary/40 text-primary hover:bg-primary/5" disabled={addVisit.isPending}>
+                  <LogOut className="h-4 w-4" />
+                  Check-out Center
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Spaces</p>
             <div className="grid gap-2 sm:grid-cols-2">
               {!inLab && (
                 <Button onClick={() => handleAction("computer_lab", "check_in")} className="gap-2 rounded-xl h-11" disabled={labFull || addVisit.isPending}>
