@@ -587,18 +587,26 @@ export default function Statistics() {
           )}
         </div>
       </div>
+
+      <VisitorListDialog
+        open={!!listDialog}
+        onOpenChange={(open) => !open && setListDialog(null)}
+        title={listDialog?.title || ""}
+        description={listDialog?.description}
+        items={listDialog?.items || []}
+      />
     </div>
   );
 }
 
-function KpiCard({ icon: Icon, label, value, change, period, subtitle }: {
+function KpiCard({ icon: Icon, label, value, change, period, subtitle, onClick }: {
   icon: React.ElementType; label: string; value: string | number;
-  change?: number; period?: Period; subtitle?: string;
+  change?: number; period?: Period; subtitle?: string; onClick?: () => void;
 }) {
   const showChange = change !== undefined && period !== "all";
   const isUp = (change ?? 0) >= 0;
-  return (
-    <div className="stat-card">
+  const inner = (
+    <>
       <div className="mb-3 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
           <Icon className="h-5 w-5 text-primary" />
@@ -615,20 +623,37 @@ function KpiCard({ icon: Icon, label, value, change, period, subtitle }: {
       <p className="text-2xl font-bold text-foreground">{value}</p>
       <p className="mt-1 text-xs text-muted-foreground">{label}</p>
       {subtitle && <p className="text-[10px] text-muted-foreground">{subtitle}</p>}
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className="stat-card text-left w-full transition-transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer">
+        {inner}
+      </button>
+    );
+  }
+  return <div className="stat-card">{inner}</div>;
 }
 
-function RoomStat({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number; color: string }) {
+function RoomStat({ icon: Icon, label, value, color, onClick }: { icon: React.ElementType; label: string; value: number; color: string; onClick?: () => void }) {
   const colorClass = color === "accent" ? "text-accent" : color === "garden" ? "text-green-600" : "text-primary";
   const bgClass = color === "accent" ? "bg-accent/10" : color === "garden" ? "bg-green-500/10" : "bg-primary/10";
-  return (
-    <div className="stat-card text-center">
+  const inner = (
+    <>
       <div className={`mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl ${bgClass}`}>
         <Icon className={`h-5 w-5 ${colorClass}`} />
       </div>
       <p className="text-2xl font-bold text-foreground">{value}</p>
       <p className="text-xs text-muted-foreground">{label}</p>
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className="stat-card text-center w-full transition-transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer">
+        {inner}
+      </button>
+    );
+  }
+  return <div className="stat-card text-center">{inner}</div>;
 }
+
