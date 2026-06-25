@@ -115,13 +115,41 @@ export default function Statistics() {
   }, [visits, period]);
 
   const checkIns = filteredVisits.filter((v) => v.action === "check_in");
+  const checkOuts = filteredVisits.filter((v) => v.action === "check_out");
   const prevCheckIns = prevPeriodVisits.filter((v) => v.action === "check_in");
-  const uniqueVisitors = new Set(checkIns.map((v) => v.visitor_id)).size;
+  const uniqueVisitorIds = [...new Set(checkIns.map((v) => v.visitor_id))];
+  const uniqueVisitors = uniqueVisitorIds.length;
   const prevUniqueVisitors = new Set(prevCheckIns.map((v) => v.visitor_id)).size;
 
   const rawLabCheckIns = checkIns.filter((v) => v.room === "computer_lab").length;
   const rawMultiCheckIns = checkIns.filter((v) => v.room === "multipurpose_room").length;
   const rawGardenCheckIns = checkIns.filter((v) => v.room === "garden").length;
+
+  // Currently inside (live, not filtered by period)
+  const currentlyInsideIds = useMemo(() => {
+    const all = new Set<string>();
+    (["center", "computer_lab", "multipurpose_room", "garden"] as RoomType[]).forEach((r) => {
+      computeOccupancy(visits, r).forEach((id) => all.add(id));
+    });
+    return all;
+  }, [visits]);
+
+  const [listDialog, setListDialog] = useState<{ title: string; description?: string; items: VisitorListItem[] } | null>(null);
+  const openList = (title: string, items: VisitorListItem[], description?: string) =>
+    setListDialog({ title, items, description });
+
+  const getVisitorName = (vid: string) => visitors.find((v) => v.visitor_id === vid)?.full_name || vid;
+  const visitsToItems = (vs: Visit[]): VisitorListItem[] =>
+    vs.slice().sort((a, b) => b.timestamp.localeCompare(a.timestamp)).map((v) => ({
+      id: `${v.id}`,
+      name: getVisitorName(v.visitor_id),
+      subtitle: `${ROOM_LABELS[v.room as RoomType] || v.room} · ${new Date(v.timestamp).toLocaleString("en-US", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}`,
+    }));
+  const idsToItems = (ids: string[]): VisitorListItem[] =>
+    ids.map((id) => {
+      const v = visitors.find((vis) => vis.visitor_id === id);
+      return { id, name: v?.full_name || id, subtitle: v?.occupation };
+    });
 
 
 
