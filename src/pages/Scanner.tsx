@@ -15,7 +15,7 @@ import {
   ROOM_LABELS,
 } from "@/lib/supabase-store";
 import type { Visitor, RoomType } from "@/lib/supabase-store";
-import { ScanLine, Monitor, DoorOpen, LogOut, AlertTriangle, Search, Camera, X, TreePine, Clock } from "lucide-react";
+import { ScanLine, Monitor, DoorOpen, LogOut, AlertTriangle, Search, Camera, X, TreePine, Clock, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { Html5Qrcode } from "html5-qrcode";
 
