@@ -201,12 +201,121 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard icon={Monitor} label={t("dashboard.computerLab")} value={`${labCount} / ${COMPUTER_LAB_CAPACITY}`} alert={labFull} color="primary" />
-        <StatCard icon={DoorOpen} label={t("dashboard.multipurposeRoom")} value={multiCount} color="accent" />
-        <StatCard icon={TreePine} label={t("dashboard.garden")} value={gardenCount} color="garden" />
-        <StatCard icon={UserPlus} label={t("dashboard.todayVisitors")} value={uniqueToday} color="primary" />
-        <StatCard icon={Users} label={t("dashboard.registeredMembers")} value={visitors.length} color="accent" />
+        <StatCard
+          icon={Monitor}
+          label={t("dashboard.computerLab")}
+          value={`${labCount} / ${COMPUTER_LAB_CAPACITY}`}
+          alert={labFull}
+          color="primary"
+          onClick={() => openList(
+            t("dashboard.computerLab"),
+            [
+              ...Array.from(labOccupancy).map((id) => visitorItem(id, "Member")),
+              ...programPresentByRoom.computer_lab.map((a) => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant", badge: "Program" })),
+            ],
+            "Currently inside",
+          )}
+        />
+        <StatCard
+          icon={DoorOpen}
+          label={t("dashboard.multipurposeRoom")}
+          value={multiCount}
+          color="accent"
+          onClick={() => openList(
+            t("dashboard.multipurposeRoom"),
+            [
+              ...Array.from(multiOccupancy).map((id) => visitorItem(id, "Member")),
+              ...programPresentByRoom.multipurpose_room.map((a) => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant", badge: "Program" })),
+            ],
+            "Currently inside",
+          )}
+        />
+        <StatCard
+          icon={TreePine}
+          label={t("dashboard.garden")}
+          value={gardenCount}
+          color="garden"
+          onClick={() => openList(
+            t("dashboard.garden"),
+            [
+              ...Array.from(gardenOccupancy).map((id) => visitorItem(id, "Member")),
+              ...programPresentByRoom.garden.map((a) => ({ id: a.participant_id, name: participantNameMap[a.participant_id] || "Participant", badge: "Program" })),
+            ],
+            "Currently inside",
+          )}
+        />
+        <StatCard
+          icon={UserPlus}
+          label={t("dashboard.todayVisitors")}
+          value={uniqueToday}
+          color="primary"
+          onClick={() => openList(
+            t("dashboard.todayVisitors"),
+            uniqueTodayIds.map((id) => visitorItem(id)),
+            "Members who checked in today",
+          )}
+        />
+        <StatCard
+          icon={Users}
+          label={t("dashboard.registeredMembers")}
+          value={visitors.length}
+          color="accent"
+          onClick={() => openList(
+            t("dashboard.registeredMembers"),
+            visitors.map((v) => ({ id: v.visitor_id, name: v.full_name, subtitle: v.occupation })),
+          )}
+        />
       </div>
+
+      {/* Check-ins / Check-outs today */}
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard
+          icon={LogIn}
+          label="Check-ins today"
+          value={todayCheckIns.length}
+          color="primary"
+          onClick={() => openList(
+            "Check-ins today",
+            todayCheckIns
+              .slice()
+              .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+              .map((v) => ({
+                id: `${v.id}`,
+                name: getVisitor(v.visitor_id)?.full_name || v.visitor_id,
+                subtitle: `${ROOM_LABELS[v.room as RoomType] || v.room} · ${new Date(v.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`,
+              })),
+          )}
+        />
+        <StatCard
+          icon={LogOut}
+          label="Check-outs today"
+          value={todayCheckOuts.length}
+          color="accent"
+          onClick={() => openList(
+            "Check-outs today",
+            todayCheckOuts
+              .slice()
+              .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+              .map((v) => ({
+                id: `${v.id}`,
+                name: getVisitor(v.visitor_id)?.full_name || v.visitor_id,
+                subtitle: `${ROOM_LABELS[v.room as RoomType] || v.room} · ${new Date(v.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`,
+              })),
+          )}
+        />
+        <StatCard
+          icon={Activity}
+          label="Currently inside"
+          value={currentlyInsideIds.size}
+          color="garden"
+          onClick={() => openList(
+            "Currently inside",
+            Array.from(currentlyInsideIds).map((id) => visitorItem(id)),
+            "Check-ins minus check-outs",
+          )}
+        />
+      </div>
+
 
       {/* Program attendance today */}
       {programTotalToday > 0 && (
