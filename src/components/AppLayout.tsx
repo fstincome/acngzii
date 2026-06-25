@@ -27,6 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [normalOpen, setNormalOpen] = useState(true);
   const [programOpen, setProgramOpen] = useState(true);
+  const [libraryOpen, setLibraryOpen] = useState(true);
   const [restaurantOpen, setRestaurantOpen] = useState(true);
   const location = useLocation();
   const { role, user, signOut } = useAuth();
@@ -54,6 +55,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   ];
 
   const showPrograms = !!role;
+
+  const libraryNavItems = [
+    { to: "/library/entry", icon: LogIn, label: t("nav.libraryEntry") },
+    { to: "/library/books", icon: BookOpen, label: t("nav.books") },
+    { to: "/library/loans", icon: BookCheck, label: t("nav.loans") },
+  ];
+  const showLibrary = !!role;
 
   const restaurantNavItems = [
     { to: "/restaurant/orders", icon: UtensilsCrossed, label: t("nav.orders") },
