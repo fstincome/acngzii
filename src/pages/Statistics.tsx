@@ -348,18 +348,74 @@ export default function Statistics() {
 
       {/* KPI cards with comparison */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard icon={Users} label="Unique visitors" value={uniqueVisitors} change={visitorChange} period={period} />
-        <KpiCard icon={TrendingUp} label="Total check-ins" value={checkIns.length} change={totalChange} period={period} />
+        <KpiCard
+          icon={Users}
+          label="Unique visitors"
+          value={uniqueVisitors}
+          change={visitorChange}
+          period={period}
+          onClick={() => openList("Unique visitors", idsToItems(uniqueVisitorIds), `Distinct members — ${periodLabel}`)}
+        />
+        <KpiCard
+          icon={TrendingUp}
+          label="Total check-ins"
+          value={checkIns.length}
+          change={totalChange}
+          period={period}
+          onClick={() => openList("Total check-ins", visitsToItems(checkIns), periodLabel)}
+        />
         <KpiCard icon={Clock} label="Avg / day" value={avgDaily} />
         <KpiCard icon={Calendar} label="Peak hour" value={peakHour.hour} subtitle={`${peakHour.total} check-ins`} />
       </div>
 
+      {/* Check-ins vs Check-outs */}
+      <div className="grid grid-cols-3 gap-4">
+        <KpiCard
+          icon={LogIn}
+          label="Check-ins"
+          value={checkIns.length}
+          onClick={() => openList("Check-ins", visitsToItems(checkIns), periodLabel)}
+        />
+        <KpiCard
+          icon={LogOut}
+          label="Check-outs"
+          value={checkOuts.length}
+          onClick={() => openList("Check-outs", visitsToItems(checkOuts), periodLabel)}
+        />
+        <KpiCard
+          icon={Activity}
+          label="Currently inside"
+          value={currentlyInsideIds.size}
+          subtitle="Live, all rooms"
+          onClick={() => openList("Currently inside", idsToItems(Array.from(currentlyInsideIds)), "Check-ins minus check-outs")}
+        />
+      </div>
+
       {/* Room breakdown */}
       <div className="grid grid-cols-3 gap-4">
-        <RoomStat icon={Monitor} label="Computer Lab" value={labCheckIns} color="primary" />
-        <RoomStat icon={DoorOpen} label="Discussion Room" value={multiCheckIns} color="accent" />
-        <RoomStat icon={TreePine} label="Reading Lounge" value={gardenCheckIns} color="garden" />
+        <RoomStat
+          icon={Monitor}
+          label="Computer Lab"
+          value={labCheckIns}
+          color="primary"
+          onClick={() => openList("Computer Lab — check-ins", visitsToItems(checkIns.filter((v) => v.room === "computer_lab")), periodLabel)}
+        />
+        <RoomStat
+          icon={DoorOpen}
+          label="Discussion Room"
+          value={multiCheckIns}
+          color="accent"
+          onClick={() => openList("Discussion Room — check-ins", visitsToItems(checkIns.filter((v) => v.room === "multipurpose_room")), periodLabel)}
+        />
+        <RoomStat
+          icon={TreePine}
+          label="Reading Lounge"
+          value={gardenCheckIns}
+          color="garden"
+          onClick={() => openList("Reading Lounge — check-ins", visitsToItems(checkIns.filter((v) => v.room === "garden")), periodLabel)}
+        />
       </div>
+
 
 
 
