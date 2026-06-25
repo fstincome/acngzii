@@ -94,6 +94,7 @@ export default function Scanner() {
   const isInRoom = (visitorId: string, room: RoomType) =>
     computeOccupancy(allVisits, room).has(visitorId);
 
+  const inCenter = scanned ? isInRoom(scanned.visitor_id, "center") : false;
   const inLab = scanned ? isInRoom(scanned.visitor_id, "computer_lab") : false;
   const inMulti = scanned ? isInRoom(scanned.visitor_id, "multipurpose_room") : false;
   const inGarden = scanned ? isInRoom(scanned.visitor_id, "garden") : false;
