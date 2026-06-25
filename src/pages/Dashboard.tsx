@@ -626,9 +626,9 @@ function DetailRow({ icon: Icon, label, value }: { icon: React.ElementType; labe
   );
 }
 
-function StatCard({ icon: Icon, label, value, alert, color }: { icon: React.ElementType; label: string; value: string | number; alert?: boolean; color?: string }) {
-  return (
-    <div className={`stat-card ${alert ? "border-destructive/30 !bg-destructive/5" : ""}`}>
+function StatCard({ icon: Icon, label, value, alert, color, onClick }: { icon: React.ElementType; label: string; value: string | number; alert?: boolean; color?: string; onClick?: () => void }) {
+  const content = (
+    <>
       <div className="mb-3 flex items-center gap-3">
         <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
           alert ? "bg-destructive/10" : color === "accent" ? "bg-accent/10" : color === "garden" ? "bg-green-500/10" : "bg-primary/10"
@@ -638,6 +638,15 @@ function StatCard({ icon: Icon, label, value, alert, color }: { icon: React.Elem
       </div>
       <p className={`text-2xl font-bold ${alert ? "text-destructive" : "text-foreground"}`}>{value}</p>
       <p className="mt-1 text-xs text-muted-foreground">{label}</p>
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={`stat-card text-left w-full transition-transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer ${alert ? "border-destructive/30 !bg-destructive/5" : ""}`}>
+        {content}
+      </button>
+    );
+  }
+  return <div className={`stat-card ${alert ? "border-destructive/30 !bg-destructive/5" : ""}`}>{content}</div>;
 }
+
