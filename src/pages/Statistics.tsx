@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, AreaChart, Area,
+  CartesianGrid, Legend, LabelList,
 } from "recharts";
 import { VisitorListDialog, VisitorListItem } from "@/components/VisitorListDialog";
 
