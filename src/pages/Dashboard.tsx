@@ -494,6 +494,21 @@ export default function Dashboard() {
           )}
         </DialogContent>
       </Dialog>
+
+      <VisitorListDialog
+        open={!!listDialog}
+        onOpenChange={(open) => !open && setListDialog(null)}
+        title={listDialog?.title || ""}
+        description={listDialog?.description}
+        items={listDialog?.items || []}
+        onItemClick={(it) => {
+          const v = getVisitor(it.id);
+          if (v) {
+            setListDialog(null);
+            setSelectedVisitor(v);
+          }
+        }}
+      />
     </div>
   );
 }
