@@ -1,58 +1,58 @@
-## Objectif
-Ajouter un menu **Access Control** (Admin/National Coordinator uniquement) pour gérer les permissions CRUD par rôle ET par utilisateur, sur 4 modules : Visitors, Programs, Statistics, Scanner.
+# Library Management
 
-## Modèle de permissions
+A new module to manage the library: catalog books, track on-site readers (scan in/out), and lend books with a return deadline.
 
-5 actions par module : `view`, `create`, `update`, `delete`, `full` (= raccourci CRUD complet).
+## Scope
 
-Modules contrôlés :
-- `visitors` (register, list, edit, delete)
-- `programs` (programmes, attendance, reports)
-- `statistics` (page Statistics)
-- `scanner` (QR scan)
+### 1. Books catalog
+- Register a new book with full identifiers: title, author(s), ISBN, category, language, publisher, publication year, edition, copies total, location/shelf, cover photo, description, status (available / unavailable).
+- List view with:
+  - search (by title, author, ISBN, code)
+  - sort (title, author, year, date added)
+  - filter by category / language / availability
+  - barcode/QR scan to instantly find a book by its internal code or ISBN
+- Each book gets a unique internal QR code (printable) for fast scanning.
 
-Hiérarchie de résolution (du plus prioritaire au moins) :
-1. Admin / National Coordinator → **toujours full access** (non éditable)
-2. Override utilisateur (table `user_permissions`)
-3. Défaut du rôle (table `role_permissions`)
-4. Aucun accès
+### 2. On-site reading (scan in / out)
+- Page "Library Entry" with a scanner:
+  - Scan visitor membership ID → start a reading session (check-in).
+  - Scan again → close the session (check-out).
+  - Optionally scan one or several book codes attached to the session (books consulted on site, not borrowed).
+- Active readers list showing who is currently in the library with time elapsed.
 
-## Base de données
+### 3. Loans (taking a book home)
+- Issue a loan: scan visitor ID + scan book code, choose a due date (default: 7 days, configurable when issuing).
+- Return: scan book code → mark loan as returned.
+- Loan list with filters: active / returned / overdue. Overdue loans highlighted in red.
+- A book cannot be loaned if no copy is available.
 
-**Nouvelle table `role_permissions`** : `role`, `module`, `can_view`, `can_create`, `can_update`, `can_delete` (unique sur role+module).
+### 4. Permissions
+- New module `library` in the permissions system (view / create / update / delete).
+- Admin + American Center: full access. Other roles: configurable via Access Control.
 
-**Nouvelle table `user_permissions`** : `user_id`, `module`, `can_view`, `can_create`, `can_update`, `can_delete` (unique sur user_id+module). NULL = pas d'override → utilise la valeur du rôle.
+## Technical details
 
-**Fonction SECURITY DEFINER `has_permission(_user_id, _module, _action)`** : retourne `true` si admin-like, sinon vérifie override user puis défaut role.
+### Database (one migration)
+- `library_books` — title, authors, isbn, internal_code (unique), category, language, publisher, year, edition, copies_total, copies_available, shelf, cover_url, description, status.
+- `library_visits` — visitor_id, checked_in_at, checked_out_at, books_consulted (text[] of book codes).
+- `library_loans` — visitor_id, book_id, loaned_at, due_at, returned_at, status (active/returned/overdue), issued_by, returned_by.
+- Trigger on `library_loans` to decrement/increment `copies_available` on insert/return.
+- Extend `app_module` enum with `'library'`.
+- RLS: authenticated can read; create/update/delete gated by `has_permission(auth.uid(), 'library', ...)`.
+- GRANTs to authenticated + service_role.
 
-RLS : seuls admin/national_coordinator peuvent lire/écrire ces tables. Tous les users authentifiés peuvent lire **leurs propres** permissions (pour l'UI).
+### Frontend
+- New pages under `src/pages/`:
+  - `LibraryBooks.tsx` — catalog + add/edit dialog + scan-to-find
+  - `LibraryEntry.tsx` — scan check-in/out for on-site reading + active readers
+  - `LibraryLoans.tsx` — issue/return loans + loan list with overdue filter
+- Sidebar group "Library" with the three entries, gated by `library` permission.
+- Routes added to `App.tsx` with `ProtectedRoute` requiring `library.view`.
+- Reuse existing `html5-qrcode` scanner component pattern from `Scanner.tsx`.
+- Add `library` to `AccessControl.tsx` module list and to translations (`en.json`).
 
-Seed : défauts raisonnables (Director = full sur visitors/programs/statistics/scanner ; Reception = view+create visitors, view+create scanner, view programs, pas de statistics).
-
-## Frontend
-
-**Nouvelle page `/access-control`** (admin-like only) accessible depuis le groupe "Administration" du sidebar :
-- Onglet **Par rôle** : tableau Rôle × Module, chaque cellule = checkboxes (View / Create / Update / Delete) + bouton "Full CRUD" qui coche les 4. Admin et National Coordinator affichés en lecture seule avec badge "Full access (system)".
-- Onglet **Par utilisateur** : liste des users avec recherche. Sélectionner un user → tableau Modules avec checkboxes + bouton "Use role default" (efface l'override).
-
-**Hook `usePermissions()`** : charge les permissions effectives de l'utilisateur courant une fois, fournit `can(module, action)` synchrone.
-
-**Application UI (mode "afficher désactivé")** :
-- Boutons d'action (Register, Edit, Delete, etc.) → `disabled` + tooltip "Access denied" quand `!can(...)`.
-- Liens sidebar restent visibles, mais cliquer mène à la page (le contenu sensible affiche bandeau "Read only" si seulement view).
-- `ProtectedRoute` continue de protéger l'accès aux pages entières via `allowedRoles` ; les permissions CRUD affinent à l'intérieur.
-
-## Fichiers techniques
-
-- Migration : tables `role_permissions`, `user_permissions`, fonction `has_permission`, RLS, seed des défauts.
-- `src/hooks/usePermissions.tsx` : hook + Provider.
-- `src/pages/AccessControl.tsx` : nouvelle page avec les 2 onglets.
-- `src/App.tsx` : route `/access-control` (allowedRoles admin/national_coordinator).
-- `src/components/AppLayout.tsx` : entrée "Access Control" dans le groupe Administration.
-- `src/i18n/locales/en.json` : clés `nav.accessControl`, `accessControl.*`.
-- Intégration dans `Visitors.tsx`, `RegisterVisitor.tsx`, `Programs.tsx`, `ProgramAttendance.tsx`, `Statistics.tsx`, `Scanner.tsx` → disable boutons selon `can(...)`.
-
-## Hors scope
-- Restaurant (module désactivé actuellement).
-- Permissions au niveau ligne (toujours via RLS existant).
-- Audit log des changements de permissions.
+### Out of scope (ask later if needed)
+- Reservations / waiting list
+- Fines for late returns
+- Member-facing self-service portal
+- Notifications/SMS reminders
