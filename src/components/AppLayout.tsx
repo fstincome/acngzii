@@ -61,7 +61,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { to: "/library/books", icon: BookOpen, label: t("nav.books") },
     { to: "/library/loans", icon: BookCheck, label: t("nav.loans") },
   ];
-  const showLibrary = !!role;
+  const showLibrary = false;
 
   const restaurantNavItems = [
     { to: "/restaurant/orders", icon: UtensilsCrossed, label: t("nav.orders") },
