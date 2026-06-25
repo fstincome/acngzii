@@ -193,6 +193,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </>
           )}
 
+          {/* Library group */}
+          {showLibrary && (
+            <>
+              <button
+                onClick={() => setLibraryOpen(!libraryOpen)}
+                className="flex w-full items-center justify-between px-3 mb-2"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+                  {t("nav.groups.library")}
+                </p>
+                <ChevronDown className={`h-3 w-3 text-sidebar-foreground/30 transition-transform ${libraryOpen ? "" : "-rotate-90"}`} />
+              </button>
+              {libraryOpen && (
+                <div className="space-y-1 mb-4">
+                  {libraryNavItems.map(renderNavItem)}
+                </div>
+              )}
+            </>
+          )}
+
           {/* Restaurant group */}
           {showRestaurant && (
             <>
