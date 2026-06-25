@@ -1,15 +1,17 @@
 import { useState, useMemo } from "react";
-import { useVisitors, useVisits, ROOM_LABELS } from "@/lib/supabase-store";
+import { useVisitors, useVisits, ROOM_LABELS, computeOccupancy } from "@/lib/supabase-store";
 import type { Visit, RoomType } from "@/lib/supabase-store";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, GraduationCap, ClipboardCheck } from "lucide-react";
+import { Users, TrendingUp, Calendar, Clock, Monitor, DoorOpen, TreePine, ArrowUpRight, ArrowDownRight, GraduationCap, ClipboardCheck, LogIn, LogOut, Activity } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, AreaChart, Area,
 } from "recharts";
+import { VisitorListDialog, VisitorListItem } from "@/components/VisitorListDialog";
+
 
 type Period = "today" | "week" | "month" | "all";
 
