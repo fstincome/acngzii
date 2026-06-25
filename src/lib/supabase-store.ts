@@ -27,7 +27,7 @@ export interface Visitor {
 export interface Visit {
   id: string;
   visitor_id: string;
-  room: "computer_lab" | "multipurpose_room" | "garden";
+  room: "center" | "computer_lab" | "multipurpose_room" | "garden";
   action: "check_in" | "check_out";
   timestamp: string;
   expected_checkout: string | null;
@@ -36,9 +36,10 @@ export interface Visit {
 export const COMPUTER_LAB_CAPACITY = 20;
 export const DEFAULT_DURATION_HOURS = 9;
 
-export type RoomType = "computer_lab" | "multipurpose_room" | "garden";
+export type RoomType = "center" | "computer_lab" | "multipurpose_room" | "garden";
 
 export const ROOM_LABELS: Record<RoomType, string> = {
+  center: "Center",
   computer_lab: "Computer Lab",
   multipurpose_room: "Discussion Room",
   garden: "Reading Lounge",
