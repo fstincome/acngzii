@@ -183,6 +183,10 @@ export default function Login() {
           <p className="mt-10 text-[11px] uppercase tracking-[0.25em] text-muted-foreground text-center">
             American Corner Ngozi · National Coordination
           </p>
+          <p className="mt-3 text-xs text-muted-foreground text-center">
+            © {new Date().getFullYear()} American Corner Ngozi · Made with ❤️ by{" "}
+            <a href="https://www.freeti.org" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">Freeti</a>
+          </p>
         </div>
       </div>
     </div>
