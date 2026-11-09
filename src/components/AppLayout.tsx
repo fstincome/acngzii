@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth, isAdminLike } from "@/hooks/useAuth";
@@ -23,6 +23,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [normalOpen, setNormalOpen] = useState(true);
   const [programOpen, setProgramOpen] = useState(true);
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
   const location = useLocation();
   const { role, user, signOut } = useAuth();
   const { t } = useTranslation();
@@ -218,6 +223,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="label-eyebrow">American Corner</span>
             <span className="h-3 w-px bg-border" />
             <span className="font-serif text-base text-foreground">Ngozi</span>
+            <span className="h-3 w-px bg-border" />
+            <span className="text-sm text-muted-foreground tabular-nums">
+              {now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })} · {now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </span>
           </div>
           <div className="flex-1" />
           <div className="hidden md:flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1">
