@@ -80,7 +80,7 @@ function buildFormPDF(): jsPDF {
   setText(doc, [255, 255, 255]);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text("GITEGA STUDY SPACE", W / 2, y + 7.5, { align: "center" });
+  doc.text("AMERICAN CORNER NGOZI", W / 2, y + 7.5, { align: "center" });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.text("Computer Access Form  |  American Corner", W / 2, y + 12.5, { align: "center" });
@@ -304,7 +304,7 @@ function buildFormPDF(): jsPDF {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.text(
-    "Free Tech Institute  |  American Corner, Q. Stade, Gitega  |  info@freeti.org  |  +257 69 03 49 65  |  www.freeti.org",
+    "Free Tech Institute  |  American Corner, Ngozi  |  info@freeti.org  |  +257 69 03 49 65  |  www.freeti.org",
     W / 2, y, { align: "center" }
   );
 
@@ -321,7 +321,7 @@ function buildVisitorFormPDF(): jsPDF {
 
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("GITEGA STUDY SPACE", w / 2, y, { align: "center" });
+  doc.text("AMERICAN CORNER NGOZI", w / 2, y, { align: "center" });
   y += 6;
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");

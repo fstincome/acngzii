@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 const ROLE_LABELS: Record<AppRole, string> = {
   admin: "Administrator",
   american_center: "American Center",
-  american_corner_gitega: "American Corner Gitega",
+  american_corner_gitega: "American Corner Ngozi",
   coordinator: "Coordinator",
   program_manager: "Program Manager",
   public_relations: "Public Relations",
@@ -291,7 +291,7 @@ export default function UserManagement() {
           <SelectContent>
             <SelectItem value="admin">Administrator</SelectItem>
             <SelectItem value="american_center">American Center</SelectItem>
-            <SelectItem value="american_corner_gitega">American Corner Gitega</SelectItem>
+            <SelectItem value="american_corner_gitega">American Corner Ngozi</SelectItem>
             <SelectItem value="coordinator">Coordinator</SelectItem>
             <SelectItem value="program_manager">Program Manager</SelectItem>
             <SelectItem value="public_relations">Public Relations</SelectItem>

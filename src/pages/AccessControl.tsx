@@ -24,7 +24,7 @@ const MODULES: { key: AppModule; label: string }[] = [
 const ROLES: { key: AppRole; label: string; systemFull?: boolean }[] = [
   { key: "admin", label: "Administrator", systemFull: true },
   { key: "american_center", label: "American Center", systemFull: true },
-  { key: "american_corner_gitega", label: "American Corner Gitega" },
+  { key: "american_corner_gitega", label: "American Corner Ngozi" },
   { key: "coordinator", label: "Coordinator" },
   { key: "program_manager", label: "Program Manager" },
   { key: "public_relations", label: "Public Relations" },

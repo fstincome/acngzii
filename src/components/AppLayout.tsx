@@ -217,7 +217,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="hidden lg:flex items-center gap-2">
             <span className="label-eyebrow">American Corner</span>
             <span className="h-3 w-px bg-border" />
-            <span className="font-serif text-base text-foreground">Gitega</span>
+            <span className="font-serif text-base text-foreground">Ngozi</span>
           </div>
           <div className="flex-1" />
           <div className="hidden md:flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1">

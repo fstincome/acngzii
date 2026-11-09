@@ -22,7 +22,7 @@ function buildFormPDF(): jsPDF {
 
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("AMERICAN CORNER GITEGA", w / 2, y, { align: "center" });
+  doc.text("AMERICAN CORNER NGOZI", w / 2, y, { align: "center" });
   y += 6;
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");

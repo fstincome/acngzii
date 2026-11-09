@@ -66,7 +66,7 @@ export async function generateMembershipCardPDF(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...LIGHT_TEXT);
-  doc.text("AMERICAN CORNER GITEGA", 18, 9);
+  doc.text("AMERICAN CORNER NGOZI", 18, 9);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(4.5);
