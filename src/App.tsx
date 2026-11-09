@@ -19,16 +19,6 @@ import RegistrationForm from "@/pages/RegistrationForm";
 import Login from "@/pages/Login";
 import UserManagement from "@/pages/UserManagement";
 import AccessControl from "@/pages/AccessControl";
-import RestaurantEntry from "@/pages/RestaurantEntry";
-import RestaurantMenu from "@/pages/RestaurantMenu";
-import RestaurantOrders from "@/pages/RestaurantOrders";
-import RestaurantProducts from "@/pages/RestaurantProducts";
-import RestaurantAnalytics from "@/pages/RestaurantAnalytics";
-import RestaurantManualOrder from "@/pages/RestaurantManualOrder";
-import OrderTracking from "@/pages/OrderTracking";
-import LibraryBooks from "@/pages/LibraryBooks";
-import LibraryEntry from "@/pages/LibraryEntry";
-import LibraryLoans from "@/pages/LibraryLoans";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,22 +54,6 @@ const App = () => (
             {/* Admin only */}
             <Route path="/users" element={<ProtectedRoute allowedRoles={["admin"]}><AppLayout><UserManagement /></AppLayout></ProtectedRoute>} />
             <Route path="/access-control" element={<ProtectedRoute allowedRoles={["admin"]}><AppLayout><AccessControl /></AppLayout></ProtectedRoute>} />
-
-            {/* Restaurant - public entry */}
-            <Route path="/restaurant" element={<RestaurantEntry />} />
-            <Route path="/restaurant/menu/:visitorId" element={<RestaurantMenu />} />
-            <Route path="/track/:orderCode" element={<OrderTracking />} />
-
-            {/* Restaurant - staff */}
-            <Route path="/restaurant/orders" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantOrders /></AppLayout></ProtectedRoute>} />
-            <Route path="/restaurant/products" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantProducts /></AppLayout></ProtectedRoute>} />
-            <Route path="/restaurant/analytics" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantAnalytics /></AppLayout></ProtectedRoute>} />
-            <Route path="/restaurant/manual-order" element={<ProtectedRoute allowedRoles={["admin","american_center","american_corner_gitega","coordinator","program_manager"]}><AppLayout><RestaurantManualOrder /></AppLayout></ProtectedRoute>} />
-
-            {/* Library */}
-            <Route path="/library/books" element={<ProtectedRoute><AppLayout><LibraryBooks /></AppLayout></ProtectedRoute>} />
-            <Route path="/library/entry" element={<ProtectedRoute><AppLayout><LibraryEntry /></AppLayout></ProtectedRoute>} />
-            <Route path="/library/loans" element={<ProtectedRoute><AppLayout><LibraryLoans /></AppLayout></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
