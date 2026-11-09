@@ -1,1 +1,0 @@
-ALTER TABLE public.program_tasks ADD COLUMN IF NOT EXISTS deadline date;

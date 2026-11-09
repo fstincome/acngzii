@@ -1,1 +1,0 @@
-ALTER TABLE public.program_participants ADD COLUMN institution text DEFAULT NULL;

@@ -1,1 +1,0 @@
-ALTER TABLE public.visitors ADD COLUMN institution text DEFAULT NULL;

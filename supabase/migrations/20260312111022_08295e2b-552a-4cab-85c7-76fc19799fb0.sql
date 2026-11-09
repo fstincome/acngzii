@@ -1,1 +1,0 @@
-ALTER TABLE public.visits ADD COLUMN IF NOT EXISTS expected_checkout timestamp with time zone DEFAULT NULL;

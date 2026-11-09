@@ -1,1 +1,0 @@
-ALTER TABLE public.program_attendance ADD COLUMN room text DEFAULT NULL;
