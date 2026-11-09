@@ -12,7 +12,7 @@
   "roles": {
     "admin": "Administrator",
     "american_center": "American Center",
-    "american_corner_gitega": "American Corner Gitega",
+    "american_corner_gitega": "American Corner Ngozi",
     "coordinator": "Coordinator",
     "program_manager": "Program Manager",
     "public_relations": "Public Relations",
@@ -101,7 +101,7 @@
       "institution": "Institution (school, university...)"
     },
     "pdf": {
-      "orgName": "AMERICAN CORNER GITEGA",
+      "orgName": "AMERICAN CORNER NGOZI",
       "subtitle": "Registration Form — Visitor",
       "signatureLabel": "Visitor signature:",
       "dateLabel": "Date:"

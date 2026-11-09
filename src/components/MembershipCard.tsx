@@ -103,7 +103,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
       ctx.font = "bold 11px Inter, sans-serif";
       ctx.fillStyle = "#ffffff";
       ctx.letterSpacing = "2px";
-      ctx.fillText("AMERICAN CORNER GITEGA", 68, 32);
+      ctx.fillText("AMERICAN CORNER NGOZI", 68, 32);
       ctx.font = "10px Inter, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.5)";
       ctx.fillText(programName || "Membership Card", 68, 46);
@@ -276,7 +276,7 @@ export default function MembershipCard({ fullName, visitorId, photo, showActions
               <img src="/gss-logo.png" alt="American Spaces" className="h-10 w-10 rounded-lg object-contain shrink-0" />
             )}
             <div className="flex-1">
-              <p className="text-xs font-bold text-white tracking-widest">{programName ? programName.toUpperCase() : "AMERICAN CORNER GITEGA"}</p>
+              <p className="text-xs font-bold text-white tracking-widest">{programName ? programName.toUpperCase() : "AMERICAN CORNER NGOZI"}</p>
               <p className="text-[10px] text-white/50">{institution || (programName ? "American Corner" : "Membership Card")}</p>
             </div>
             {photo && (
